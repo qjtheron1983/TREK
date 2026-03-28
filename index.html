@@ -1061,25 +1061,36 @@ async function joinTrip(){
   if(!hasMyVeh){
     foundTrip.vehicles.push({name:vname,fuelType:$('jt-ftype').value,consumption:cons,tank:Number($('jt-tank').value)||80,driver:ME.name,uid:ME.id});
   }
-  // Preserve original owner — the organiser, not the joiner
-  // _owner stays as whoever created the trip
   if(!foundTrip._owner)foundTrip._owner=foundTrip.createdBy||ME.id;
   DB.trips[foundTrip.id]=foundTrip;
   DB.cur=foundTrip.id;
-  // Save locally
-  try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
-  // Write back to Firebase — preserving original _owner, adding joiner to _crewIds
+  sv();
+
   if(FB_READY){
-    fbDb.collection('trips').doc(foundTrip.id).set({
-      ...foundTrip,
-      _updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-    },{merge:true})
-    .then(()=>console.log('Joined trip saved to Firebase'))
-    .catch(e=>console.error('Join save failed:',e));
+    // Write a join_request — joiner CAN write this, organiser reads it on next load
+    const joinReq={
+      tripId:foundTrip.id,
+      tripName:foundTrip.name||'',
+      userId:ME.id,
+      userName:ME.name||'',
+      userEmail:ME.email||'',
+      userInitials:ME.initials||'',
+      userAvatar:ME.avatar||'',
+      vehicleName:$('jt-vname').value.trim()||ME.name+"'s vehicle",
+      fuelType:$('jt-ftype').value||'Diesel',
+      consumption:parseFloat($('jt-cons').value)||12.5,
+      tank:Number($('jt-tank').value)||80,
+      status:'pending',
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    };
+    fbDb.collection('join_requests').doc(foundTrip.id+'_'+ME.id).set(joinReq)
+      .then(()=>console.log('[JOIN] join_request written'))
+      .catch(e=>console.error('[JOIN] join_request failed:',e));
   }
+
   rebuildSel(); renderAll(); startCD();
   closeModal('joinTripMod');
-  toast('🎉 Joined '+foundTrip.name+'!','ok');
+  toast('🎉 Joined '+foundTrip.name+'! The organiser will see you when they next open the app.','ok');
 }
 
 
