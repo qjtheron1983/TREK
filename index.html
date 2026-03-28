@@ -14,474 +14,502 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
-/* ══ DESIGN TOKENS — LIGHT THEME ══ */
 :root{
-  --bg:#f7f2eb;
-  --bg2:#eee8dd;
-  --surface:#fff;
-  --surface2:#faf6f0;
-  --border:#ddd4c0;
-  --border2:#e8dfd0;
-  --text:#1c1612;
-  --text2:#4a3f30;
-  --text3:#7a6e5f;
-  --amber:#b8720f;
-  --amber-bg:rgba(184,114,15,.1);
-  --amber-border:rgba(184,114,15,.25);
-  --sage:#3d6435;
-  --sage-bg:rgba(61,100,53,.1);
-  --rust:#8b3222;
-  --rust-bg:rgba(139,50,34,.08);
-  --sky:#1e6fa5;
-  --sky-bg:rgba(30,111,165,.1);
+  --bg:#f7f2eb;--bg2:#eee8dd;--surface:#fff;--border:#ddd4c0;--border2:#e8dfd0;
+  --text:#1c1612;--text2:#4a3f30;--text3:#7a6e5f;
+  --amber:#b8720f;--al:#c9921a;--amber-bg:rgba(184,114,15,.1);--amber-bd:rgba(184,114,15,.25);
+  --sage:#3d6435;--sage-bg:rgba(61,100,53,.1);--sage-bd:rgba(61,100,53,.25);
+  --rust:#8b3222;--rust-bg:rgba(139,50,34,.08);
+  --sky:#1e6fa5;--sky-bg:rgba(30,111,165,.1);--sky-bd:rgba(30,111,165,.25);
   --fire:#c94b1a;
-  --shadow:rgba(28,22,18,.08);
-  --shadow-md:rgba(28,22,18,.14);
-  --radius:10px;
-  --radius-lg:16px;
+  --sh:rgba(28,22,18,.08);--shm:rgba(28,22,18,.14);
+  --r:10px;--rl:16px;
 }
-*{margin:0;padding:0;box-sizing:border-box;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;-webkit-font-smoothing:antialiased;}
-body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;}
-h1,h2,h3,.serif{font-family:'Playfair Display',Georgia,serif;}
-.mono{font-family:'Space Mono',monospace;}
-
-/* ══ SCROLLBAR ══ */
-::-webkit-scrollbar{width:5px;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;overscroll-behavior-y:none;}
+::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 
-/* ══ LOADER ══ */
-#loader{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;transition:opacity .8s,transform .8s;}
+/* LOADER */
+#loader{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .7s,transform .7s;}
 #loader.out{opacity:0;pointer-events:none;transform:scale(1.03);}
-.ldr-ring{width:64px;height:64px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--amber);animation:spin 1.4s linear infinite;margin-bottom:1.75rem;}
+.lring{width:60px;height:60px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--amber);animation:spin 1.3s linear infinite;margin-bottom:1.6rem;}
 @keyframes spin{to{transform:rotate(360deg)}}
-.ldr-logo{font-family:'Playfair Display';font-size:2.6rem;font-weight:900;letter-spacing:.25em;color:var(--text);animation:lfi .5s .2s both;}
-.ldr-tag{font-family:'Space Mono';font-size:.55rem;letter-spacing:.3em;color:var(--text3);text-transform:uppercase;margin-top:.3rem;animation:lfi .5s .4s both;}
-.ldr-div{width:36px;height:1px;background:var(--border);margin:.85rem auto;animation:lfi .4s .5s both;}
-.ldr-fb{font-family:'Space Mono';font-size:.48rem;letter-spacing:.2em;color:var(--amber);text-transform:uppercase;animation:lfi .4s .6s both;}
-@keyframes lfi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.llogo{font-family:'Playfair Display';font-size:2.5rem;font-weight:900;letter-spacing:.22em;color:var(--text);}
+.ltag{font-family:'Space Mono';font-size:.52rem;letter-spacing:.28em;color:var(--text3);text-transform:uppercase;margin-top:.25rem;}
+.ldiv{width:32px;height:1px;background:var(--border);margin:.8rem auto;}
+.lfb{font-family:'Space Mono';font-size:.45rem;letter-spacing:.18em;color:var(--amber);text-transform:uppercase;}
+@keyframes lfi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.llogo,.ltag,.ldiv,.lfb{animation:lfi .5s ease both;}
+.ltag{animation-delay:.15s}.ldiv{animation-delay:.25s}.lfb{animation-delay:.35s}
 
-/* ══ AUTH SCREENS ══ */
-#authScreen{position:fixed;inset:0;z-index:8500;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow-y:auto;}
+/* AUTH */
+#authScreen{position:fixed;inset:0;z-index:8500;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:1.25rem;overflow-y:auto;}
 #authScreen.hidden{display:none;}
-.auth-card{width:100%;max-width:420px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:2.5rem;box-shadow:0 4px 24px var(--shadow);}
-.auth-logo{text-align:center;margin-bottom:1.75rem;}
-.auth-logo-mark{font-family:'Playfair Display';font-size:2rem;font-weight:900;letter-spacing:.2em;color:var(--text);}
-.auth-logo-sub{font-size:.72rem;color:var(--text3);letter-spacing:.15em;font-family:'Space Mono';text-transform:uppercase;margin-top:.2rem;}
-.auth-logo-fb{font-size:.5rem;color:var(--amber);letter-spacing:.18em;font-family:'Space Mono';text-transform:uppercase;margin-top:.15rem;}
-.auth-title{font-family:'Playfair Display';font-size:1.5rem;font-weight:700;color:var(--text);margin-bottom:.35rem;}
-.auth-sub{font-size:.85rem;color:var(--text3);margin-bottom:1.5rem;}
-.auth-tabs{display:flex;gap:0;background:var(--bg2);border-radius:8px;padding:3px;margin-bottom:1.5rem;}
-.auth-tab{flex:1;padding:.5rem;text-align:center;border-radius:6px;cursor:pointer;font-size:.8rem;font-weight:500;color:var(--text3);transition:all .2s;}
-.auth-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px var(--shadow);}
-.fi{margin-bottom:1rem;}
-.fi label{display:block;font-size:.72rem;font-weight:600;color:var(--text2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:.35rem;}
-.fi input{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.65rem .85rem;border-radius:8px;font-size:.95rem;transition:border-color .2s;outline:none;}
+.auth-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:2.25rem;box-shadow:0 4px 24px var(--sh);}
+.auth-logo{text-align:center;margin-bottom:1.5rem;}
+.auth-logo-mark{font-family:'Playfair Display';font-size:1.85rem;font-weight:900;letter-spacing:.18em;}
+.auth-logo-sub{font-size:.65rem;color:var(--text3);letter-spacing:.14em;font-family:'Space Mono';text-transform:uppercase;margin-top:.18rem;}
+.auth-logo-fb{font-size:.48rem;color:var(--amber);letter-spacing:.16em;font-family:'Space Mono';text-transform:uppercase;margin-top:.12rem;}
+.auth-tabs{display:flex;background:var(--bg2);border-radius:8px;padding:3px;margin-bottom:1.4rem;}
+.auth-tab{flex:1;padding:.48rem;text-align:center;border-radius:6px;cursor:pointer;font-size:.78rem;font-weight:500;color:var(--text3);transition:all .18s;}
+.auth-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px var(--sh);}
+.fi{margin-bottom:.9rem;}
+.fi label{display:block;font-size:.68rem;font-weight:600;color:var(--text2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:.3rem;}
+.fi input{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.65rem .82rem;border-radius:8px;font-size:.95rem;outline:none;transition:border-color .18s;}
 .fi input:focus{border-color:var(--amber);background:var(--surface);}
-.btn-auth{width:100%;background:var(--amber);color:#fff;border:none;padding:.75rem;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:.25rem;}
-.btn-auth:hover{background:#9a5f0a;transform:translateY(-1px);box-shadow:0 4px 12px rgba(184,114,15,.3);}
-.auth-err{background:var(--rust-bg);border:1px solid rgba(139,50,34,.2);color:var(--rust);border-radius:6px;padding:.6rem .85rem;font-size:.83rem;margin-bottom:.85rem;display:none;}
+.btn-auth{width:100%;background:var(--amber);color:#fff;border:none;padding:.75rem;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:.2rem;}
+.btn-auth:hover{background:var(--al);}
+.btn-auth:active{transform:scale(.98);}
+.auth-err{background:var(--rust-bg);border:1px solid rgba(139,50,34,.2);color:var(--rust);border-radius:6px;padding:.55rem .82rem;font-size:.82rem;margin-bottom:.8rem;display:none;}
 .auth-err.show{display:block;}
-.auth-switch{text-align:center;margin-top:1.1rem;font-size:.83rem;color:var(--text3);}
-.auth-switch a{color:var(--amber);cursor:pointer;font-weight:500;}
+.auth-switch{text-align:center;margin-top:1rem;font-size:.8rem;color:var(--text3);}
+.auth-switch a{color:var(--amber);cursor:pointer;font-weight:600;}
+#fbSetupBanner{display:none;background:#fff8e1;border:1px solid #ffe082;border-radius:7px;padding:.7rem .85rem;font-size:.75rem;color:#7a6e5f;margin-bottom:.9rem;line-height:1.5;}
 
-/* ══ APP SHELL ══ */
-#app{display:none;min-height:100vh;flex-direction:row;}
-#app.visible{display:flex;}
+/* APP SHELL */
+#app{display:none;min-height:100vh;}
+#app.visible{display:block;}
 
-/* ══ SIDEBAR ══ */
-#sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border2);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:200;transition:transform .28s ease;overflow-y:auto;box-shadow:2px 0 12px var(--shadow);}
-#sidebar.off{transform:translateX(-240px);}
-.sb-head{padding:1.4rem 1.25rem 1.1rem;border-bottom:1px solid var(--border2);}
-.sb-wordmark{font-family:'Playfair Display';font-size:1.7rem;font-weight:900;letter-spacing:.15em;color:var(--text);display:flex;align-items:center;gap:.4rem;}
-.sb-tag{font-size:.5rem;color:var(--text3);letter-spacing:.3em;font-family:'Space Mono';text-transform:uppercase;margin-top:.15rem;}
-.sb-fb{font-size:.43rem;color:var(--amber);letter-spacing:.18em;font-family:'Space Mono';text-transform:uppercase;margin-top:.08rem;}
-.sb-user{padding:.85rem 1.25rem;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:.75rem;}
-.sb-avatar{width:34px;height:34px;border-radius:50%;background:var(--amber);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display';font-size:1rem;font-weight:700;flex-shrink:0;}
-.sb-uname{font-size:.85rem;font-weight:600;color:var(--text);flex:1;}
-.sb-logout{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.78rem;transition:color .2s;padding:.2rem;}
+/* SIDEBAR */
+#sidebar{width:232px;background:var(--surface);border-right:1px solid var(--border2);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:200;transition:transform .26s ease;overflow-y:auto;box-shadow:2px 0 12px var(--sh);}
+#sidebar.off{transform:translateX(-232px);}
+.sb-head{padding:1.3rem 1.2rem 1rem;border-bottom:1px solid var(--border2);}
+.sb-logo{font-family:'Playfair Display';font-size:1.6rem;font-weight:900;letter-spacing:.14em;}
+.sb-tag{font-size:.48rem;color:var(--text3);letter-spacing:.28em;font-family:'Space Mono';text-transform:uppercase;margin-top:.12rem;}
+.sb-fb{font-size:.42rem;color:var(--amber);letter-spacing:.16em;font-family:'Space Mono';text-transform:uppercase;margin-top:.06rem;}
+.sb-user{padding:.8rem 1.2rem;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:.7rem;}
+.sb-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display';font-size:.95rem;font-weight:700;color:#fff;flex-shrink:0;}
+.sb-uname{font-size:.82rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sb-logout{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;padding:.18rem;}
 .sb-logout:hover{color:var(--rust);}
-.sb-trip{padding:.75rem 1.25rem;border-bottom:1px solid var(--border2);}
-.sb-trip label{display:block;font-size:.62rem;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.3rem;}
-.sb-sel{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.42rem .65rem;border-radius:6px;font-size:.88rem;cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 5 5-5' stroke='%23b8720f' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
-.sb-sel:focus{border-color:var(--amber);}
-.btn-newtrip{width:100%;margin-top:.4rem;background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);padding:.4rem;font-size:.65rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s;}
-.btn-newtrip:hover{background:var(--amber);color:#fff;}
-.sb-nav{flex:1;padding:.6rem 0;}
-.ni{display:flex;align-items:center;gap:.62rem;padding:.6rem 1.25rem;color:var(--text3);cursor:pointer;transition:all .18s;border-left:2.5px solid transparent;font-size:.85rem;font-weight:500;user-select:none;}
+.sb-trip{padding:.7rem 1.2rem;border-bottom:1px solid var(--border2);}
+.sb-trip label{font-size:.6rem;font-weight:600;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;display:block;margin-bottom:.28rem;}
+.sb-sel{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.4rem .6rem;border-radius:6px;font-size:.85rem;cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 5 5-5' stroke='%23b8720f' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;}
+.btn-trip{width:100%;margin-top:.35rem;padding:.38rem;font-size:.62rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .18s;}
+.btn-new{background:var(--amber-bg);border:1px solid var(--amber-bd);color:var(--amber);}
+.btn-new:hover{background:var(--amber);color:#fff;}
+.btn-join{background:var(--sky-bg);border:1px solid var(--sky-bd);color:var(--sky);}
+.btn-join:hover{background:var(--sky);color:#fff;}
+.btn-del{background:none;border:1px solid rgba(139,50,34,.2);color:var(--rust);}
+.btn-del:hover{background:var(--rust-bg);}
+.sb-nav{flex:1;padding:.5rem 0;}
+.ni{display:flex;align-items:center;gap:.58rem;padding:.58rem 1.2rem;color:var(--text3);cursor:pointer;transition:all .16s;border-left:2.5px solid transparent;font-size:.82rem;font-weight:500;user-select:none;}
 .ni:hover{color:var(--text);background:var(--bg2);}
 .ni.active{color:var(--amber);border-left-color:var(--amber);background:var(--amber-bg);}
-.ni-ic{width:16px;text-align:center;font-size:.92rem;flex-shrink:0;}
-.ni-badge{margin-left:auto;background:var(--rust);color:#fff;font-size:.52rem;padding:1px 6px;border-radius:10px;font-family:'Space Mono';}
-.sb-cd{margin:.65rem 1rem .85rem;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:8px;padding:.85rem;}
-.cd-lbl{font-size:.56rem;font-weight:600;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:.55rem;}
-.cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.15rem;}
+.ni-ic{width:15px;text-align:center;font-size:.88rem;flex-shrink:0;}
+.ni-badge{margin-left:auto;background:var(--rust);color:#fff;font-size:.5rem;padding:1px 5px;border-radius:10px;font-family:'Space Mono';}
+.sb-cd{margin:.6rem .9rem .75rem;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:.75rem;}
+.cd-lbl{font-size:.54rem;font-weight:600;color:var(--amber);letter-spacing:.09em;text-transform:uppercase;display:block;margin-bottom:.5rem;}
+.cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.1rem;}
 .cd-u{text-align:center;}
-.cd-n{font-family:'Playfair Display';font-size:1.3rem;font-weight:700;color:var(--amber);line-height:1;}
-.cd-l{font-size:.42rem;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;font-family:'Space Mono';}
-.sb-foot{padding:.65rem 1.25rem .85rem;border-top:1px solid var(--border2);}
-.sb-ft{font-size:.48rem;color:var(--text3);letter-spacing:.12em;font-family:'Space Mono';text-transform:uppercase;text-align:center;}
+.cd-n{font-family:'Playfair Display';font-size:1.25rem;font-weight:700;color:var(--amber);line-height:1;}
+.cd-l{font-size:.4rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'Space Mono';}
+.sb-foot{padding:.55rem 1.2rem .75rem;border-top:1px solid var(--border2);font-size:.45rem;color:var(--text3);letter-spacing:.1em;font-family:'Space Mono';text-transform:uppercase;text-align:center;}
 
-/* ══ MAIN ══ */
-#main{margin-left:240px;flex:1;min-height:100vh;transition:margin-left .28s ease;background:var(--bg);}
-#main.wide{margin-left:0;}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border2);padding:.8rem 1.75rem;display:flex;align-items:center;gap:.85rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px var(--shadow);}
-.menu-btn{background:none;border:1px solid var(--border);color:var(--amber);padding:.32rem .52rem;cursor:pointer;border-radius:6px;font-size:.9rem;transition:all .18s;}
+/* MAIN */
+#main{margin-left:232px;min-height:100vh;background:var(--bg);}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border2);padding:.75rem 1.5rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px var(--sh);}
+.menu-btn{background:none;border:1px solid var(--border);color:var(--amber);padding:.3rem .5rem;cursor:pointer;border-radius:6px;font-size:.85rem;transition:all .16s;}
 .menu-btn:hover{background:var(--amber-bg);}
-.tb-title{font-family:'Playfair Display';font-size:1.05rem;font-style:italic;color:var(--text2);flex:1;}
-.btn-sm{background:none;border:1px solid var(--border);color:var(--text3);padding:.3rem .65rem;cursor:pointer;border-radius:6px;font-size:.78rem;transition:all .18s;}
+.tb-title{font-family:'Playfair Display';font-size:1rem;font-style:italic;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn-sm{background:none;border:1px solid var(--border);color:var(--text3);padding:.28rem .6rem;cursor:pointer;border-radius:6px;font-size:.75rem;transition:all .16s;}
 .btn-sm:hover{color:var(--text);border-color:var(--amber);}
 
-/* ══ PANELS ══ */
-.panel{display:none;padding:1.75rem;animation:pIn .3s ease;}
+/* PANELS */
+.panel{display:none;padding:1.5rem;animation:pIn .28s ease;max-width:1200px;}
 .panel.active{display:block;}
-@keyframes pIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-.ph{margin-bottom:1.6rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
-.ph-title{font-family:'Playfair Display';font-size:1.75rem;font-weight:700;color:var(--text);}
-.ph-sub{font-size:.85rem;color:var(--text3);margin-top:.18rem;}
+@keyframes pIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-/* ══ BUTTONS ══ */
-.btn-primary{background:var(--amber);color:#fff;border:none;padding:.58rem 1.25rem;font-size:.75rem;font-weight:600;letter-spacing:.04em;cursor:pointer;border-radius:8px;transition:all .2s;white-space:nowrap;}
-.btn-primary:hover{background:#9a5f0a;transform:translateY(-1px);box-shadow:0 3px 10px rgba(184,114,15,.3);}
-.btn-secondary{background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:.52rem 1.05rem;font-size:.72rem;font-weight:500;cursor:pointer;border-radius:8px;transition:all .2s;}
+/* BUTTONS */
+.btn-primary{background:var(--amber);color:#fff;border:none;padding:.55rem 1.15rem;font-size:.73rem;font-weight:600;letter-spacing:.03em;cursor:pointer;border-radius:8px;transition:all .18s;white-space:nowrap;}
+.btn-primary:hover{background:var(--al);transform:translateY(-1px);box-shadow:0 3px 10px rgba(184,114,15,.3);}
+.btn-primary:active{transform:scale(.97);}
+.btn-secondary{background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:.5rem 1rem;font-size:.72rem;font-weight:500;cursor:pointer;border-radius:8px;transition:all .18s;}
 .btn-secondary:hover{border-color:var(--amber);color:var(--amber);}
-.btn-danger{background:var(--rust-bg);border:1px solid rgba(139,50,34,.2);color:var(--rust);padding:.38rem .7rem;font-size:.7rem;font-weight:500;cursor:pointer;border-radius:6px;transition:all .2s;}
-.btn-danger:hover{background:rgba(139,50,34,.18);}
-.btn-ghost{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.82rem;padding:.2rem .4rem;transition:color .18s;}
+.btn-danger{background:var(--rust-bg);border:1px solid rgba(139,50,34,.18);color:var(--rust);padding:.35rem .65rem;font-size:.68rem;font-weight:500;cursor:pointer;border-radius:6px;transition:all .18s;}
+.btn-ghost{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.82rem;padding:.18rem .35rem;transition:color .16s;}
 .btn-ghost:hover{color:var(--rust);}
 
-/* ══ CARDS ══ */
-.card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);box-shadow:0 1px 4px var(--shadow);transition:box-shadow .2s;}
-.card:hover{box-shadow:0 3px 12px var(--shadow-md);}
-.card-pad{padding:1.25rem;}
-
-/* ══ FORMS ══ */
-.form-row{display:flex;gap:.85rem;flex-wrap:wrap;margin-bottom:.85rem;}
-.fg{flex:1;min-width:150px;}
-.fg label{display:block;font-size:.68rem;font-weight:600;color:var(--text2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:.32rem;}
-.fg input,.fg select,.fg textarea{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.58rem .75rem;border-radius:8px;font-size:.92rem;transition:border-color .18s;outline:none;}
+/* FORMS */
+.form-row{display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:.8rem;}
+.fg{flex:1;min-width:140px;}
+.fg label{display:block;font-size:.65rem;font-weight:600;color:var(--text2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:.28rem;}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.56rem .72rem;border-radius:8px;font-size:.9rem;transition:border-color .16s;outline:none;}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--amber);background:var(--surface);}
-.fg select option{background:var(--surface);}
-.fg textarea{resize:vertical;min-height:72px;}
-.modal-footer{display:flex;gap:.7rem;justify-content:flex-end;margin-top:1.4rem;padding-top:1.1rem;border-top:1px solid var(--border2);}
+.fg textarea{resize:vertical;min-height:68px;}
+.modal-footer{display:flex;gap:.65rem;justify-content:flex-end;margin-top:1.3rem;padding-top:1rem;border-top:1px solid var(--border2);}
 
-/* ══ MODAL ══ */
-.overlay{position:fixed;inset:0;z-index:500;background:rgba(28,22,18,.45);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;padding:1rem;}
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);box-shadow:0 1px 4px var(--sh);transition:box-shadow .18s;}
+.card:hover{box-shadow:0 3px 12px var(--shm);}
+.card-pad{padding:1.2rem;}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;z-index:500;background:rgba(28,22,18,.42);backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;padding:0;}
 .overlay.open{opacity:1;pointer-events:all;}
-.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:1.75rem;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;transform:scale(.96) translateY(12px);transition:transform .25s;position:relative;box-shadow:0 8px 32px var(--shadow-md);}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl) var(--rl) 0 0;padding:1.6rem 1.6rem calc(1.6rem + env(safe-area-inset-bottom));width:100%;max-width:580px;max-height:92vh;overflow-y:auto;transform:translateY(24px);transition:transform .25s;position:relative;}
 .overlay.open .modal{transform:none;}
-.modal-title{font-family:'Playfair Display';font-size:1.4rem;font-weight:700;color:var(--text);margin-bottom:1.3rem;}
-.modal-close{position:absolute;top:.9rem;right:.9rem;background:none;border:none;color:var(--text3);font-size:1.1rem;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .18s;}
-.modal-close:hover{background:var(--bg2);color:var(--text);}
+.modal-title{font-family:'Playfair Display';font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:1.2rem;}
+.modal-close{position:absolute;top:.85rem;right:.85rem;background:var(--bg2);border:none;color:var(--text3);font-size:.9rem;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .16s;}
+.modal-close:hover{background:var(--border);color:var(--text);}
 
-/* ══ TAGS ══ */
-.tag{font-size:.62rem;padding:2px 8px;border-radius:20px;font-weight:600;letter-spacing:.04em;display:inline-block;}
+/* TAGS */
+.tag{font-size:.6rem;padding:2px 7px;border-radius:20px;font-weight:600;letter-spacing:.03em;display:inline-block;}
 .t-camp{background:var(--sage-bg);color:var(--sage);}
-.t-chalet{background:var(--amber-bg);color:var(--amber);}
-.t-lodge{background:var(--rust-bg);color:var(--rust);}
+.t-chalet,.t-lodge{background:var(--amber-bg);color:var(--amber);}
 .t-drive{background:var(--sky-bg);color:var(--sky);}
+.t-guesthouse{background:rgba(201,75,26,.1);color:var(--fire);}
+.t-accommodation{background:var(--amber-bg);color:var(--amber);}
 .t-activity{background:rgba(201,75,26,.1);color:var(--fire);}
-.t-start{background:#e8f5e9;color:#2e7d32;}
-.t-end{background:#fce4ec;color:#c62828;}
+.t-food{background:var(--sage-bg);color:var(--sage);}
+.t-fuel,.t-other{background:var(--sky-bg);color:var(--sky);}
 
-/* ══ PROGRESS ══ */
-.prog-wrap{background:var(--bg2);border-radius:4px;overflow:hidden;height:6px;}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--amber));border-radius:4px;transition:width .5s ease;}
+/* PROGRESS */
+.prog-wrap{background:var(--bg2);border-radius:4px;overflow:hidden;height:5px;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--amber));border-radius:4px;transition:width .4s ease;}
 
-/* ══ TOAST ══ */
-#toasts{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9000;display:flex;flex-direction:column;gap:.4rem;}
-.toast{background:var(--text);color:#fff;padding:.65rem 1.05rem;border-radius:8px;font-size:.85rem;box-shadow:0 4px 16px var(--shadow-md);animation:tIn .25s ease;display:flex;align-items:center;gap:.45rem;}
-@keyframes tIn{from{opacity:0;transform:translateY(6px) scale(.95)}to{opacity:1;transform:none}}
+/* TOAST */
+#toasts{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));right:1rem;z-index:9000;display:flex;flex-direction:column;gap:.35rem;}
+.toast{background:var(--text);color:#fff;padding:.6rem 1rem;border-radius:8px;font-size:.82rem;box-shadow:0 4px 16px var(--shm);animation:tIn .22s ease;display:flex;align-items:center;gap:.4rem;max-width:280px;}
+@keyframes tIn{from{opacity:0;transform:translateY(5px) scale(.95)}to{opacity:1;transform:none}}
 .toast.ok{background:#1e6b2e;}
 .toast.err{background:var(--rust);}
 
-/* ══ EMPTY ══ */
-.empty{text-align:center;padding:2.5rem 1rem;color:var(--text3);}
-.ei{font-size:2.2rem;margin-bottom:.65rem;opacity:.5;}
-.et{font-size:.95rem;font-weight:600;color:var(--text2);margin-bottom:.2rem;}
-.es{font-size:.83rem;}
+/* EMPTY */
+.empty{text-align:center;padding:2.2rem 1rem;color:var(--text3);}
+.ei{font-size:2rem;margin-bottom:.55rem;opacity:.45;}
+.et{font-size:.92rem;font-weight:600;color:var(--text2);margin-bottom:.18rem;}
+.es{font-size:.8rem;}
 
-/* ══ PLACE SEARCH ══ */
-.ps-wrap{position:relative;margin-bottom:.85rem;}
-.ps-wrap input{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.62rem .75rem .62rem 2.2rem;border-radius:8px;font-size:.92rem;outline:none;transition:border-color .2s;}
+/* PLACE SEARCH */
+.ps-wrap{position:relative;margin-bottom:.8rem;}
+.ps-wrap input{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.6rem .72rem .6rem 2.1rem;border-radius:8px;font-size:.9rem;outline:none;transition:border-color .18s;}
 .ps-wrap input:focus{border-color:var(--amber);background:var(--surface);}
-.ps-icon{position:absolute;left:.72rem;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.9rem;pointer-events:none;}
-.ps-results{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:600;background:var(--surface);border:1px solid var(--border2);border-radius:10px;overflow:hidden;box-shadow:0 8px 24px var(--shadow-md);display:none;max-height:280px;overflow-y:auto;}
+.ps-icon{position:absolute;left:.68rem;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.88rem;pointer-events:none;}
+.ps-results{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:600;background:var(--surface);border:1px solid var(--border2);border-radius:10px;overflow:hidden;box-shadow:0 8px 24px var(--shm);display:none;max-height:260px;overflow-y:auto;}
 .ps-results.open{display:block;}
-.ps-item{padding:.65rem .95rem;cursor:pointer;font-size:.88rem;color:var(--text2);transition:background .15s;display:flex;align-items:center;gap:.6rem;border-bottom:1px solid var(--border2);}
+.ps-item{padding:.6rem .9rem;cursor:pointer;font-size:.85rem;color:var(--text2);transition:background .14s;display:flex;align-items:center;gap:.55rem;border-bottom:1px solid var(--border2);}
 .ps-item:last-child{border-bottom:none;}
-.ps-item:hover{background:var(--amber-bg);}
-.ps-ic{font-size:1rem;flex-shrink:0;}
-.ps-sub{font-size:.75rem;color:var(--text3);}
-.ps-loading{padding:.65rem .95rem;color:var(--text3);font-size:.82rem;font-style:italic;}
+.ps-item:hover,.ps-item:active{background:var(--amber-bg);}
+.ps-ic{font-size:.95rem;flex-shrink:0;}
+.ps-sub{font-size:.72rem;color:var(--text3);}
+.ps-loading{padding:.6rem .9rem;color:var(--text3);font-size:.8rem;font-style:italic;}
 
-/* ══ STOP PILLS ══ */
-.stop-pills{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.65rem;min-height:26px;}
-.sp{display:flex;align-items:center;gap:.35rem;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:20px;padding:.22rem .5rem .22rem .7rem;font-size:.8rem;color:var(--text2);font-weight:500;}
+/* STOP PILLS */
+.stop-pills{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.6rem;min-height:24px;}
+.sp{display:flex;align-items:center;gap:.32rem;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:20px;padding:.2rem .48rem .2rem .68rem;font-size:.78rem;color:var(--text2);font-weight:500;}
 .sp.start{background:#e8f5e9;border-color:rgba(61,100,53,.3);color:var(--sage);}
 .sp.end{background:#fce4ec;border-color:rgba(139,50,34,.3);color:var(--rust);}
-.sp-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.72rem;padding:0 .1rem;line-height:1;}
+.sp-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.7rem;padding:0 .08rem;line-height:1;}
 .sp-del:hover{color:var(--rust);}
-.nights-inp{width:50px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.25rem .35rem;font-size:.8rem;border-radius:4px;text-align:center;outline:none;}
-.nights-inp:focus{border-color:var(--amber);}
+.nights-inp{width:48px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.22rem .32rem;font-size:.78rem;border-radius:4px;text-align:center;outline:none;}
 
-/* ══ WIZARD STEPS BAR ══ */
-.wsbar{display:flex;align-items:center;gap:.3rem;margin-bottom:1.25rem;}
-.wsb{display:flex;align-items:center;gap:.28rem;font-size:.68rem;font-weight:600;color:var(--text3);}
-.wsb-n{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.62rem;transition:all .25s;flex-shrink:0;}
+/* WIZARD */
+.wsbar{display:flex;align-items:center;gap:.28rem;margin-bottom:1.2rem;}
+.wsb{display:flex;align-items:center;gap:.26rem;font-size:.65rem;font-weight:600;color:var(--text3);}
+.wsb-n{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.6rem;transition:all .22s;flex-shrink:0;}
 .wsb.active .wsb-n{background:var(--amber);border-color:var(--amber);color:#fff;}
 .wsb.done .wsb-n{background:var(--sage);border-color:var(--sage);color:#fff;}
 .wsb.active{color:var(--text);}
 .wsb.done{color:var(--sage);}
-.wsb-line{flex:1;height:1px;background:var(--border2);max-width:40px;}
-.wiz-pane{display:none;animation:lfi .25s ease;}
+.wsb-line{flex:1;height:1px;background:var(--border2);max-width:36px;}
+.wiz-pane{display:none;}
 .wiz-pane.on{display:block;}
 
-/* ══ DASHBOARD ══ */
-.dash-hero{background:linear-gradient(135deg,#4a3320 0%,#6b4a22 40%,#3d4f35 100%);border-radius:var(--radius-lg);padding:2rem 2.25rem;margin-bottom:1.5rem;position:relative;overflow:hidden;color:#fff;}
-.dash-hero::after{content:'';position:absolute;right:-20px;top:-20px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none;}
-.dh-name{font-family:'Playfair Display';font-size:2.2rem;font-weight:900;color:#fff;position:relative;z-index:1;}
-.dh-meta{display:flex;gap:1.25rem;flex-wrap:wrap;margin-top:.6rem;position:relative;z-index:1;}
-.dh-mi{display:flex;align-items:center;gap:.35rem;font-size:.85rem;color:rgba(255,255,255,.8);}
-.dh-ic{opacity:.7;}
-.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.9rem;margin-bottom:1.5rem;}
-.stat{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:.95rem 1rem;box-shadow:0 1px 4px var(--shadow);}
-.stat-n{font-family:'Playfair Display';font-size:1.8rem;font-weight:700;color:var(--amber);}
-.stat-l{font-size:.62rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:.15rem;}
-.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.5rem;}
-@media(max-width:800px){.dash-grid{grid-template-columns:1fr;}}
-.dc{padding:1.2rem;}
-.dc-title{font-size:.78rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.85rem;display:flex;align-items:center;gap:.4rem;}
+/* OVERVIEW DASHBOARD */
+.dash-hero{background:linear-gradient(135deg,#2e1f0c 0%,#4a3020 45%,#2d4028 100%);border-radius:var(--rl);padding:1.75rem 2rem;margin-bottom:1.3rem;color:#fff;position:relative;overflow:hidden;}
+.dash-hero::after{content:'';position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none;}
+.dh-name{font-family:'Playfair Display';font-size:2rem;font-weight:900;color:#fff;position:relative;z-index:1;}
+.dh-meta{display:flex;gap:1.1rem;flex-wrap:wrap;margin-top:.55rem;position:relative;z-index:1;}
+.dh-mi{display:flex;align-items:center;gap:.32rem;font-size:.82rem;color:rgba(255,255,255,.78);}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:.8rem;margin-bottom:1.3rem;}
+.stat{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.9rem;box-shadow:0 1px 4px var(--sh);}
+.stat-n{font-family:'Playfair Display';font-size:1.7rem;font-weight:700;color:var(--amber);}
+.stat-l{font-size:.58rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:.12rem;}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.3rem;}
+.dc{padding:1.1rem;}
+.dc-title{font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.8rem;display:flex;align-items:center;gap:.35rem;}
 
-/* ══ BI DASHBOARD ══ */
-.bi-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem;margin-bottom:1.5rem;}
-@media(max-width:900px){.bi-grid{grid-template-columns:1fr;}}
-.bi-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:1.4rem;box-shadow:0 1px 4px var(--shadow);}
+/* INSIGHTS */
+.bi-kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.8rem;margin-bottom:1.3rem;}
+.bi-kpi{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.9rem;box-shadow:0 1px 4px var(--sh);text-align:center;}
+.bi-kpi-n{font-family:'Playfair Display';font-size:1.85rem;font-weight:700;color:var(--amber);}
+.bi-kpi-l{font-size:.58rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:.1rem;}
+.bi-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.3rem;}
+.bi-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:1.3rem;box-shadow:0 1px 4px var(--sh);}
 .bi-card.full{grid-column:1/-1;}
-.bi-title{font-size:.78rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1.1rem;display:flex;align-items:center;gap:.4rem;}
-.bi-kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.85rem;margin-bottom:1.5rem;}
-.bi-kpi{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:1rem;box-shadow:0 1px 4px var(--shadow);text-align:center;}
-.bi-kpi-n{font-family:'Playfair Display';font-size:2rem;font-weight:700;color:var(--amber);}
-.bi-kpi-l{font-size:.62rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:.12rem;}
-.bi-kpi-trend{font-size:.7rem;margin-top:.2rem;}
-.trend-up{color:var(--sage);}
-.trend-dn{color:var(--rust);}
-.chart-container{position:relative;height:220px;}
-.insight-list{display:flex;flex-direction:column;gap:.55rem;}
-.insight-item{display:flex;align-items:flex-start;gap:.75rem;padding:.75rem;background:var(--bg2);border-radius:8px;}
-.ins-ic{font-size:1.2rem;flex-shrink:0;margin-top:.05rem;}
-.ins-title{font-size:.82rem;font-weight:600;color:var(--text);}
-.ins-sub{font-size:.78rem;color:var(--text3);margin-top:.12rem;}
+.bi-title{font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem;}
+.chart-container{position:relative;height:200px;}
+.insight-list{display:flex;flex-direction:column;gap:.5rem;}
+.insight-item{display:flex;align-items:flex-start;gap:.7rem;padding:.7rem;background:var(--bg2);border-radius:8px;}
+.ins-ic{font-size:1.1rem;flex-shrink:0;margin-top:.03rem;}
+.ins-title{font-size:.8rem;font-weight:600;color:var(--text);}
+.ins-sub{font-size:.75rem;color:var(--text3);margin-top:.1rem;}
 
-/* ══ ROUTE ══ */
-#mapContainer{border-radius:var(--radius-lg);overflow:hidden;height:440px;margin-bottom:1.25rem;border:1px solid var(--border2);box-shadow:0 2px 8px var(--shadow);}
+/* MAP */
+#mapContainer{border-radius:var(--rl);overflow:hidden;border:1px solid var(--border2);box-shadow:0 2px 8px var(--sh);margin-bottom:1rem;height:380px;display:none;}
 #leafletMap{width:100%;height:100%;}
-.leaflet-popup-content-wrapper{background:var(--surface);border:1px solid var(--border2);color:var(--text);border-radius:8px;box-shadow:0 4px 16px var(--shadow-md);}
+.leaflet-popup-content-wrapper{background:var(--surface);border:1px solid var(--border2);color:var(--text);border-radius:8px;box-shadow:0 4px 16px var(--shm);}
 .leaflet-popup-tip{background:var(--surface);}
-.leaflet-popup-content{font-size:.88rem;margin:.55rem .85rem;}
+.leaflet-popup-content{font-size:.85rem;margin:.5rem .8rem;}
 .leaflet-control-zoom a{background:var(--surface);color:var(--amber);border-color:var(--border2);}
-.leaflet-control-zoom a:hover{background:var(--amber);color:#fff;}
-.rsr{display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:.9rem;margin-bottom:1.25rem;}
-.rs{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:.88rem;text-align:center;box-shadow:0 1px 4px var(--shadow);}
-.rs-n{font-family:'Playfair Display';font-size:1.5rem;font-weight:700;color:var(--sky);}
-.rs-l{font-size:.6rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:.15rem;}
-.stop-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.25rem;}
-.stop-row{display:flex;align-items:center;gap:.85rem;padding:.72rem 1rem;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);box-shadow:0 1px 3px var(--shadow);transition:box-shadow .2s;}
-.stop-row:hover{box-shadow:0 3px 10px var(--shadow-md);}
+
+/* ROUTE */
+.rsr{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.8rem;margin-bottom:1rem;}
+.rs{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.82rem;text-align:center;box-shadow:0 1px 4px var(--sh);}
+.rs-n{font-family:'Playfair Display';font-size:1.4rem;font-weight:700;color:var(--sky);}
+.rs-l{font-size:.58rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-top:.12rem;}
+.stop-list{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1rem;}
+.stop-row{display:flex;align-items:flex-start;gap:.75rem;padding:.7rem .9rem;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);box-shadow:0 1px 3px var(--sh);}
 .stop-row.is-start{border-left:3px solid var(--sage);}
 .stop-row.is-end{border-left:3px solid var(--rust);}
-/* Route summary table */
-.route-day-table{width:100%;border-collapse:collapse;font-size:.82rem;}
-.route-day-table th{text-align:left;padding:.3rem .5rem;font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);}
-.route-day-table td{padding:.4rem .5rem;border-bottom:1px solid var(--border2);color:var(--text2);}
-.route-day-table tr:last-child td{font-weight:700;background:var(--amber-bg);}
-.sr-n{font-family:'Playfair Display';font-size:1.2rem;font-weight:700;color:var(--amber);min-width:24px;}
-.sr-nm{font-size:.9rem;font-weight:600;color:var(--text);}
-.sr-mt{font-size:.72rem;color:var(--text3);margin-top:.08rem;}
-.sr-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.85rem;transition:color .18s;padding:.2rem;}
+.sr-n{font-family:'Playfair Display';font-size:1.15rem;font-weight:700;color:var(--amber);min-width:22px;padding-top:.05rem;}
+.sr-icon{font-size:1.1rem;flex-shrink:0;}
+.sr-body{flex:1;}
+.sr-nm{font-size:.88rem;font-weight:600;color:var(--text);}
+.sr-meta{font-size:.7rem;color:var(--text3);margin-top:.12rem;}
+.sr-km-row{display:flex;align-items:center;gap:.4rem;margin-top:.35rem;}
+.sr-km-inp{width:68px;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.22rem .35rem;border-radius:6px;font-size:.8rem;text-align:center;outline:none;transition:border-color .16s;}
+.sr-km-inp:focus{border-color:var(--amber);background:var(--surface);}
+.sr-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;padding:.18rem;transition:color .16s;margin-top:.12rem;}
 .sr-del:hover{color:var(--rust);}
+.map-toggle-btn{background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:.42rem .85rem;font-size:.72rem;font-weight:600;cursor:pointer;border-radius:8px;transition:all .18s;margin-bottom:.9rem;display:flex;align-items:center;gap:.4rem;}
+.map-toggle-btn:hover{border-color:var(--amber);color:var(--amber);}
 
-/* ══ ACCOMMODATION ══ */
-.accom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1.1rem;}
-.ac-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 1px 4px var(--shadow);transition:all .25s;}
-.ac-card:hover{box-shadow:0 6px 20px var(--shadow-md);transform:translateY(-2px);}
-.ac-img{height:90px;display:flex;align-items:center;justify-content:center;font-size:2.4rem;}
+/* SUBTABS */
+.subtabs{display:flex;gap:.3rem;background:var(--bg2);padding:.28rem;border-radius:10px;margin-bottom:1.1rem;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.stab{flex:1;min-width:fit-content;padding:.44rem .65rem;border:none;background:transparent;color:var(--text3);font-size:.73rem;font-weight:600;cursor:pointer;border-radius:7px;transition:all .18s;white-space:nowrap;}
+.stab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px var(--sh);}
+.stpane{display:none;}
+.stpane.on{display:block;}
+
+/* DAYS / ITINERARY */
+.day-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);margin-bottom:.7rem;overflow:hidden;box-shadow:0 1px 3px var(--sh);}
+.day-card.from-route{border-left:3px solid var(--sage);}
+.day-card.travel-day{border-left:3px solid var(--sky);}
+.dh{display:flex;align-items:center;gap:.8rem;padding:.85rem 1rem;cursor:pointer;background:var(--bg2);}
+.dn{font-family:'Playfair Display';font-size:1.3rem;font-weight:700;min-width:38px;}
+.di{flex:1;}
+.dd{font-size:.62rem;font-weight:600;color:var(--text3);letter-spacing:.03em;}
+.dl{font-size:.88rem;font-weight:600;color:var(--text);}
+.dtg{display:flex;gap:.22rem;flex-wrap:wrap;margin-top:.22rem;}
+.dbd{padding:1rem;display:none;border-top:1px solid var(--border2);}
+.dbd.open{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
+.dst{font-size:.62rem;font-weight:700;color:var(--amber);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.32rem;padding-bottom:.18rem;border-bottom:1px solid var(--border2);}
+.dsx{font-size:.83rem;color:var(--text2);margin-bottom:.22rem;}
+.dinp{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.28rem .48rem;border-radius:6px;font-size:.8rem;outline:none;}
+.dinp:focus{border-color:var(--amber);}
+.dv-badge{grid-column:1/-1;background:var(--sky-bg);border:1px solid var(--sky-bd);border-radius:8px;padding:.58rem .9rem;display:flex;gap:1.5rem;flex-wrap:wrap;}
+.dv-i span:first-child{font-size:.58rem;font-weight:600;color:var(--sky);text-transform:uppercase;letter-spacing:.05em;display:block;}
+.dv-i span:last-child{font-size:.95rem;font-weight:700;color:var(--text);}
+/* Suggestions chips */
+.sug-chips{grid-column:1/-1;margin-top:.4rem;}
+.sug-lbl{font-size:.62rem;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;}
+.sug-row{display:flex;flex-wrap:wrap;gap:.28rem;}
+.sug-chip{background:var(--sage-bg);border:1px solid var(--sage-bd);color:var(--sage);padding:.2rem .52rem;border-radius:20px;font-size:.73rem;cursor:pointer;transition:all .16s;}
+.sug-chip:hover,.sug-chip:active{background:var(--sage);color:#fff;}
+.sug-hint{font-size:.65rem;color:var(--text3);margin-top:.3rem;}
+
+/* ACCOMMODATION */
+.accom-group{margin-bottom:1.4rem;}
+.accom-group-hd{display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem;flex-wrap:wrap;}
+.ag-name{font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
+.accom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:.9rem;}
+.ac-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);overflow:hidden;box-shadow:0 1px 4px var(--sh);transition:all .22s;}
+.ac-card:hover{box-shadow:0 5px 18px var(--shm);transform:translateY(-2px);}
+.ac-img{height:80px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;}
 .ac-img.camp{background:linear-gradient(135deg,#a8c8a0,#6b8f65);}
 .ac-img.chalet{background:linear-gradient(135deg,#d4a96a,#b8720f);}
 .ac-img.lodge{background:linear-gradient(135deg,#c9907a,#8b3222);}
 .ac-img.guesthouse{background:linear-gradient(135deg,#7eacd0,#1e6fa5);}
-.ac-body{padding:1rem;}
-.ac-name{font-size:.92rem;font-weight:700;color:var(--text);}
-.ac-meta{font-size:.78rem;color:var(--text3);margin-top:.18rem;}
-.ac-nights{font-size:.65rem;font-weight:600;color:var(--amber);letter-spacing:.06em;text-transform:uppercase;margin-top:.45rem;}
-.ac-del{float:right;background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;transition:color .18s;}
-.ac-del:hover{color:var(--rust);}
+.ac-body{padding:.9rem;}
+.ac-name{font-size:.88rem;font-weight:700;color:var(--text);}
+.ac-meta{font-size:.75rem;color:var(--text3);margin-top:.15rem;}
+.ac-nights{font-size:.62rem;font-weight:600;color:var(--amber);letter-spacing:.05em;text-transform:uppercase;margin-top:.42rem;}
+.ac-btns{display:flex;gap:.35rem;margin-top:.65rem;flex-wrap:wrap;}
 
-/* ══ PACKING ══ */
-.pack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.1rem;}
-.pack-cat{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:1.1rem;box-shadow:0 1px 4px var(--shadow);}
-.pk-hd{display:flex;align-items:center;gap:.45rem;margin-bottom:.85rem;}
-.pki{font-size:1.1rem;}
-.pkn{font-size:.88rem;font-weight:700;color:var(--text);flex:1;}
-.pkc{font-size:.7rem;font-weight:600;color:var(--text3);}
-.pc-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.82rem;transition:color .18s;padding:0 .2rem;}
+/* BUDGET */
+.budget-hero{background:linear-gradient(135deg,#1f1408,#2d1e0a);border-radius:var(--rl);padding:1.4rem 1.75rem;color:#fff;margin-bottom:1.1rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.bh-label{font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.65;margin-bottom:.2rem;}
+.bh-amount{font-family:'Playfair Display';font-size:2.2rem;font-weight:900;color:#f0c060;}
+.bh-sub{font-size:.75rem;opacity:.55;margin-top:.15rem;}
+.bh-details{display:flex;gap:1.75rem;flex-wrap:wrap;}
+.bh-di{}
+/* settings bar */
+.budget-bar{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:.7rem .9rem;margin-bottom:1rem;}
+.bb-lbl{font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+.bb-inp{background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.3rem .58rem;border-radius:6px;font-size:.9rem;width:88px;outline:none;}
+.bb-inp:focus{border-color:var(--amber);}
+.veh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.9rem;margin-bottom:1.25rem;}
+.fv-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:1rem;box-shadow:0 1px 4px var(--sh);}
+.fv-name{font-size:.86rem;font-weight:700;color:var(--text);}
+.fv-meta{font-size:.72rem;color:var(--text3);margin-top:.15rem;}
+.fv-cost{font-family:'Playfair Display';font-size:1.25rem;font-weight:700;color:var(--amber);margin-top:.45rem;}
+.my-cost-banner{background:linear-gradient(135deg,var(--amber-bg),var(--sky-bg));border:1px solid var(--amber-bd);border-radius:var(--r);padding:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.mcb-label{font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;}
+.mcb-amount{font-family:'Playfair Display';font-size:1.5rem;font-weight:700;color:var(--amber);}
+.cost-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:1.1rem;box-shadow:0 1px 4px var(--sh);margin-bottom:.75rem;}
+.cost-card-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;font-size:.82rem;font-weight:600;color:var(--text);}
+.cost-amount{font-family:'Playfair Display';font-size:1.35rem;font-weight:700;color:var(--amber);}
+.split-row{display:flex;align-items:center;gap:.6rem;padding:.38rem 0;border-bottom:1px solid var(--border2);font-size:.8rem;}
+.split-row:last-child{border:none;}
+.split-pct{width:56px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.2rem .32rem;border-radius:4px;font-size:.78rem;text-align:center;outline:none;}
+.split-pct:focus{border-color:var(--amber);}
+.split-amt{font-size:.78rem;font-weight:600;color:var(--sage);min-width:58px;text-align:right;}
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;margin-top:1.25rem;}
+.section-hd-title{font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;}
+
+/* FOOD */
+.fd{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);margin-bottom:.75rem;overflow:hidden;box-shadow:0 1px 4px var(--sh);}
+.fdh{display:flex;align-items:center;padding:.68rem 1rem;cursor:pointer;background:var(--bg2);gap:.7rem;border-bottom:1px solid var(--border2);}
+.fdt{font-size:.85rem;font-weight:600;color:var(--text);flex:1;}
+.fdl{font-size:.75rem;color:var(--text3);font-style:italic;}
+.fdb{display:none;padding:.9rem 1rem;}
+.fdb.open{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;}
+.ml{font-size:.62rem;font-weight:700;color:var(--amber);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.3rem;}
+.mi-item{font-size:.83rem;color:var(--text2);padding:.16rem 0;display:flex;align-items:center;gap:.42rem;}
+.mi-del{background:none;border:none;color:transparent;cursor:pointer;font-size:.68rem;transition:color .15s;}
+.mi-item:hover .mi-del{color:var(--text3);}
+.mi-del:hover{color:var(--rust) !important;}
+.madd{display:flex;gap:.35rem;margin-top:.42rem;}
+.madd input{flex:1;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.26rem .46rem;border-radius:6px;font-size:.8rem;outline:none;}
+.madd input:focus{border-color:var(--amber);}
+.madd button{background:rgba(201,75,26,.1);border:1px solid rgba(201,75,26,.2);color:var(--fire);padding:.26rem .48rem;cursor:pointer;border-radius:6px;font-size:.8rem;font-weight:600;transition:all .16s;}
+.madd button:hover{background:var(--fire);color:#fff;}
+
+/* PACKING */
+.pack-type-tabs{display:flex;gap:.35rem;margin-bottom:.9rem;}
+.ptt{padding:.32rem .72rem;border-radius:20px;cursor:pointer;font-size:.72rem;font-weight:600;border:1px solid var(--border);color:var(--text3);transition:all .18s;}
+.ptt.active{background:var(--amber);border-color:var(--amber);color:#fff;}
+.pack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem;}
+.pack-cat{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:1rem;box-shadow:0 1px 4px var(--sh);}
+.pk-hd{display:flex;align-items:center;gap:.42rem;margin-bottom:.8rem;}
+.pki{font-size:1.05rem;}
+.pkn{font-size:.86rem;font-weight:700;color:var(--text);flex:1;}
+.pkc{font-size:.68rem;font-weight:600;color:var(--text3);}
+.pc-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.78rem;transition:color .15s;}
 .pc-del:hover{color:var(--rust);}
-.pack-item{display:flex;align-items:flex-start;gap:.6rem;padding:.32rem 0;border-bottom:1px solid var(--border2);cursor:pointer;}
+.pack-item{display:flex;align-items:flex-start;gap:.55rem;padding:.3rem 0;border-bottom:1px solid var(--border2);cursor:pointer;}
 .pack-item:last-of-type{border:none;}
-.chk{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;margin-top:1px;}
+.chk{width:15px;height:15px;border-radius:3px;border:1.5px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .16s;margin-top:1px;}
 .pack-item.done .chk{background:var(--sage);border-color:var(--sage);}
-.pack-item.done .chk::after{content:'✓';font-size:10px;color:#fff;}
+.pack-item.done .chk::after{content:'✓';font-size:9px;color:#fff;}
 .pack-item.done .pit{color:var(--text3);text-decoration:line-through;}
-.pit{font-size:.85rem;color:var(--text2);flex:1;}
-.pit.personal{font-style:italic;}
-.pit .pers-badge{font-size:.58rem;background:var(--sky-bg);color:var(--sky);border-radius:4px;padding:1px 5px;margin-left:.3rem;font-style:normal;font-weight:600;}
-.pi-del{background:none;border:none;color:transparent;cursor:pointer;font-size:.7rem;transition:color .18s;padding:0 .18rem;}
+.pit{font-size:.83rem;color:var(--text2);flex:1;}
+.pi-del{background:none;border:none;color:transparent;cursor:pointer;font-size:.68rem;transition:color .15s;}
 .pack-item:hover .pi-del{color:var(--text3);}
 .pi-del:hover{color:var(--rust) !important;}
-.pack-add{display:flex;gap:.38rem;margin-top:.6rem;}
-.pack-add input{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.3rem .5rem;border-radius:6px;font-size:.83rem;outline:none;}
-.pack-add input:focus{border-color:var(--amber);background:var(--surface);}
-.pack-add button{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);padding:.3rem .6rem;cursor:pointer;border-radius:6px;font-size:.83rem;font-weight:600;transition:all .18s;}
+.pack-add{display:flex;gap:.35rem;margin-top:.55rem;}
+.pack-add input{flex:1;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.28rem .48rem;border-radius:6px;font-size:.8rem;outline:none;}
+.pack-add input:focus{border-color:var(--amber);}
+.pack-add button{background:var(--amber-bg);border:1px solid var(--amber-bd);color:var(--amber);padding:.28rem .58rem;cursor:pointer;border-radius:6px;font-size:.8rem;font-weight:600;transition:all .16s;}
 .pack-add button:hover{background:var(--amber);color:#fff;}
-.pp-top{display:flex;align-items:baseline;gap:.9rem;flex-wrap:wrap;margin-bottom:.45rem;}
-.pp-n{font-family:'Playfair Display';font-size:1.6rem;font-weight:700;color:var(--amber);}
-.pp-t{font-size:.9rem;color:var(--text3);}
-.pp-p{font-size:.72rem;font-weight:600;color:var(--text3);margin-left:auto;}
-.pack-type-tabs{display:flex;gap:.4rem;margin-bottom:1rem;}
-.ptt{padding:.32rem .75rem;border-radius:20px;cursor:pointer;font-size:.75rem;font-weight:600;border:1px solid var(--border);color:var(--text3);transition:all .2s;}
-.ptt.active{background:var(--amber);border-color:var(--amber);color:#fff;}
+.pp-top{display:flex;align-items:baseline;gap:.85rem;flex-wrap:wrap;margin-bottom:.4rem;}
+.pp-n{font-family:'Playfair Display';font-size:1.55rem;font-weight:700;color:var(--amber);}
+.pp-t{font-size:.88rem;color:var(--text3);}
+.pp-p{font-size:.7rem;font-weight:600;color:var(--text3);margin-left:auto;}
 
-/* ══ CREW ══ */
-.crew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:1.1rem;margin-bottom:1.6rem;}
-.cc{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:1.2rem;text-align:center;box-shadow:0 1px 4px var(--shadow);transition:box-shadow .2s;}
-.cc:hover{box-shadow:0 3px 12px var(--shadow-md);}
-.cr-av{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display';font-size:1.35rem;font-weight:700;color:#fff;margin:0 auto .85rem;}
-.cr-nm{font-size:.92rem;font-weight:700;color:var(--text);}
-.cr-rl{font-size:.65rem;font-weight:600;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-top:.18rem;}
-.cr-st{font-size:.65rem;font-weight:600;padding:3px 9px;border-radius:20px;margin-top:.55rem;display:inline-block;}
+/* CREW */
+.crew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-bottom:1.4rem;}
+.cc{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:1.1rem;text-align:center;box-shadow:0 1px 4px var(--sh);}
+.cr-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display';font-size:1.25rem;font-weight:700;color:#fff;margin:0 auto .8rem;}
+.cr-nm{font-size:.88rem;font-weight:700;color:var(--text);}
+.cr-rl{font-size:.62rem;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-top:.16rem;}
+.cr-st{font-size:.62rem;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:.5rem;display:inline-block;}
 .cst-conf{background:var(--sage-bg);color:var(--sage);}
 .cst-pend{background:var(--amber-bg);color:var(--amber);}
 .cst-self{background:var(--sky-bg);color:var(--sky);}
+.invite-code-box{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--r);padding:.9rem;text-align:center;margin-bottom:1.2rem;}
+.icb-label{font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.38rem;}
+.icb-code{font-family:'Space Mono';font-size:1.55rem;font-weight:700;color:var(--amber);letter-spacing:.22em;}
+.icb-copy{background:var(--amber);color:#fff;border:none;padding:.32rem .82rem;border-radius:6px;font-size:.7rem;font-weight:600;cursor:pointer;margin-top:.48rem;transition:all .18s;}
+.icb-copy:hover{background:var(--al);}
 
-/* ══ FOOD ══ */
-.fd{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);margin-bottom:.85rem;overflow:hidden;box-shadow:0 1px 4px var(--shadow);}
-.fdh{display:flex;align-items:center;padding:.7rem 1.1rem;cursor:pointer;background:var(--bg2);gap:.75rem;border-bottom:1px solid var(--border2);}
-.fdt{font-size:.88rem;font-weight:600;color:var(--text);flex:1;}
-.fdl{font-size:.78rem;color:var(--text3);font-style:italic;}
-.fdb{display:none;padding:.95rem 1.1rem;}
-.fdb.open{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.95rem;}
-@media(max-width:700px){.fdb.open{grid-template-columns:1fr;}}
-.ml{font-size:.65rem;font-weight:700;color:var(--amber);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.32rem;}
-.mi-item{font-size:.85rem;color:var(--text2);padding:.18rem 0;display:flex;align-items:center;gap:.45rem;}
-.mi-del{background:none;border:none;color:transparent;cursor:pointer;font-size:.7rem;transition:color .18s;}
-.mi-item:hover .mi-del{color:var(--text3);}
-.madd{display:flex;gap:.38rem;margin-top:.45rem;}
-.madd input{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.26rem .48rem;border-radius:6px;font-size:.82rem;outline:none;}
-.madd input:focus{border-color:var(--amber);}
-.madd button{background:rgba(201,75,26,.1);border:1px solid rgba(201,75,26,.2);color:var(--fire);padding:.26rem .5rem;cursor:pointer;border-radius:6px;font-size:.82rem;font-weight:600;transition:all .18s;}
-.madd button:hover{background:var(--fire);color:#fff;}
-
-/* ══ COSTS / SPLIT ══ */
-.cost-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:1.25rem;box-shadow:0 1px 4px var(--shadow);margin-bottom:.85rem;}
-.cost-card-title{font-size:.82rem;font-weight:700;color:var(--text2);margin-bottom:.85rem;display:flex;align-items:center;justify-content:space-between;}
-.cost-amount{font-family:'Playfair Display';font-size:1.4rem;font-weight:700;color:var(--amber);}
-.split-row{display:flex;align-items:center;gap:.65rem;padding:.4rem 0;border-bottom:1px solid var(--border2);font-size:.83rem;}
-.split-row:last-child{border:none;}
-.split-pct{width:60px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.22rem .35rem;border-radius:4px;font-size:.8rem;text-align:center;outline:none;}
-.split-pct:focus{border-color:var(--amber);}
-.split-amt{font-size:.8rem;font-weight:600;color:var(--sage);min-width:60px;text-align:right;}
-.my-cost-banner{background:linear-gradient(135deg,var(--amber-bg),rgba(30,111,165,.08));border:1px solid var(--amber-border);border-radius:var(--radius);padding:1.1rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;}
-.mcb-label{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;}
-.mcb-amount{font-family:'Playfair Display';font-size:1.6rem;font-weight:700;color:var(--amber);}
-
-/* ══ DOCS & GALLERY ══ */
-.drop-zone{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:2.25rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface);margin-bottom:1.4rem;}
+/* DOCS / GALLERY */
+.drop-zone{border:2px dashed var(--border);border-radius:var(--rl);padding:2rem;text-align:center;cursor:pointer;transition:all .18s;background:var(--surface);margin-bottom:1.2rem;}
 .drop-zone:hover,.drop-zone.over{border-color:var(--amber);background:var(--amber-bg);}
-.dz-icon{font-size:2.2rem;opacity:.4;margin-bottom:.75rem;}
-.dz-text{font-size:1rem;font-weight:600;color:var(--text2);}
-.dz-sub{font-size:.82rem;color:var(--text3);font-style:italic;margin-top:.25rem;}
-.docs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.9rem;}
-.doc-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:1rem;text-align:center;cursor:pointer;transition:all .2s;box-shadow:0 1px 3px var(--shadow);}
-.doc-card:hover{box-shadow:0 4px 12px var(--shadow-md);transform:translateY(-2px);}
-.doc-ic{font-size:2rem;margin-bottom:.5rem;}
-.doc-n{font-size:.78rem;color:var(--text2);word-break:break-all;font-weight:500;}
-.doc-m{font-size:.6rem;color:var(--text3);margin-top:.28rem;letter-spacing:.05em;}
-.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.7rem;}
-.gi{aspect-ratio:1;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border2);cursor:pointer;transition:all .2s;box-shadow:0 1px 3px var(--shadow);}
-.gi:hover{box-shadow:0 4px 12px var(--shadow-md);transform:scale(1.02);}
+.dz-icon{font-size:2rem;opacity:.38;margin-bottom:.65rem;}
+.dz-text{font-size:.92rem;font-weight:600;color:var(--text2);}
+.dz-sub{font-size:.78rem;color:var(--text3);font-style:italic;margin-top:.22rem;}
+.docs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.8rem;}
+.doc-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.9rem;text-align:center;cursor:pointer;transition:all .18s;box-shadow:0 1px 3px var(--sh);}
+.doc-card:hover{box-shadow:0 4px 12px var(--shm);transform:translateY(-2px);}
+.doc-ic{font-size:1.85rem;margin-bottom:.45rem;}
+.doc-n{font-size:.75rem;color:var(--text2);word-break:break-all;font-weight:500;}
+.doc-m{font-size:.58rem;color:var(--text3);margin-top:.25rem;}
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.6rem;}
+.gi{aspect-ratio:1;border-radius:var(--r);overflow:hidden;border:1px solid var(--border2);cursor:pointer;transition:all .18s;}
+.gi:hover{transform:scale(1.02);}
 .gi img{width:100%;height:100%;object-fit:cover;}
-.ga{aspect-ratio:1;border:2px dashed var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.35rem;color:var(--text3);transition:all .2s;font-size:1.7rem;}
+.ga{aspect-ratio:1;border:2px dashed var(--border);border-radius:var(--r);background:var(--surface);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem;color:var(--text3);transition:all .18s;font-size:1.6rem;}
 .ga:hover{border-color:var(--amber);color:var(--amber);}
-.ga small{font-size:.75rem;font-weight:500;}
+.ga small{font-size:.72rem;font-weight:500;}
 
-/* ══ FUEL ══ */
-.total-fuel-banner{background:linear-gradient(135deg,#2d1f0a,#3d2a0f);border-radius:var(--radius-lg);padding:1.5rem 2rem;color:#fff;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
-.tfb-label{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.7;}
-.tfb-amount{font-family:'Playfair Display';font-size:2.4rem;font-weight:900;color:#f0c060;}
-.tfb-sub{font-size:.8rem;opacity:.6;margin-top:.2rem;}
-.tfb-details{display:flex;gap:2rem;flex-wrap:wrap;}
-.tfb-di{text-align:right;}
-.fuel-veh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-bottom:1.5rem;}
-.fv-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:1.1rem;box-shadow:0 1px 4px var(--shadow);}
-.fv-name{font-size:.88rem;font-weight:700;color:var(--text);}
-.fv-meta{font-size:.75rem;color:var(--text3);margin-top:.18rem;}
-.fv-cost{font-family:'Playfair Display';font-size:1.3rem;font-weight:700;color:var(--amber);margin-top:.5rem;}
+/* BOTTOM TAB BAR */
+#bottomTabs{display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--surface);border-top:1px solid var(--border2);box-shadow:0 -2px 16px var(--sh);padding-bottom:env(safe-area-inset-bottom);}
+.bt{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.52rem .25rem .42rem;cursor:pointer;gap:.14rem;border:none;background:none;transition:all .16s;position:relative;}
+.bt-ic{font-size:1.25rem;line-height:1;}
+.bt-lb{font-size:.5rem;font-weight:600;color:var(--text3);letter-spacing:.03em;text-transform:uppercase;}
+.bt.active .bt-lb{color:var(--amber);}
+.bt-badge{position:absolute;top:.35rem;right:calc(50% - 1rem);background:var(--rust);color:#fff;font-size:.42rem;width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;}
 
-/* ══ ITINERARY ══ */
-.day-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);margin-bottom:.75rem;overflow:hidden;box-shadow:0 1px 3px var(--shadow);transition:box-shadow .2s;}
-.day-card:hover{box-shadow:0 3px 10px var(--shadow-md);}
-.day-card.from-route{border-left:3px solid var(--sage);}
-.day-card.travel-day{border-left:3px solid var(--sky);background:rgba(30,111,165,.02);}
-.day-card.travel-day{border-left:3px solid var(--sky);background:rgba(30,111,165,.02);}
-.dh{display:flex;align-items:center;gap:.85rem;padding:.88rem 1.1rem;cursor:pointer;background:var(--bg2);}
-.dn{font-family:'Playfair Display';font-size:1.35rem;font-weight:700;color:var(--amber);min-width:40px;}
-.di{flex:1;}
-.dd{font-size:.65rem;font-weight:600;color:var(--text3);letter-spacing:.04em;}
-.dl{font-size:.92rem;font-weight:600;color:var(--text);}
-.dtg{display:flex;gap:.25rem;flex-wrap:wrap;margin-top:.25rem;}
-.dbd{padding:1.1rem;display:none;border-top:1px solid var(--border2);}
-.dbd.open{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
-@media(max-width:800px){.dbd.open{grid-template-columns:1fr;}}
-.dst{font-size:.65rem;font-weight:700;color:var(--amber);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.38rem;padding-bottom:.2rem;border-bottom:1px solid var(--border2);}
-.dsx{font-size:.85rem;color:var(--text2);}
-.dinp{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.3rem .5rem;border-radius:6px;font-size:.82rem;outline:none;margin-top:.3rem;}
-.dinp:focus{border-color:var(--amber);}
-.dv-badge{grid-column:1/-1;background:var(--sky-bg);border:1px solid rgba(30,111,165,.2);border-radius:8px;padding:.62rem 1rem;display:flex;gap:1.75rem;flex-wrap:wrap;}
-.dv-i span:first-child{font-size:.6rem;font-weight:600;color:var(--sky);text-transform:uppercase;letter-spacing:.06em;display:block;}
-.dv-i span:last-child{font-size:1rem;font-weight:700;color:var(--text);}
-.add-day-dashed{width:100%;padding:.85rem;background:var(--surface);border:2px dashed var(--border);color:var(--text3);cursor:pointer;border-radius:var(--radius);font-size:.88rem;transition:all .2s;margin-top:.5rem;}
-.add-day-dashed:hover{border-color:var(--amber);color:var(--amber);}
-
-/* ══ MISC ══ */
+/* MISC */
 input[type=file]{display:none;}
-.divider{border:none;border-top:1px solid var(--border2);margin:1.5rem 0;}
-@media(max-width:900px){#sidebar{width:240px;}#main{margin-left:0;}.panel{padding:1.1rem;}}
-.tip-banner{background:var(--sky-bg);border:1px solid rgba(30,111,165,.2);border-radius:var(--radius);padding:.75rem 1rem;display:flex;align-items:flex-start;gap:.7rem;margin-bottom:1.1rem;font-size:.83rem;color:var(--text2);}
-.invite-code-box{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius);padding:1rem;text-align:center;margin-bottom:1.25rem;}
-.icb-label{font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;}
-.icb-code{font-family:'Space Mono';font-size:1.6rem;font-weight:700;color:var(--amber);letter-spacing:.25em;}
-.icb-copy{background:var(--amber);color:#fff;border:none;padding:.35rem .85rem;border-radius:6px;font-size:.72rem;font-weight:600;cursor:pointer;margin-top:.5rem;transition:all .2s;}
-.icb-copy:hover{background:#9a5f0a;}
+.divider{border:none;border-top:1px solid var(--border2);margin:1.4rem 0;}
+.ph-title{font-family:'Playfair Display';font-size:1.65rem;font-weight:700;}
+.ph-sub{font-size:.8rem;color:var(--text3);margin-top:.15rem;}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  #sidebar{display:none !important;}
+  #main{margin-left:0 !important;padding-bottom:calc(65px + env(safe-area-inset-bottom));}
+  #bottomTabs{display:flex;}
+  #toasts{bottom:calc(75px + env(safe-area-inset-bottom));}
+  .panel{padding:1rem;}
+  .dash-hero{padding:1.3rem 1.2rem;}
+  .dh-name{font-size:1.65rem;}
+  .dash-grid{grid-template-columns:1fr;}
+  .bi-grid{grid-template-columns:1fr;}
+  .bi-kpi-row{grid-template-columns:repeat(2,1fr);}
+  .stats-row{grid-template-columns:repeat(3,1fr);}
+  .accom-grid{grid-template-columns:1fr;}
+  .crew-grid{grid-template-columns:repeat(2,1fr);}
+  .rsr{grid-template-columns:repeat(2,1fr);}
+  .fdb.open{grid-template-columns:1fr;}
+  .dbd.open{grid-template-columns:1fr;}
+  .pack-grid{grid-template-columns:1fr;}
+  .veh-grid{grid-template-columns:1fr;}
+  .modal{border-radius:var(--rl) var(--rl) 0 0;}
+  #mapContainer{height:260px;}
+  .bi-card.full{grid-column:1;}
+}
+@media(min-width:769px){
+  #sidebar{display:flex !important;}
+  #main{margin-left:232px;}
+  #bottomTabs{display:none !important;}
+  .overlay{align-items:center;}
+  .modal{border-radius:var(--rl);max-width:560px;}
+}
 .COLORS{--c0:linear-gradient(135deg,#b8720f,#8b3222);--c1:linear-gradient(135deg,#3d6435,#1e6fa5);--c2:linear-gradient(135deg,#7a6e5f,#b8720f);--c3:linear-gradient(135deg,#8b3222,#c94b1a);--c4:linear-gradient(135deg,#1e6fa5,#3d6435);--c5:linear-gradient(135deg,#b8720f,#3d6435);}
 </style>
-<!-- Firebase v10 modular SDK (compat layer for simplicity) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="COLORS">
-
 <!-- LOADER -->
 <div id="loader">
-  <div class="ldr-ring"></div>
-  <div class="ldr-logo">TREK</div>
-  <div class="ldr-tag">Expedition Planner</div>
-  <div class="ldr-div"></div>
-  <div class="ldr-fb">A Forgebit Product</div>
+  <div class="lring"></div>
+  <div class="llogo">TREK</div>
+  <div class="ltag">Expedition Planner</div>
+  <div class="ldiv"></div>
+  <div class="lfb">A Forgebit Product</div>
 </div>
-
-<!-- AUTH SCREEN -->
+<!-- AUTH -->
 <div id="authScreen">
   <div class="auth-card">
     <div class="auth-logo">
@@ -489,70 +517,57 @@ input[type=file]{display:none;}
       <div class="auth-logo-sub">Expedition Planner</div>
       <div class="auth-logo-fb">A Forgebit Product</div>
     </div>
-    <div id="fbSetupBanner" style="display:none;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:.75rem .9rem;font-size:.78rem;color:#7a6e5f;margin-bottom:1rem;line-height:1.5">
-      <strong style="color:#b8720f">⚡ Firebase not configured</strong> — the app is running in local mode. 
-      To enable cloud sync, open <code style="background:rgba(0,0,0,.06);padding:1px 4px;border-radius:3px">index.html</code> and replace <code style="background:rgba(0,0,0,.06);padding:1px 4px;border-radius:3px">FIREBASE_CONFIG</code> with your project settings from 
-      <a href="https://console.firebase.google.com" target="_blank" style="color:#b8720f">console.firebase.google.com</a>.
-    </div>
+    <div id="fbSetupBanner">⚡ <strong>Local mode</strong> — Firebase not configured. Replace FIREBASE_CONFIG in index.html to enable cloud sync.</div>
     <div class="auth-tabs">
       <div class="auth-tab active" onclick="showAuthTab('login')">Sign In</div>
       <div class="auth-tab" onclick="showAuthTab('register')">Register</div>
     </div>
     <div id="authErr" class="auth-err"></div>
-    <!-- LOGIN -->
     <div id="loginPane">
       <div class="fi"><label>Email</label><input type="email" id="li-email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div class="fi"><label>Password</label><input type="password" id="li-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <button class="btn-auth" onclick="doLogin()">Sign In →</button>
-      <div class="auth-switch">Don't have an account? <a onclick="showAuthTab('register')">Register</a></div>
+      <div class="auth-switch">No account? <a onclick="showAuthTab('register')">Register free</a></div>
     </div>
-    <!-- REGISTER -->
     <div id="registerPane" style="display:none">
-      <div class="fi"><label>Your Name</label><input type="text" id="re-name" placeholder="Quintus van der Berg"></div>
+      <div class="fi"><label>Your Name</label><input type="text" id="re-name" placeholder="Quintus Theron"></div>
       <div class="fi"><label>Email</label><input type="email" id="re-email" placeholder="you@example.com"></div>
       <div class="fi"><label>Password</label><input type="password" id="re-pass" placeholder="Min. 6 characters"></div>
       <button class="btn-auth" onclick="doRegister()">Create Account →</button>
-      <div class="auth-switch">Already have an account? <a onclick="showAuthTab('login')">Sign In</a></div>
+      <div class="auth-switch">Have an account? <a onclick="showAuthTab('login')">Sign In</a></div>
     </div>
   </div>
 </div>
-
 <!-- TOASTS -->
 <div id="toasts"></div>
-
 <!-- APP -->
-<div id="app">
+<div id="app" class="COLORS">
   <!-- SIDEBAR -->
   <nav id="sidebar">
     <div class="sb-head">
-      <div class="sb-wordmark">✦ TREK</div>
+      <div class="sb-logo">✦ TREK</div>
       <div class="sb-tag">Expedition Planner</div>
       <div class="sb-fb">A Forgebit Product</div>
     </div>
     <div class="sb-user">
-      <div class="sb-avatar" id="sbAvatar">?</div>
+      <div class="sb-av" id="sbAvatar">?</div>
       <div class="sb-uname" id="sbUname">—</div>
       <button class="sb-logout" onclick="doLogout()" title="Sign out">⎋</button>
     </div>
     <div class="sb-trip">
       <label>Current Trip</label>
-      <select id="tripSel" onchange="switchTrip(this.value)"></select>
-      <button class="btn-newtrip" onclick="openNewTripModal()">＋ New Expedition</button>
-      <button onclick="openJoinTrip()" style="width:100%;margin-top:.25rem;background:var(--sky-bg);border:1px solid rgba(30,111,165,.25);color:var(--sky);padding:.4rem;font-size:.65rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s">🔗 Join a Trip</button>
-      <button onclick="deleteCurrentTrip()" style="width:100%;margin-top:.25rem;background:none;border:1px solid rgba(139,50,34,.25);color:var(--rust);padding:.35rem;font-size:.6rem;font-weight:600;letter-spacing:.04em;cursor:pointer;border-radius:6px;transition:all .2s" onmouseover="this.style.background='var(--rust-bg)'" onmouseout="this.style.background='none'">🗑 Delete Current Trip</button>
+      <select id="tripSel" class="sb-sel" onchange="switchTrip(this.value)"></select>
+      <button class="btn-trip btn-new" onclick="openNewTripModal()">＋ New Expedition</button>
+      <button class="btn-trip btn-join" onclick="openJoinTrip()">🔗 Join a Trip</button>
+      <button class="btn-trip btn-del" onclick="deleteCurrentTrip()">🗑 Delete Trip</button>
     </div>
     <nav class="sb-nav">
-      <div class="ni active" data-panel="dashboard"><span class="ni-ic">🗺️</span>Dashboard</div>
-            <div class="ni" data-panel="itinerary"><span class="ni-ic">📅</span>Itinerary</div>
-      <div class="ni" data-panel="route"><span class="ni-ic">🧭</span>Route & Map</div>
-      <div class="ni" data-panel="accommodation"><span class="ni-ic">🏕️</span>Accommodation</div>
-      <div class="ni" data-panel="fuel"><span class="ni-ic">⛽</span>Fuel & Costs</div>
-      <div class="ni" data-panel="costs"><span class="ni-ic">💰</span>Trip Costs</div>
-      <div class="ni" data-panel="food"><span class="ni-ic">🔥</span>Food & Meals</div>
-      <div class="ni" data-panel="packing"><span class="ni-ic">🎒</span>Packing<span class="ni-badge" id="packBadge" style="display:none">0</span></div>
+      <div class="ni active" data-panel="overview"><span class="ni-ic">🗺️</span>Overview</div>
+      <div class="ni" data-panel="plan"><span class="ni-ic">🧭</span>Plan</div>
+      <div class="ni" data-panel="days"><span class="ni-ic">📅</span>Days</div>
+      <div class="ni" data-panel="budget"><span class="ni-ic">⛽</span>Budget</div>
+      <div class="ni" data-panel="pack"><span class="ni-ic">🎒</span>Pack<span class="ni-badge" id="packBadge" style="display:none">!</span></div>
       <div class="ni" data-panel="crew"><span class="ni-ic">👥</span>Crew</div>
-      <div class="ni" data-panel="docs"><span class="ni-ic">📄</span>Documents</div>
-      <div class="ni" data-panel="gallery"><span class="ni-ic">📸</span>Gallery</div>
     </nav>
     <div class="sb-cd">
       <span class="cd-lbl">Departure in</span>
@@ -563,290 +578,263 @@ input[type=file]{display:none;}
         <div class="cd-u"><div class="cd-n" id="cdS">--</div><div class="cd-l">Sec</div></div>
       </div>
     </div>
-    <div class="sb-foot"><div class="sb-ft">Forgebit · TREK v4</div></div>
+    <div class="sb-foot">Forgebit · TREK v5</div>
   </nav>
-
   <!-- MAIN -->
   <main id="main">
     <div class="topbar">
       <button class="menu-btn" onclick="toggleSB()">☰</button>
-      <div class="tb-title" id="tbTitle">Dashboard</div>
-      <div style="display:flex;gap:.4rem">
-        <button class="btn-sm" onclick="exportTrip()">⬇ Export</button>
-        <button class="btn-sm" onclick="shareTrip()">⬆ Share</button>
-      </div>
+      <div class="tb-title" id="tbTitle">TREK</div>
+      <button class="btn-sm" onclick="shareTrip()">⬆ Share</button>
+      <button class="btn-sm" onclick="exportTrip()">⬇</button>
     </div>
-
-    <!-- DASHBOARD -->
-    <section class="panel active" id="panel-dashboard"><div id="dashContent"></div><div id="insightsContent"></div></section>
-
-
-
-    <!-- ITINERARY -->
-    <section class="panel" id="panel-itinerary">
-      <div class="ph">
-        <div><div class="ph-title">Itinerary</div><div class="ph-sub">Every day, camp, drive and adventure</div></div>
-        <button class="btn-primary" onclick="openModal('addDayMod')">＋ Add Day</button>
+    <!-- OVERVIEW -->
+    <section class="panel active" id="panel-overview">
+      <div id="dashContent"></div>
+      <div id="insightsContent"></div>
+    </section>
+    <!-- PLAN (Route · Stays · Food) -->
+    <section class="panel" id="panel-plan">
+      <div id="mapContainer"><div id="leafletMap"></div></div>
+      <div class="subtabs">
+        <button class="stab active" data-stab="route" onclick="setPlanTab('route',this)">🧭 Route</button>
+        <button class="stab" data-stab="stays" onclick="setPlanTab('stays',this)">🏕️ Stays</button>
+        <button class="stab" data-stab="food" onclick="setPlanTab('food',this)">🔥 Food</button>
+      </div>
+      <!-- Route -->
+      <div class="stpane on" id="stp-route">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem">
+          <div style="font-size:.75rem;color:var(--text3)">First stop = 🚩 Start · Last = 🏁 End · Edit km per leg below</div>
+          <button class="btn-primary" onclick="openModal('addStopMod')">＋ Add Stop</button>
+        </div>
+        <button class="map-toggle-btn" onclick="toggleMap()">🗺️ Show / Hide Map</button>
+        <div class="rsr" id="routeStats"></div>
+        <div class="stop-list" id="stopList"></div>
+      </div>
+      <!-- Stays -->
+      <div class="stpane" id="stp-stays">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:.85rem">
+          <button class="btn-primary" onclick="openModal('addAccomMod')">＋ Add Stay</button>
+        </div>
+        <div id="accomContent"></div>
+      </div>
+      <!-- Food -->
+      <div class="stpane" id="stp-food">
+        <div style="display:flex;justify-content:flex-end;margin-bottom:.85rem">
+          <button class="btn-primary" onclick="openModal('addFoodDayMod')">＋ Add Day</button>
+        </div>
+        <div id="foodList"></div>
+      </div>
+    </section>
+    <!-- DAYS -->
+    <section class="panel" id="panel-days">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;flex-wrap:wrap;gap:.6rem">
+        <div><div class="ph-title">Days</div><div class="ph-sub">Your expedition — nights, drives & activities</div></div>
+        <button class="btn-primary" onclick="openModal('addDayMod')">＋ Day</button>
       </div>
       <div id="itinList"></div>
-      <button class="add-day-dashed" onclick="openModal('addDayMod')">＋ Add another day</button>
     </section>
-
-    <!-- ROUTE -->
-    <section class="panel" id="panel-route">
-      <div class="ph">
-        <div><div class="ph-title">Route & Map</div><div class="ph-sub">Search any place — route draws automatically. First stop = start, last = end.</div></div>
-        <button class="btn-primary" onclick="openModal('addStopMod')">＋ Add Stop</button>
+    <!-- BUDGET -->
+    <section class="panel" id="panel-budget">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem">
+        <div><div class="ph-title">Budget</div><div class="ph-sub">Fuel · Expenses · My share</div></div>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn-secondary" onclick="openAddVehicle()">＋ Vehicle</button>
+          <button class="btn-primary" onclick="openExpenseModal()">＋ Expense</button>
+        </div>
       </div>
-      <div id="mapContainer"><div id="leafletMap"></div></div>
-      <div class="rsr" id="routeStats"></div>
-      <div class="stop-list" id="stopList"></div>
-    </section>
-
-    <!-- ACCOMMODATION -->
-    <section class="panel" id="panel-accommodation">
-      <div class="ph">
-        <div><div class="ph-title">Accommodation</div><div class="ph-sub">Auto-generated from route stops — add multiple per stop</div></div>
-        <button class="btn-primary" onclick="openModal('addAccomMod')">＋ Add</button>
-      </div>
-      <div id="accomContent"></div>
-    </section>
-
-    <!-- FUEL -->
-    <section class="panel" id="panel-fuel">
-      <div class="ph">
-        <div><div class="ph-title">Fuel & Costs</div><div class="ph-sub">Per-vehicle estimates for the full route</div></div>
-        <button class="btn-primary" onclick="openAddVehicle()">＋ Add Vehicle</button>
-      </div>
+      <div class="budget-bar" id="budgetBar"></div>
+      <div id="budgetHero"></div>
       <div id="fuelContent"></div>
-    </section>
-
-    <!-- TRIP COSTS -->
-    <section class="panel" id="panel-costs">
-      <div class="ph">
-        <div><div class="ph-title">Trip Costs</div><div class="ph-sub">Add expenses and split them across the crew</div></div>
-        <button class="btn-primary" onclick="openModal('addCostMod')">＋ Add Expense</button>
-      </div>
       <div id="costsContent"></div>
     </section>
-
-    <!-- FOOD -->
-    <section class="panel" id="panel-food">
-      <div class="ph">
-        <div><div class="ph-title">Food & Meals</div><div class="ph-sub">Days auto-populate from route stops</div></div>
-        <button class="btn-primary" onclick="openModal('addFoodDayMod')">＋ Add Day</button>
-      </div>
-      <div id="foodList"></div>
-    </section>
-
-    <!-- PACKING -->
-    <section class="panel" id="panel-packing">
-      <div class="ph">
-        <div><div class="ph-title">Packing List</div><div class="ph-sub">Communal items everyone sees · Personal items only you see</div></div>
-        <div style="display:flex;gap:.5rem">
-          <button class="btn-secondary" onclick="resetPacking()">↺ Reset</button>
+    <!-- PACK -->
+    <section class="panel" id="panel-pack">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+        <div><div class="ph-title">Packing</div><div class="ph-sub">Communal · Personal</div></div>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn-secondary" onclick="resetPacking()" style="font-size:.7rem">↺</button>
           <button class="btn-primary" onclick="openModal('addCatMod')">＋ Category</button>
         </div>
       </div>
       <div class="pp-top"><span class="pp-n" id="ppN">0</span><span class="pp-t" id="ppT">/ 0 items</span><span class="pp-p" id="ppP">0%</span></div>
-      <div class="prog-wrap" style="margin-bottom:1.25rem"><div class="prog-fill" id="ppBar" style="width:0%"></div></div>
+      <div class="prog-wrap" style="margin-bottom:1rem"><div class="prog-fill" id="ppBar" style="width:0%"></div></div>
       <div class="pack-type-tabs">
         <div class="ptt active" onclick="setPackTab('communal',this)">🌍 Communal</div>
-        <div class="ptt" onclick="setPackTab('personal',this)">👤 Personal (mine)</div>
+        <div class="ptt" onclick="setPackTab('personal',this)">👤 Mine only</div>
       </div>
       <div class="pack-grid" id="packGrid"></div>
     </section>
-
     <!-- CREW -->
     <section class="panel" id="panel-crew">
-      <div class="ph"><div><div class="ph-title">Crew</div><div class="ph-sub">Manage your expedition team</div></div></div>
+      <div style="margin-bottom:1.1rem"><div class="ph-title">Crew</div><div class="ph-sub">Team · Documents · Gallery</div></div>
       <div id="inviteCodeBox"></div>
       <div class="crew-grid" id="crewGrid"></div>
-      <div class="divider"></div>
-      <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:1.5rem;box-shadow:0 1px 4px var(--shadow)">
-        <h3 style="font-family:'Playfair Display';font-size:1.15rem;color:var(--text);margin-bottom:1.1rem">📨 Invite Member</h3>
+      <div class="card card-pad" style="margin-bottom:1.1rem">
+        <div style="font-family:'Playfair Display';font-size:1.1rem;margin-bottom:.9rem">📨 Invite Member</div>
         <div class="form-row">
-          <div class="fg"><label>Name</label><input type="text" id="invName" placeholder="Jannie van der Berg"></div>
+          <div class="fg"><label>Name</label><input type="text" id="invName" placeholder="Jannie Smit"></div>
           <div class="fg"><label>Email</label><input type="email" id="invEmail" placeholder="jannie@example.com"></div>
         </div>
-        <div class="form-row">
-          <div class="fg"><label>Role</label><select id="invRole"><option>Traveller</option><option>Navigator</option><option>Camp Chef</option><option>Medic</option><option>Organiser</option><option>Driver</option></select></div>
-          <div class="fg"><label>Vehicle</label><select id="invVeh"><option>Vehicle 1</option><option>Vehicle 2</option><option>Vehicle 3</option><option>Vehicle 4</option></select></div>
-        </div>
+        <div class="fg" style="margin-bottom:.9rem"><label>Role</label><select id="invRole"><option>Traveller</option><option>Navigator</option><option>Camp Chef</option><option>Medic</option><option>Organiser</option><option>Driver</option></select></div>
         <button class="btn-primary" onclick="addCrew()">Send Invite</button>
       </div>
-    </section>
-
-    <!-- DOCS -->
-    <section class="panel" id="panel-docs">
-      <div class="ph"><div><div class="ph-title">Documents</div><div class="ph-sub">Permits, itineraries, maps and more</div></div></div>
-      <div class="drop-zone" id="dropZone" onclick="$('docFile').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="docDrop(event)">
-        <div class="dz-icon">📎</div><div class="dz-text">Drop files here or click to upload</div><div class="dz-sub">PDFs, spreadsheets, images, Word docs</div>
+      <div class="card card-pad" style="margin-bottom:1.1rem">
+        <div style="font-family:'Playfair Display';font-size:1.1rem;margin-bottom:.9rem">📄 Documents</div>
+        <div class="drop-zone" style="padding:1.4rem;margin-bottom:.75rem" onclick="$('docFile').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="docDrop(event)">
+          <div class="dz-icon" style="font-size:1.5rem">📎</div><div class="dz-text" style="font-size:.85rem">Tap or drop to upload</div>
+        </div>
+        <input type="file" id="docFile" multiple onchange="docUpload(event)">
+        <div class="docs-grid" id="docsGrid"></div>
       </div>
-      <input type="file" id="docFile" multiple onchange="docUpload(event)">
-      <div class="docs-grid" id="docsGrid"></div>
-    </section>
-
-    <!-- GALLERY -->
-    <section class="panel" id="panel-gallery">
-      <div class="ph"><div><div class="ph-title">Gallery</div><div class="ph-sub">Memories from the road</div></div><button class="btn-primary" onclick="$('photoFile').click()">＋ Add Photos</button></div>
-      <input type="file" id="photoFile" multiple accept="image/*" onchange="photoUpload(event)">
-      <div class="gal-grid" id="galGrid"></div>
+      <div class="card card-pad">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+          <div style="font-family:'Playfair Display';font-size:1.1rem">📸 Gallery</div>
+          <button class="btn-primary" style="font-size:.7rem" onclick="$('photoFile').click()">＋ Photos</button>
+        </div>
+        <input type="file" id="photoFile" multiple accept="image/*" onchange="photoUpload(event)">
+        <div class="gal-grid" id="galGrid"></div>
+      </div>
     </section>
   </main>
 </div>
-
-<!-- ══ MODALS ══ -->
-
+<!-- BOTTOM TAB BAR -->
+<nav id="bottomTabs">
+  <button class="bt active" data-panel="overview"><div class="bt-ic">🗺️</div><div class="bt-lb">Home</div></button>
+  <button class="bt" data-panel="plan"><div class="bt-ic">🧭</div><div class="bt-lb">Plan</div></button>
+  <button class="bt" data-panel="days"><div class="bt-ic">📅</div><div class="bt-lb">Days</div></button>
+  <button class="bt" data-panel="budget"><div class="bt-ic">⛽</div><div class="bt-lb">Budget</div></button>
+  <button class="bt" data-panel="pack" style="position:relative"><div class="bt-ic">🎒</div><div class="bt-lb">Pack</div><div class="bt-badge" id="packBadgeMob" style="display:none">!</div></button>
+  <button class="bt" data-panel="crew"><div class="bt-ic">👥</div><div class="bt-lb">Crew</div></button>
+</nav>
+<!-- MODALS -->
 <!-- NEW TRIP WIZARD -->
 <div class="overlay" id="newTripMod">
-<div class="modal" style="position:relative;max-width:600px">
+<div class="modal" style="position:relative">
   <button class="modal-close" onclick="closeModal('newTripMod')">✕</button>
   <div class="modal-title">New Expedition</div>
-  <div class="wsbar" id="wbar">
+  <div class="wsbar">
     <div class="wsb active" id="wb1"><div class="wsb-n">1</div>Basics</div>
     <div class="wsb-line"></div>
-    <div class="wsb active" id="wb2"><div class="wsb-n">2</div>Route</div>
+    <div class="wsb" id="wb2"><div class="wsb-n">2</div>Route</div>
     <div class="wsb-line"></div>
-    <div class="wsb" id="wb3"><div class="wsb-n">3</div>Crew & Gear</div>
+    <div class="wsb" id="wb3"><div class="wsb-n">3</div>My Vehicle</div>
   </div>
   <div class="wiz-pane on" id="wp1">
-    <div class="form-row"><div class="fg"><label>Trip Name</label><input type="text" id="wn" placeholder="Kgalagadi 2027"></div><div class="fg"><label>Destination</label><input type="text" id="wd" placeholder="Kgalagadi, South Africa"></div></div>
+    <div class="form-row"><div class="fg"><label>Trip Name</label><input type="text" id="wn" placeholder="Namibia 2027"></div><div class="fg"><label>Destination</label><input type="text" id="wd" placeholder="Namibia"></div></div>
     <div class="form-row"><div class="fg"><label>Departure</label><input type="date" id="ws"></div><div class="fg"><label>Return</label><input type="date" id="we"></div></div>
-    <div class="form-row"><div class="fg"><label>Type</label><select id="wt"><option>4x4 Overland</option><option>Game Reserve</option><option>Desert Expedition</option><option>Coastal</option><option>Mountain</option><option>Mixed</option></select></div><div class="fg"><label>Accommodation Style</label><select id="wa"><option>Mix of camping &amp; chalets</option><option>Camping only</option><option>Chalets/lodges only</option><option>Wild camping</option></select></div></div>
+    <div class="form-row"><div class="fg"><label>Type</label><select id="wt"><option>4x4 Overland</option><option>Game Reserve</option><option>Desert Expedition</option><option>Coastal</option><option>Mountain</option><option>Mixed</option></select></div><div class="fg"><label>Style</label><select id="wa"><option>Mix of camping & chalets</option><option>Camping only</option><option>Chalets/lodges only</option><option>Wild camping</option></select></div></div>
     <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('newTripMod')">Cancel</button><button class="btn-primary" onclick="wizGo(2)">Route →</button></div>
   </div>
   <div class="wiz-pane" id="wp2">
-    <p style="font-size:.83rem;color:var(--text3);font-style:italic;margin-bottom:.85rem">Search any place — first stop is your start 🚩, last is your end 🏁. Add intermediate stops in order.</p>
-    <div class="ps-wrap"><span class="ps-icon">🔍</span><input type="text" id="wizSearch" placeholder="Search: Tiger Reef Camping, Twee Rivieren, Sesriem, Swakopmund…" autocomplete="off" oninput="ps(this.value,'wzRes')" onkeydown="psk(event,'wzRes')"><div class="ps-results" id="wzRes"></div></div>
+    <p style="font-size:.8rem;color:var(--text3);margin-bottom:.85rem">Search stops in order — first is 🚩 Start, last is 🏁 End.</p>
+    <div class="ps-wrap"><span class="ps-icon">🔍</span><input type="text" id="wizSearch" placeholder="Search: Tiger Reef, Sesriem, Etosha…" autocomplete="off" oninput="ps(this.value,'wzRes')" onkeydown="psk(event,'wzRes')"><div class="ps-results" id="wzRes"></div></div>
     <div id="wizPills" class="stop-pills"></div>
-    <div id="wizNights" style="display:flex;flex-direction:column;gap:.32rem;margin-bottom:.85rem"></div>
-    <div class="modal-footer"><button class="btn-secondary" onclick="wizGo(1)">← Back</button><button class="btn-primary" onclick="wizGo(3)">Crew & Gear →</button></div>
+    <div id="wizNights" style="display:flex;flex-direction:column;gap:.28rem;margin-bottom:.85rem"></div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="wizGo(1)">← Back</button><button class="btn-primary" onclick="wizGo(3)">My Vehicle →</button></div>
   </div>
   <div class="wiz-pane" id="wp3">
-    <p style="font-size:.82rem;color:var(--text3);font-style:italic;margin-bottom:1rem">Your vehicle only — crew members add their own when they join.</p>
-    <div class="form-row">
-      <div class="fg"><label>My Vehicle Name</label><input type="text" id="wvname" placeholder="Hilux GD-6 / Fortuner…"></div>
-      <div class="fg"><label>Fuel Type</label><select id="wvftype"><option value="Diesel">Diesel</option><option value="Petrol 95">Petrol (95)</option><option value="Petrol 93">Petrol (93)</option></select></div>
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>Consumption (L/100km)</label><input type="number" id="wcons" placeholder="12.5" step="0.1" value="12.5"></div>
-      <div class="fg"><label>Tank Size (L)</label><input type="number" id="wvtank" placeholder="80" value="80"></div>
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>Fuel Price (R/L)</label><input type="number" id="wfuel" placeholder="24.50" step="0.01" value="24.50"></div>
-      <div class="fg"><label>Notes / Permits needed</label><input type="text" id="wnotes" placeholder="Kgalagadi permit required in advance…"></div>
-    </div>
-    <div class="modal-footer"><button class="btn-secondary" onclick="wizGo(2)">← Back</button><button class="btn-primary" onclick="createTrip()">🗺️ Create Expedition</button></div>
+    <p style="font-size:.8rem;color:var(--text3);margin-bottom:.85rem">Your vehicle only — crew members add their own when they join.</p>
+    <div class="form-row"><div class="fg"><label>Vehicle Name</label><input type="text" id="wvname" placeholder="Hilux GD-6 / Fortuner…"></div><div class="fg"><label>Fuel Type</label><select id="wvftype"><option value="Diesel">Diesel</option><option value="Petrol 95">Petrol (95)</option><option value="Petrol 93">Petrol (93)</option></select></div></div>
+    <div class="form-row"><div class="fg"><label>Consumption (L/100km)</label><input type="number" id="wcons" placeholder="12.5" step="0.1" value="12.5"></div><div class="fg"><label>Tank Size (L)</label><input type="number" id="wvtank" placeholder="80" value="80"></div></div>
+    <div class="form-row"><div class="fg"><label>Fuel Price (R/L)</label><input type="number" id="wfuel" placeholder="24.50" step="0.1" value="24.50"></div><div class="fg"><label>Notes / Permits</label><input type="text" id="wnotes" placeholder="Kgalagadi permit…"></div></div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="wizGo(2)">← Back</button><button class="btn-primary" onclick="createTrip()">🗺️ Create!</button></div>
   </div>
 </div></div>
-
+<!-- JOIN TRIP -->
+<div class="overlay" id="joinTripMod">
+<div class="modal" style="position:relative">
+  <button class="modal-close" onclick="closeModal('joinTripMod')">✕</button>
+  <div class="modal-title">🔗 Join an Expedition</div>
+  <p style="font-size:.83rem;color:var(--text3);margin-bottom:1.1rem">Enter the invite code from your trip organiser, then add your vehicle.</p>
+  <div class="fi"><label>Invite Code</label><input type="text" id="jt-code" placeholder="AB12CD" style="text-transform:uppercase;letter-spacing:.2em;font-family:'Space Mono';font-size:1.05rem" oninput="this.value=this.value.toUpperCase()"></div>
+  <div style="border-top:1px solid var(--border2);margin:.9rem 0 1rem"></div>
+  <div style="font-size:.78rem;font-weight:700;color:var(--text2);margin-bottom:.85rem">🚗 My Vehicle</div>
+  <div class="form-row"><div class="fg"><label>Vehicle Name</label><input type="text" id="jt-vname" placeholder="Ranger / Prado…"></div><div class="fg"><label>Fuel Type</label><select id="jt-ftype"><option>Diesel</option><option>Petrol 95</option><option>Petrol 93</option></select></div></div>
+  <div class="form-row"><div class="fg"><label>Consumption (L/100km)</label><input type="number" id="jt-cons" placeholder="12.5" step="0.1" value="12.5"></div><div class="fg"><label>Tank (L)</label><input type="number" id="jt-tank" placeholder="80" value="80"></div></div>
+  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('joinTripMod')">Cancel</button><button class="btn-primary" onclick="joinTrip()">Join →</button></div>
+</div></div>
 <!-- ADD STOP -->
 <div class="overlay" id="addStopMod">
 <div class="modal" style="position:relative">
   <button class="modal-close" onclick="closeModal('addStopMod')">✕</button>
   <div class="modal-title">Add Route Stop</div>
-  <div class="ps-wrap"><span class="ps-icon">🔍</span><input type="text" id="rSearch" placeholder="Search: Fish River Canyon, Sossusvlei, Etosha…" autocomplete="off" oninput="ps(this.value,'rRes')" onkeydown="psk(event,'rRes')"><div class="ps-results" id="rRes"></div></div>
+  <div class="ps-wrap"><span class="ps-icon">🔍</span><input type="text" id="rSearch" placeholder="Search: Fish River Canyon, Sossusvlei…" autocomplete="off" oninput="ps(this.value,'rRes')" onkeydown="psk(event,'rRes')"><div class="ps-results" id="rRes"></div></div>
   <div id="rPills" class="stop-pills"></div>
   <div class="form-row">
-    <div class="fg"><label>Nights Here (0 = transit/end point)</label><input type="number" id="rs-nights" placeholder="3" min="0"></div>
-    <div class="fg"><label>km from Previous Stop</label><input type="number" id="rs-km" placeholder="347" min="0"></div>
+    <div class="fg"><label>Nights here (0 = end point)</label><input type="number" id="rs-nights" placeholder="3" min="0"></div>
+    <div class="fg"><label>Drive distance to here (km)</label><input type="number" id="rs-km" placeholder="347" min="0"></div>
   </div>
-  <div class="form-row"><div class="fg"><label>Notes</label><input type="text" id="rs-notes" placeholder="Fuel up before this leg"></div></div>
-  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addStopMod')">Cancel</button><button class="btn-primary" onclick="addStop()">＋ Add Stop</button></div>
+  <div class="form-row"><div class="fg"><label>Notes</label><input type="text" id="rs-notes" placeholder="Fuel stop, permits…"></div></div>
+  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addStopMod')">Cancel</button><button class="btn-primary" onclick="addStop()">＋ Add</button></div>
 </div></div>
-
 <!-- ADD DAY -->
 <div class="overlay" id="addDayMod">
 <div class="modal" style="position:relative">
   <button class="modal-close" onclick="closeModal('addDayMod')">✕</button>
-  <div class="modal-title">Add Itinerary Day</div>
+  <div class="modal-title">Add Day</div>
   <div class="form-row"><div class="fg"><label>Date</label><input type="date" id="nd-dt"></div><div class="fg"><label>Location</label><input type="text" id="nd-lc" placeholder="Sesriem"></div></div>
   <div class="form-row"><div class="fg"><label>Accommodation</label><input type="text" id="nd-ac" placeholder="Sossus Dune Lodge"></div><div class="fg"><label>Type</label><select id="nd-tp"><option value="camp">🏕️ Camp</option><option value="chalet">🏠 Chalet</option><option value="lodge">🏡 Lodge</option><option value="drive">🚗 Drive Day</option><option value="guesthouse">🏘️ Guesthouse</option></select></div></div>
   <div class="form-row"><div class="fg"><label>Morning</label><input type="text" id="nd-mo" placeholder="Dune 45 sunrise climb"></div><div class="fg"><label>Afternoon</label><input type="text" id="nd-af" placeholder="Dead Vlei walk"></div></div>
-  <div class="form-row"><div class="fg"><label>Drive Distance (km)</label><input type="number" id="nd-km" placeholder="347"></div><div class="fg"><label>Drive Duration</label><input type="text" id="nd-dt2" placeholder="4.5 hrs"></div></div>
-  <div class="form-row"><div class="fg"><label>Notes</label><input type="text" id="nd-nt" placeholder="Book 4x4 permits…"></div></div>
-  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addDayMod')">Cancel</button><button class="btn-primary" onclick="addDay()">＋ Add Day</button></div>
+  <div class="form-row"><div class="fg"><label>Drive km</label><input type="number" id="nd-km" placeholder="347"></div><div class="fg"><label>Notes</label><input type="text" id="nd-nt" placeholder="Permits…"></div></div>
+  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addDayMod')">Cancel</button><button class="btn-primary" onclick="addDay()">＋ Add</button></div>
 </div></div>
-
 <!-- ADD ACCOMMODATION -->
 <div class="overlay" id="addAccomMod">
 <div class="modal" style="position:relative">
   <button class="modal-close" onclick="closeModal('addAccomMod')">✕</button>
-  <div class="modal-title">Add Accommodation</div>
+  <div class="modal-title" id="accomModalTitle">Add Stay</div>
   <div class="form-row"><div class="fg"><label>Name</label><input type="text" id="na-nm" placeholder="Tiger Reef Camp"></div><div class="fg"><label>Type</label><select id="na-tp"><option value="camp">🏕️ Camp</option><option value="chalet">🏠 Chalet</option><option value="lodge">🏡 Lodge</option><option value="guesthouse">🏘️ Guesthouse</option></select></div></div>
-  <div class="form-row"><div class="fg"><label>Stop / Location</label><select id="na-stop"></select></div><div class="fg"><label>Nights</label><input type="number" id="na-ni" placeholder="4" min="1"></div></div>
-  <div class="form-row"><div class="fg"><label>Check-in Date</label><input type="date" id="na-ci"></div><div class="fg"><label>Booking Reference</label><input type="text" id="na-rf" placeholder="NR-2026-045"></div></div>
+  <div class="form-row"><div class="fg"><label>Stop</label><select id="na-stop"></select></div><div class="fg"><label>Nights</label><input type="number" id="na-ni" placeholder="4" min="1"></div></div>
+  <div class="form-row"><div class="fg"><label>Check-in Date</label><input type="date" id="na-ci"></div><div class="fg"><label>Booking Ref</label><input type="text" id="na-rf" placeholder="NR-2026-045"></div></div>
   <div class="form-row"><div class="fg"><label>Notes</label><input type="text" id="na-nt" placeholder="Braai, pool, BFKB…"></div></div>
-  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addAccomMod')">Cancel</button><button class="btn-primary" onclick="addAccom()">＋ Add</button></div>
+  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addAccomMod')">Cancel</button><button class="btn-primary" onclick="addAccom()">Save</button></div>
 </div></div>
-
 <!-- ADD VEHICLE -->
 <div class="overlay" id="addVehMod">
 <div class="modal" style="position:relative">
   <button class="modal-close" onclick="closeModal('addVehMod')">✕</button>
   <div class="modal-title">Add Vehicle</div>
-  <div class="form-row"><div class="fg"><label>Vehicle Name</label><input type="text" id="nv-nm" placeholder="Hilux GD-6 (Lead)"></div><div class="fg"><label>Fuel Type</label><select id="nv-ft"><option>Diesel</option><option>Petrol (95)</option><option>Petrol (93)</option></select></div></div>
-  <div class="form-row"><div class="fg"><label>Consumption (L/100km)</label><input type="number" id="nv-co" placeholder="12.5" step="0.1"></div><div class="fg"><label>Tank Size (L)</label><input type="number" id="nv-tk" placeholder="80"></div></div>
+  <div class="form-row"><div class="fg"><label>Vehicle Name</label><input type="text" id="nv-nm" placeholder="Hilux GD-6"></div><div class="fg"><label>Fuel Type</label><select id="nv-ft"><option>Diesel</option><option>Petrol 95</option><option>Petrol 93</option></select></div></div>
+  <div class="form-row"><div class="fg"><label>Consumption (L/100km)</label><input type="number" id="nv-co" placeholder="12.5" step="0.1"></div><div class="fg"><label>Tank (L)</label><input type="number" id="nv-tk" placeholder="80"></div></div>
   <div class="form-row"><div class="fg"><label>Driver</label><input type="text" id="nv-dr" placeholder="Driver name"></div></div>
   <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addVehMod')">Cancel</button><button class="btn-primary" onclick="addVehicle()">＋ Add</button></div>
 </div></div>
-
 <!-- ADD EXPENSE -->
 <div class="overlay" id="addCostMod">
 <div class="modal" style="position:relative">
   <button class="modal-close" onclick="closeModal('addCostMod')">✕</button>
   <div class="modal-title">Add Expense</div>
-  <div class="form-row"><div class="fg"><label>Description</label><input type="text" id="nc-desc" placeholder="Tiger Reef Camp — 4 nights"></div><div class="fg"><label>Category</label><select id="nc-cat"><option value="accommodation">Accommodation</option><option value="activity">Activity</option><option value="food">Food</option><option value="fuel">Fuel</option><option value="other">Other</option></select></div></div>
-  <div class="form-row"><div class="fg"><label>Total Amount (R)</label><input type="number" id="nc-amt" placeholder="2400" step="0.01" oninput="updateSplitAmounts()"></div><div class="fg"><label>Paid by</label><select id="nc-paid"></select></div></div>
-  <div style="font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem">Split (%)</div>
+  <div class="form-row"><div class="fg"><label>Description</label><input type="text" id="nc-desc" placeholder="Tiger Reef — 4 nights"></div><div class="fg"><label>Category</label><select id="nc-cat"><option value="accommodation">Accommodation</option><option value="activity">Activity</option><option value="food">Food</option><option value="fuel">Fuel</option><option value="other">Other</option></select></div></div>
+  <div class="form-row"><div class="fg"><label>Amount (R)</label><input type="number" id="nc-amt" placeholder="2400" step="0.01" oninput="updateSplitAmounts()"></div><div class="fg"><label>Paid by</label><select id="nc-paid"></select></div></div>
+  <div style="font-size:.68rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem">Split %</div>
   <div id="splitRows"></div>
-  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addCostMod')">Cancel</button><button class="btn-primary" onclick="addExpense()">＋ Add Expense</button></div>
+  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addCostMod')">Cancel</button><button class="btn-primary" onclick="addExpense()">＋ Add</button></div>
 </div></div>
-
 <!-- ADD FOOD DAY -->
 <div class="overlay" id="addFoodDayMod">
 <div class="modal" style="position:relative">
   <button class="modal-close" onclick="closeModal('addFoodDayMod')">✕</button>
   <div class="modal-title">Add Meal Day</div>
-  <div class="form-row"><div class="fg"><label>Day Label</label><input type="text" id="nfd-d" placeholder="Day 1 – Fri 18 Dec"></div><div class="fg"><label>Location</label><input type="text" id="nfd-l" placeholder="Hardeveld Lodge"></div></div>
+  <div class="form-row"><div class="fg"><label>Day Label</label><input type="text" id="nfd-d" placeholder="Day 3 — Wed 18 Dec"></div><div class="fg"><label>Location</label><input type="text" id="nfd-l" placeholder="Hardeveld Lodge"></div></div>
   <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addFoodDayMod')">Cancel</button><button class="btn-primary" onclick="addFoodDay()">＋ Add</button></div>
 </div></div>
-
 <!-- ADD PACKING CATEGORY -->
 <div class="overlay" id="addCatMod">
 <div class="modal" style="position:relative">
   <button class="modal-close" onclick="closeModal('addCatMod')">✕</button>
   <div class="modal-title">Add Packing Category</div>
-  <div class="form-row"><div class="fg"><label>Category Name</label><input type="text" id="nc-nm" placeholder="Medical"></div><div class="fg"><label>Icon</label><input type="text" id="nc-ic" placeholder="🩺" maxlength="4"></div></div>
-  <div class="form-row"><div class="fg"><label>Type</label><select id="nc-tp"><option value="communal">🌍 Communal (visible to all)</option><option value="personal">👤 Personal (only me)</option></select></div><div class="fg"><label>First Item (optional)</label><input type="text" id="nc-it" placeholder="First aid kit"></div></div>
-  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addCatMod')">Cancel</button><button class="btn-primary" onclick="addCategory()">＋ Add Category</button></div>
-</div></div>
-
-<!-- JOIN TRIP MODAL -->
-<div class="overlay" id="joinTripMod">
-<div class="modal" style="position:relative;max-width:460px">
-  <button class="modal-close" onclick="closeModal('joinTripMod')">✕</button>
-  <div class="modal-title">🔗 Join an Expedition</div>
-  <p style="font-size:.85rem;color:var(--text3);margin-bottom:1.25rem">Enter the invite code shared by the trip organiser, then add your vehicle details.</p>
-  <div class="fi"><label>Invite Code</label><input type="text" id="jt-code" placeholder="e.g. AB12CD" style="text-transform:uppercase;letter-spacing:.2em;font-family:'Space Mono';font-size:1.1rem" oninput="this.value=this.value.toUpperCase()"></div>
-  <hr style="border:none;border-top:1px solid var(--border2);margin:1.1rem 0">
-  <div style="font-size:.78rem;font-weight:700;color:var(--text2);margin-bottom:.85rem">🚗 My Vehicle</div>
-  <div class="form-row">
-    <div class="fg"><label>Vehicle Name</label><input type="text" id="jt-vname" placeholder="Ranger / Prado / Discovery…"></div>
-    <div class="fg"><label>Fuel Type</label><select id="jt-ftype"><option>Diesel</option><option>Petrol 95</option><option>Petrol 93</option></select></div>
+  <div class="form-row"><div class="fg"><label>Category Name</label><input type="text" id="nc-nm" placeholder="Medical"></div><div class="fg"><label>Icon</label><input type="text" id="nc-ic" placeholder="🩺" maxlength="4" style="width:64px"></div></div>
+  <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.85rem">
+    <span style="font-size:.62rem;font-weight:600;color:var(--text3);align-self:center;margin-right:.15rem">Pick:</span>
+    ${['🏕️','🚗','🔧','🍖','🔥','💊','🩺','👕','🥾','🧭','📡','🛠️','🎒','🧴','🏹','🐾','📷','💧','🔦','⛺','🪓','🧤','🛡️','🎯'].map(e=>`<button type="button" onclick="document.getElementById('nc-ic').value='${e}'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem">${e}</button>`).join('')}
   </div>
-  <div class="form-row">
-    <div class="fg"><label>Consumption (L/100km)</label><input type="number" id="jt-cons" placeholder="12.5" step="0.1" value="12.5"></div>
-    <div class="fg"><label>Tank Size (L)</label><input type="number" id="jt-tank" placeholder="80" value="80"></div>
-  </div>
-  <div class="modal-footer">
-    <button class="btn-secondary" onclick="closeModal('joinTripMod')">Cancel</button>
-    <button class="btn-primary" onclick="joinTrip()">🔗 Join Expedition</button>
-  </div>
+  <div class="form-row"><div class="fg"><label>Type</label><select id="nc-tp"><option value="communal">🌍 Communal (everyone sees)</option><option value="personal">👤 Personal (only me)</option></select></div><div class="fg"><label>First Item</label><input type="text" id="nc-it" placeholder="First aid kit"></div></div>
+  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addCatMod')">Cancel</button><button class="btn-primary" onclick="addCategory()">＋ Add</button></div>
 </div></div>
 
 <script>
+
 function openJoinTrip(){
   $('jt-code').value='';
   openModal('joinTripMod');
@@ -895,8 +883,8 @@ async function joinTrip(){
   closeModal('joinTripMod');
   toast('🎉 Joined '+foundTrip.name+'!','ok');
 }
-</script>
-<script>
+
+
 // ══════════════════════════════════════════════════════════════
 //  FIREBASE CONFIGURATION
 //  Replace the config below with your Firebase project settings.
@@ -933,7 +921,7 @@ function initFirebase(){
 const SK='trek_v4';
 let DB={users:{},trips:{},cur:null}; // cur = tripId
 let ME=null; // current logged-in user object
-let currentPanel='dashboard', packTab='communal', cdTimer=null;
+let currentPanel='overview', packTab='communal', cdTimer=null;
 let leafMap=null,leafMarkers=[],leafPolyline=null,leafReady=false;
 let wizStops=[],rStopSelected=null,psTimer=null;
 let biCharts={};
@@ -1384,7 +1372,6 @@ function renderDash(t){
       ${t.food.length&&t.food[0].dinner.length?`<div style="font-size:.95rem;font-weight:600;color:var(--text)">${t.food[0].dinner[0]}</div><div style="font-size:.78rem;color:var(--text3);font-style:italic;margin-top:.15rem">${t.food[0].day} · ${t.food[0].loc}</div>`:`<div class="empty" style="padding:1rem 0"><div class="ei" style="font-size:1.8rem">🔥</div><div class="es">No meals planned</div></div>`}
     </div>
   </div>`;
-  // Render BI charts below dashboard
   renderInsights(t);
 }
 
@@ -1674,12 +1661,10 @@ function renderItinerary(t){
         <div><div class="dst">🌞 Afternoon</div><div class="dsx">${d.afternoon||'—'}</div><input class="dinp" value="${esc(d.afternoon||'')}" placeholder="Add afternoon activity…" onchange="udF(${i},'afternoon',this.value)"></div>
         ${d.km?`<div class="dv-badge"><div class="dv-i"><span>Distance</span><span>${d.km} km</span></div><div class="dv-i"><span>Drive</span><span>${d.driveTime||'—'}</span></div></div>`:''}
         ${d.notes?`<div style="grid-column:1/-1;font-size:.8rem;color:var(--text3);font-style:italic;padding-top:.4rem">📝 ${d.notes}</div>`:''}
-        ${d.suggestions&&d.suggestions.length?`<div style="grid-column:1/-1;margin-top:.5rem">
-          <div style="font-size:.65rem;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">💡 Suggested Activities</div>
-          <div style="display:flex;flex-wrap:wrap;gap:.35rem">
-            ${d.suggestions.map((s,si)=>`<span onclick="addSuggestion(${i},'${esc(s)}')" title="Click to add to morning activity" style="background:var(--sage-bg);border:1px solid rgba(61,100,53,.25);color:var(--sage);padding:.2rem .55rem;border-radius:20px;font-size:.75rem;cursor:pointer;transition:all .18s" onmouseover="this.style.background='var(--sage)';this.style.color='#fff'" onmouseout="this.style.background='var(--sage-bg)';this.style.color='var(--sage)'">${s}</span>`).join('')}
-          </div>
-          <div style="font-size:.68rem;color:var(--text3);margin-top:.35rem">Click an activity to add it to the morning slot</div>
+        ${d.suggestions&&d.suggestions.length?`<div class="sug-chips">
+          <div class="sug-lbl">💡 Suggested Activities</div>
+          <div class="sug-row">${d.suggestions.map((s,si)=>`<span class="sug-chip" onclick="addSuggestion(${i},'${esc(s)}')">${s}</span>`).join('')}</div>
+          <div class="sug-hint">Tap any activity to add to morning or afternoon</div>
         </div>`:''}
       </div>
     </div>`;}).join('');
@@ -1746,7 +1731,7 @@ function getOfflineSuggestions(name){
   if(n.includes('kgalagadi')||n.includes('kalahari')){return['Lion tracking at dawn','Twee Rivieren to Mata Mata drive','Gemsbok and springbok herds','Sociable weaver nest viewpoint','Nossob dry river bed drive','Star gazing — darkest sky reserve'];}
   if(n.includes('fish river')||n.includes('ai-ais')){return['Fish River Canyon viewpoint hike','Hobas lookout at sunrise','Hellskloof Pass 4x4 route','Hot springs at Ai-Ais','Canyon rim walk','Sunset from southern viewpoint'];}
   if(n.includes('augrabies')){return['Augrabies waterfall viewpoint','Klipspringer hiking trail','Orange River sunset canoe','4x4 Dassie trail','Kokerboom forest walk','Rock art near park entrance'];}
-  if(n.includes('cape town')||n.includes('kaapstad')){return['Table Mountain cable car','Chapmans Peak coastal drive','Boulders Beach penguins','V&A Waterfront lunch','Cape Point 4x4 route','Signal Hill sunset'];}
+  if(n.includes('cape town')||n.includes('kaapstad')){return['Table Mountain cable car','Chapman\'s Peak coastal drive','Boulders Beach penguins','V&A Waterfront lunch','Cape Point 4x4 route','Signal Hill sunset'];}
   if(n.includes('namibia')||n.includes('skeleton coast')){return['Shipwreck discovery walk','Seal colonies at Cape Cross','Desolation desert 4x4 track','Fishing in Namibian surf','Coastal dunes exploration','Benguela fog mist photography'];}
   if(n.includes('kruger')){return['Sunrise game drive','Self-drive big 5 loop','Sunset sundowners in bush','Guided bush walk','Night drive with ranger','Bird watching at waterhole'];}
   if(n.includes('drakensberg')){return['Amphitheatre hike to base','Tugela Falls viewpoint','Horse riding in foothills','San rock art cave trail','Cathedral Peak day hike','Fly fishing in mountain stream'];}
@@ -1854,11 +1839,12 @@ function renderStops(t){
       <div style="flex:1">
         <div class="sr-nm">${s.name}</div>
         <div class="sr-mt">
-          ${i===0?'<span style="color:var(--sage);font-weight:600">Starting point — no nights</span>':i===n-1?'<span style="color:var(--rust);font-weight:600">End point — no nights</span>':s.nights+' night'+(s.nights!==1?'s':'')}
-          ${s.km?' · <strong>'+s.km+' km</strong> drive':''}${s.notes?' · '+s.notes:''}
+          ${i===0?'<span style="color:var(--sage);font-weight:600;font-size:.72rem">🚩 Starting point</span>':i===n-1?'<span style="color:var(--rust);font-weight:600;font-size:.72rem">🏁 End point</span>':s.nights+' night'+(s.nights!==1?'s':'')}
+          ${i>0?`<div class="sr-km-row"><input class="sr-km-inp" type="number" min="0" placeholder="km" value="${s.km||s._estKm||''}" title="Drive km to reach this stop" oninput="updStopKm(${i},this.value)" onclick="event.stopPropagation()"><span style="font-size:.67rem;color:var(--text3)">km to here${s._estKm&&!s.km?' (est.)':''}</span></div>`:''}
+          ${s.notes?`<div style="font-size:.7rem;color:var(--text3);margin-top:.12rem">${s.notes}</div>`:''}
         </div>
       </div>
-      ${i!==0&&i!==n-1?`<span class="tag t-camp" style="margin-right:.3rem">${s.nights}n${s.km?' · '+s.km+'km':''}</span>`:''}
+      ${i!==0&&i!==n-1?`<span class="tag t-camp" style="margin-right:.3rem">${s.nights}n</span>`:''}
       <button class="sr-del" onclick="removeStop(${i})">✕</button>
     </div>`).join('');
 }
@@ -1896,6 +1882,14 @@ function removeStop(i){
   const t=T();t.stops.splice(i,1);
   t.stops.forEach((s,j)=>{s.isStart=j===0;s.isEnd=j===t.stops.length-1;});
   sv();renderStops(t);renderDash(t);updateFuelKm(t);refreshMap(t);
+}
+function updStopKm(idx,val){
+  const t=T();if(!t||!t.stops[idx])return;
+  t.stops[idx].km=parseInt(val)||0;
+  delete t.stops[idx]._estKm;
+  const allHaveKm=t.stops.slice(1).every(s=>Number(s.km)>0);
+  if(allHaveKm)t._routeKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km),0);
+  sv();updateFuelKm(t);renderBudget(t);renderDash(t);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2019,7 +2013,7 @@ function openAccomForStop(stopName){
   // Default nights from stop
   const stop=t.stops.find(s=>s.name===stopName);
   if(stop)$('na-ni').value=stop.nights||1;
-  openModal('addAccomMod');
+  $('accomModalTitle').textContent='Add Stay';openModal('addAccomMod');
 }
 function editAccom(id){
   const t=T();const a=t.accommodation.find(x=>x.id===id);if(!a)return;
@@ -2033,8 +2027,8 @@ function editAccom(id){
   $('na-rf').value=a.ref||'';
   $('na-nt').value=a.notes||'';
   // Remove old entry when saved — mark with edit id
-  $('na-nm').dataset.editId=id;
-  openModal('addAccomMod');
+  $('na-nm').dataset.editId=id;$('accomModalTitle').textContent='Edit Stay';
+  $('accomModalTitle').textContent='Add Stay';openModal('addAccomMod');
 }
 function addAccomCost(name,stopName){
   const t=T();if(!t)return;
@@ -2085,55 +2079,101 @@ function updateFuelKm(t){
   $('fuelKm')&&($('fuelKm').value=km||'');
   renderFuel(t);
 }
-function renderFuel(t){
-  const el=$('fuelContent');
-  // Use OSRM km if available, else sum manual km entries from stops
-  const manualKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
-  const km=t._routeKm||manualKm||0;
-  const price=t.fuelPrice||24.5;
-  const grand=km>0&&t.vehicles.length?t.vehicles.reduce((a,v)=>a+(km/100)*v.consumption*price,0):0;
-  const grandL=km>0&&t.vehicles.length?t.vehicles.reduce((a,v)=>a+(km/100)*v.consumption,0):0;
-  el.innerHTML=`
-  <div class="total-fuel-banner">
-    <div>
-      <div class="tfb-label">Estimated Total Fuel Cost</div>
-      <div class="tfb-amount">${grand>0?fmtR(grand):km===0?'Add route km to calculate':t.vehicles.length===0?'Add a vehicle to calculate':fmtR(grand)}</div>
-      <div class="tfb-sub">${grandL>0?grandL.toFixed(0)+'L total · ':''} ${km?km.toLocaleString()+' km · ':''}R${price}/L</div>
-    </div>
-    <div class="tfb-details">
-      <div class="tfb-di">
-        <div class="tfb-label">Per person</div>
-        <div style="font-family:'Playfair Display';font-size:1.3rem;font-weight:700;color:#f0c060">${fmtR(grand/(t.crew.length||1))}</div>
+function renderFuel(t){renderBudget(t);}
+
+function renderBudget(t){
+  if(!t)return;
+  const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
+  const km=t._routeKm||manKm||0;
+  const price=Number(t.fuelPrice)||24.5;
+  const hasVeh=t.vehicles&&t.vehicles.length>0;
+  const fuelTotal=km>0&&hasVeh?t.vehicles.reduce((a,v)=>a+(km/100)*(Number(v.consumption)||12.5)*price,0):0;
+  const fuelL=km>0&&hasVeh?t.vehicles.reduce((a,v)=>a+(km/100)*(Number(v.consumption)||12.5),0):0;
+  const expTotal=(t.expenses||[]).reduce((a,e)=>a+Number(e.amount),0);
+  const myCost=calcMyCost(t);
+  const crew=t.crew.length||1;
+  // Settings bar — live updates
+  const bb=$('budgetBar');
+  if(bb)bb.innerHTML=`
+    <span class="bb-lbl">⛽ Fuel (R/L)</span>
+    <input class="bb-inp" type="number" value="${price.toFixed(2)}" step="0.10" min="0"
+      oninput="if(T()){T().fuelPrice=parseFloat(this.value)||24.5;sv();renderBudget(T());renderDash(T());}">
+    <span class="bb-lbl" style="margin-left:.5rem">📍 Route (km)</span>
+    <input class="bb-inp" id="fuelKm" type="number" value="${km||''}" placeholder="Auto from map"
+      oninput="if(T()){T()._routeKm=parseInt(this.value)||0;sv();renderBudget(T());renderDash(T());}">
+    ${km?`<span style="font-size:.7rem;color:var(--text3)">${km.toLocaleString()} km</span>`:''}`;
+  // Hero
+  const bh=$('budgetHero');
+  if(bh)bh.innerHTML=`
+    <div class="budget-hero">
+      <div>
+        <div class="bh-label">My Estimated Total</div>
+        <div class="bh-amount">${fmtR(myCost)}</div>
+        <div class="bh-sub">${fmtR(fuelTotal/crew)} fuel + ${fmtR(expTotal/crew)} expenses per person</div>
       </div>
-      <div class="tfb-di">
-        <div class="tfb-label">Vehicles</div>
-        <div style="font-family:'Playfair Display';font-size:1.3rem;font-weight:700;color:#f0c060">${t.vehicles.length}</div>
+      <div class="bh-details">
+        <div class="bh-di"><div class="bh-label">Total Fuel</div><div style="font-family:'Playfair Display';font-size:1.2rem;font-weight:700;color:#f0c060">${fuelTotal>0?fmtR(fuelTotal):km===0?'Add km':'Add vehicle'}</div>${fuelL>0?`<div style="font-size:.68rem;opacity:.6;margin-top:.1rem">${fuelL.toFixed(0)}L total</div>`:''}</div>
+        <div class="bh-di"><div class="bh-label">Expenses</div><div style="font-family:'Playfair Display';font-size:1.2rem;font-weight:700;color:#f0c060">${fmtR(expTotal)}</div></div>
       </div>
+    </div>`;
+  // Vehicles
+  const fc=$('fuelContent');
+  if(fc)fc.innerHTML=`
+    <div class="section-hd">
+      <div class="section-hd-title">🚗 Vehicles</div>
+      <button class="btn-primary" style="font-size:.68rem;padding:.3rem .72rem" onclick="openAddVehicle()">＋ Add Vehicle</button>
     </div>
-  </div>
-  <div class="fuel-veh-grid">${t.vehicles.length?t.vehicles.map((v,i)=>{const L=km>0?(km/100)*v.consumption:0;const cost=L*price;return`<div class="fv-card"><div class="fv-name">🚗 ${v.name}</div><div class="fv-meta">${v.driver?v.driver+' · ':''}${v.fuelType} · ${v.consumption}L/100km · ${v.tank}L tank</div><div class="fv-cost">${fmtR(cost)}</div><div style="font-size:.72rem;color:var(--text3);margin-top:.15rem">${L.toFixed(1)}L · ~${Math.ceil(L/v.tank)} fill${Math.ceil(L/v.tank)!==1?'s':''}</div><button class="btn-danger" style="margin-top:.6rem" onclick="removeVeh(${i})">Remove</button></div>`;}).join(''):`<div class="empty" style="grid-column:1/-1;padding:1.5rem 0"><div class="ei" style="font-size:2rem">🚗</div><div class="es">No vehicles added yet</div></div>`}</div>
-  <div class="card card-pad">
-    <div style="font-size:.82rem;font-weight:700;color:var(--text2);margin-bottom:1rem">⚙️ Calculator Settings</div>
-    <div class="form-row">
-      <div class="fg"><label>Fuel Price (R/L)</label><input type="number" id="fuelPriceInp" value="${price}" step="0.01" onchange="T().fuelPrice=parseFloat(this.value)||24.5;sv();renderFuel(T());"></div>
-      <div class="fg"><label>Route Distance (km)</label><input type="number" id="fuelKm" value="${km||''}" placeholder="Auto from route" onchange="T()._routeKm=parseInt(this.value)||0;sv();renderFuel(T());renderDash(T());"></div>
+    <div class="veh-grid">
+      ${hasVeh?t.vehicles.map((v,i)=>{
+        const L=km>0?(km/100)*(Number(v.consumption)||12.5):0;
+        const cost=L*price;
+        const fills=v.tank?Math.ceil(L/v.tank):0;
+        return`<div class="fv-card">
+          <div class="fv-name">🚗 ${v.name||'Vehicle'}</div>
+          <div class="fv-meta">${v.driver?v.driver+' · ':''}${v.fuelType||'Diesel'} · ${v.consumption}L/100km · ${v.tank}L tank</div>
+          <div class="fv-cost">${fmtR(cost)}</div>
+          <div style="font-size:.7rem;color:var(--text3);margin-top:.1rem">${L.toFixed(1)}L · ~${fills} fill${fills!==1?'s':''}</div>
+          <button class="btn-danger" style="margin-top:.5rem;font-size:.65rem" onclick="removeVeh(${i})">Remove</button>
+        </div>`;
+      }).join(''):`<div class="empty" style="grid-column:1/-1;padding:1.25rem 0"><div class="ei">🚗</div><div class="es">No vehicles added yet</div></div>`}
+    </div>`;
+  // Expenses
+  const cc=$('costsContent');
+  if(!cc)return;
+  const myExpShare=myCost-(fuelTotal/crew);
+  cc.innerHTML=`
+    <div class="section-hd" style="margin-top:1.25rem">
+      <div class="section-hd-title">💰 Expenses</div>
+      <button class="btn-primary" style="font-size:.68rem;padding:.3rem .72rem" onclick="openExpenseModal()">＋ Add</button>
     </div>
-  </div>`;
+    <div class="my-cost-banner">
+      <div><div class="mcb-label">My Share</div><div class="mcb-amount">${fmtR(myCost)}</div></div>
+      <div><div class="mcb-label">Total Expenses</div><div class="mcb-amount" style="font-size:1.15rem">${fmtR(expTotal)}</div></div>
+    </div>
+    ${(t.expenses||[]).length===0?`<div class="empty" style="padding:1.1rem 0"><div class="ei">💰</div><div class="es">No expenses yet — add accommodation, activities, food costs</div></div>`:''}
+    ${(t.expenses||[]).map((e,i)=>{
+      const myAmt=e.splits&&e.splits[ME.id]!==undefined?Number(e.amount)*e.splits[ME.id]/100:Number(e.amount)/crew;
+      return`<div class="cost-card">
+        <div class="cost-card-title"><span>${CAT_ICONS[e.category]||'💳'} ${e.desc}</span><button class="btn-ghost" onclick="removeExpense(${i})">✕</button></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem">
+          <div class="cost-amount">${fmtR(e.amount)}</div>
+          <div style="font-size:.7rem;color:var(--text3)"><span class="tag t-${e.category}">${e.category}</span> · ${fmtDate(e.date)}</div>
+        </div>
+        ${t.crew.map(m=>{const pct=e.splits&&e.splits[m.id]!==undefined?e.splits[m.id]:Math.round(100/crew);const ma=Number(e.amount)*pct/100;const isMe=m.id===ME.id;return`<div class="split-row"><div style="flex:1;font-size:.8rem;font-weight:${isMe?600:400};color:${isMe?'var(--text)':'var(--text2)'}">${m.name}${isMe?' (you)':''}</div><span style="font-size:.72rem;color:var(--text3)">${pct}%</span><div style="font-size:.8rem;font-weight:600;color:${isMe?'var(--amber)':'var(--text3)'}">${fmtR(ma)}</div></div>`;}).join('')}
+      </div>`;
+    }).join('')}`;
 }
-function openAddVehicle(){
-  $('nv-dr').value=ME?ME.name:'';
-  openModal('addVehMod');
-}
+
 function addVehicle(){
   const t=T();if(!t){toast('Create a trip first','err');return;}
   const name=$('nv-nm').value.trim();if(!name){toast('Enter vehicle name','err');return;}
   const cons=parseFloat($('nv-co').value);if(!cons){toast('Enter consumption','err');return;}
   t.vehicles.push({name,fuelType:$('nv-ft').value,consumption:cons,tank:Number($('nv-tk').value)||80,driver:$('nv-dr').value.trim(),uid:ME.id});
-  sv();renderFuel(t);renderDash(t);closeModal('addVehMod');
+  sv();renderBudget(t);renderDash(t);closeModal('addVehMod');
   ['nv-nm','nv-co','nv-tk','nv-dr'].forEach(id=>$(id).value='');
   toast('🚗 Vehicle added','ok');
 }
-function removeVeh(i){T().vehicles.splice(i,1);sv();renderFuel(T());renderDash(T());}
+function removeVeh(i){T().vehicles.splice(i,1);sv();renderBudget(T());renderDash(T());}
 
 // ══════════════════════════════════════════════════════════════
 //  TRIP COSTS / EXPENSES
@@ -2167,41 +2207,12 @@ function addExpense(){
   const splits={};
   t.crew.forEach(m=>{splits[m.id]=parseFloat($('sp-'+m.id)?.value)||0;});
   t.expenses.push({id:'e'+Date.now(),desc,category:$('nc-cat').value,amount:amt,paidBy:$('nc-paid').value,splits,date:new Date().toISOString().slice(0,10)});
-  sv();renderCosts(t);renderDash(t);closeModal('addCostMod');
+  sv();renderBudget(t);renderDash(t);closeModal('addCostMod');
   $('nc-desc').value='';$('nc-amt').value='';
   toast('💰 Expense added','ok');
 }
-function renderCosts(t){
-  const el=$('costsContent');
-  const totalCost=(t.expenses||[]).reduce((a,e)=>a+Number(e.amount),0);
-  const myCost=calcMyCost(t);
-  el.innerHTML=`
-  <div class="my-cost-banner">
-    <div><div class="mcb-label">My Share of Trip Costs</div><div class="mcb-amount">${fmtR(myCost)}</div></div>
-    <div><div class="mcb-label">Total Trip</div><div class="mcb-amount" style="font-size:1.2rem">${fmtR(totalCost)}</div></div>
-  </div>
-  ${(t.expenses||[]).length?'':`<div class="empty"><div class="ei">💰</div><div class="et">No expenses yet</div><div class="es">Add accommodation, activity and other costs, then split them across the crew</div></div>`}
-  ${(t.expenses||[]).map((e,i)=>`
-    <div class="cost-card">
-      <div class="cost-card-title">
-        <span>${CAT_ICONS[e.category]||'💳'} ${e.desc}</span>
-        <button class="btn-ghost" onclick="removeExpense(${i})">✕</button>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.75rem">
-        <div class="cost-amount">${fmtR(e.amount)}</div>
-        <div style="font-size:.72rem;color:var(--text3)"><span class="tag t-${e.category}">${e.category}</span> · Paid by ${t.crew.find(m=>m.id===e.paidBy)?.name||'—'} · ${fmtDate(e.date)}</div>
-      </div>
-      <div style="font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">Split</div>
-      ${t.crew.map(m=>{
-        const pct=e.splits&&e.splits[m.id]!==undefined?e.splits[m.id]:Math.round(100/t.crew.length);
-        const myAmt=Number(e.amount)*pct/100;
-        const isMe=m.id===ME.id;
-        return`<div class="split-row"><div style="flex:1;font-size:.82rem;font-weight:${isMe?700:400};color:${isMe?'var(--text)':'var(--text2)'}">${m.name}${isMe?' (me)':''}</div><span style="font-size:.75rem;color:var(--text3)">${pct}%</span><div style="font-size:.82rem;font-weight:600;color:${isMe?'var(--amber)':'var(--text3)'};">${fmtR(myAmt)}</div></div>`;
-      }).join('')}
-    </div>`).join('')}
-  <button class="btn-primary" style="margin-top:.5rem" onclick="openExpenseModal()">＋ Add Expense</button>`;
-}
-function removeExpense(i){if(!confirm('Remove expense?'))return;T().expenses.splice(i,1);sv();renderCosts(T());renderDash(T());}
+function renderCosts(t){renderBudget(t);}
+function removeExpense(i){if(!confirm('Remove?'))return;T().expenses.splice(i,1);sv();renderBudget(T());renderDash(T());}
 
 // ══════════════════════════════════════════════════════════════
 //  FOOD
@@ -2287,7 +2298,7 @@ function addCategory(){
   ['nc-nm','nc-ic','nc-it'].forEach(id=>$(id).value='');
   toast('✓ Category added','ok');
 }
-function updatePackBadge(t){const n=t.packing.filter(c=>c.type==='communal'||c.uid===ME.id).reduce((a,c)=>a+c.items.filter(i=>!i.checked).length,0);const b=$('packBadge');b.textContent=n;b.style.display=n>0?'':'none';}
+function updatePackBadge(t){const n=t.packing.filter(c=>c.type==='communal'||c.uid===ME.id).reduce((a,c)=>a+c.items.filter(i=>!i.checked).length,0);[$('packBadge'),$('packBadgeMob')].forEach(b=>{if(b){b.textContent=n;b.style.display=n>0?'':'none';}});}
 function resetPacking(){if(!confirm('Reset?'))return;T().packing.forEach(c=>c.items.forEach(i=>i.checked=false));sv();renderPacking(T());updatePackBadge(T());toast('↺ Reset');}
 
 // ══════════════════════════════════════════════════════════════
@@ -2371,6 +2382,42 @@ function exportTrip(){const t=T();if(!t)return;const b=new Blob([JSON.stringify(
 function shareTrip(){if(navigator.share)navigator.share({title:(T()?.name||'TREK')+' — A Forgebit Expedition',url:location.href});else{navigator.clipboard?.writeText(location.href);toast('Link copied 🔗','ok');}}
 function toast(msg,type=''){const c=$('toasts'),t=document.createElement('div');t.className='toast '+(type||'');t.textContent=msg;c.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';},2700);setTimeout(()=>t.remove(),3100);}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+function navTo(panel){
+  currentPanel=panel;
+  document.querySelectorAll('.ni,.bt').forEach(n=>n.classList.toggle('active',n.dataset.panel===panel));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  const pe=$('panel-'+panel);if(pe)pe.classList.add('active');
+  const t=T();$('tbTitle').textContent=t?t.name:'TREK';
+  if(panel==='plan'){
+    setTimeout(()=>{
+      const rp=$('stp-route');
+      if(rp&&rp.style.display!=='none'){initLeaflet();if(t)refreshMap(t);if(leafMap)leafMap.invalidateSize();}
+    },80);
+    if(t){const sel=$('na-stop');if(sel)sel.innerHTML=t.stops.filter(s=>!s.isStart&&!s.isEnd).map(s=>`<option value="${esc(s.name)}">${s.name}</option>`).join('');}
+  }
+  if(panel==='budget'&&t)renderBudget(t);
+  if(window.innerWidth<769)$('sidebar').classList.add('off');
+}
+document.querySelectorAll('.ni,.bt').forEach(item=>{
+  item.addEventListener('click',()=>navTo(item.dataset.panel));
+});
+function setPlanTab(tab,el){
+  document.querySelectorAll('.stab').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  ['route','stays','food'].forEach(t2=>{
+    const p=$('stp-'+t2);if(p)p.style.display=t2===tab?'block':'none';
+  });
+  if(tab==='route')setTimeout(()=>{initLeaflet();if(T())refreshMap(T());if(leafMap)leafMap.invalidateSize();},80);
+}
+function toggleMap(){
+  const mc=$('mapContainer');if(!mc)return;
+  const showing=mc.style.display==='block';
+  mc.style.display=showing?'none':'block';
+  if(!showing){initLeaflet();if(T())refreshMap(T());setTimeout(()=>leafMap&&leafMap.invalidateSize(),80);}
+}
+function openExpenseModal_prefill(){}
+function toggleSB(){$('sidebar').classList.toggle('off');}
 </script>
 </body>
 </html>
