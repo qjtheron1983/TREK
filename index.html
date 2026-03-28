@@ -458,6 +458,10 @@ input[type=file]{display:none;}
 .icb-copy:hover{background:#9a5f0a;}
 .COLORS{--c0:linear-gradient(135deg,#b8720f,#8b3222);--c1:linear-gradient(135deg,#3d6435,#1e6fa5);--c2:linear-gradient(135deg,#7a6e5f,#b8720f);--c3:linear-gradient(135deg,#8b3222,#c94b1a);--c4:linear-gradient(135deg,#1e6fa5,#3d6435);--c5:linear-gradient(135deg,#b8720f,#3d6435);}
 </style>
+<!-- Firebase v10 modular SDK (compat layer for simplicity) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="COLORS">
 
@@ -477,6 +481,11 @@ input[type=file]{display:none;}
       <div class="auth-logo-mark">✦ TREK</div>
       <div class="auth-logo-sub">Expedition Planner</div>
       <div class="auth-logo-fb">A Forgebit Product</div>
+    </div>
+    <div id="fbSetupBanner" style="display:none;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:.75rem .9rem;font-size:.78rem;color:#7a6e5f;margin-bottom:1rem;line-height:1.5">
+      <strong style="color:#b8720f">⚡ Firebase not configured</strong> — the app is running in local mode. 
+      To enable cloud sync, open <code style="background:rgba(0,0,0,.06);padding:1px 4px;border-radius:3px">index.html</code> and replace <code style="background:rgba(0,0,0,.06);padding:1px 4px;border-radius:3px">FIREBASE_CONFIG</code> with your project settings from 
+      <a href="https://console.firebase.google.com" target="_blank" style="color:#b8720f">console.firebase.google.com</a>.
     </div>
     <div class="auth-tabs">
       <div class="auth-tab active" onclick="showAuthTab('login')">Sign In</div>
@@ -525,8 +534,7 @@ input[type=file]{display:none;}
     </div>
     <nav class="sb-nav">
       <div class="ni active" data-panel="dashboard"><span class="ni-ic">🗺️</span>Dashboard</div>
-      <div class="ni" data-panel="insights"><span class="ni-ic">📊</span>Insights</div>
-      <div class="ni" data-panel="itinerary"><span class="ni-ic">📅</span>Itinerary</div>
+            <div class="ni" data-panel="itinerary"><span class="ni-ic">📅</span>Itinerary</div>
       <div class="ni" data-panel="route"><span class="ni-ic">🧭</span>Route & Map</div>
       <div class="ni" data-panel="accommodation"><span class="ni-ic">🏕️</span>Accommodation</div>
       <div class="ni" data-panel="fuel"><span class="ni-ic">⛽</span>Fuel & Costs</div>
@@ -561,13 +569,9 @@ input[type=file]{display:none;}
     </div>
 
     <!-- DASHBOARD -->
-    <section class="panel active" id="panel-dashboard"><div id="dashContent"></div></section>
+    <section class="panel active" id="panel-dashboard"><div id="dashContent"></div><div id="insightsContent"></div></section>
 
-    <!-- INSIGHTS BI -->
-    <section class="panel" id="panel-insights">
-      <div class="ph"><div><div class="ph-title">Insights</div><div class="ph-sub">Data-driven overview of your expedition</div></div></div>
-      <div id="insightsContent"></div>
-    </section>
+
 
     <!-- ITINERARY -->
     <section class="panel" id="panel-itinerary">
@@ -802,7 +806,37 @@ input[type=file]{display:none;}
 
 <script>
 // ══════════════════════════════════════════════════════════════
-//  STATE & PERSISTENCE
+//  FIREBASE CONFIGURATION
+//  Replace the config below with your Firebase project settings.
+//  Go to: https://console.firebase.google.com → Project Settings → Web App
+// ══════════════════════════════════════════════════════════════
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCV8N8BvZZUB0CB2zHMl4XkACpBfJsGkW0",
+  authDomain: "trek-app-500aa.firebaseapp.com",
+  projectId: "trek-app-500aa",
+  storageBucket: "trek-app-500aa.firebasestorage.app",
+  messagingSenderId: "15192462505",
+  appId: "1:15192462505:web:44bde4c033b79b337745b8"
+};
+
+let fbApp=null, fbAuth=null, fbDb=null, FB_READY=false;
+function initFirebase(){
+  try{
+    if(FIREBASE_CONFIG.apiKey==='YOUR_API_KEY'){
+      console.warn('TREK: Firebase not configured — using local storage fallback. Replace FIREBASE_CONFIG in index.html.');
+      return false;
+    }
+    fbApp=firebase.initializeApp(FIREBASE_CONFIG);
+    fbAuth=firebase.auth();
+    fbDb=firebase.firestore();
+    FB_READY=true;
+    console.log('TREK: Firebase connected ✓');
+    return true;
+  }catch(e){console.warn('TREK: Firebase init failed, using local fallback',e);return false;}
+}
+
+// ══════════════════════════════════════════════════════════════
+//  STATE & PERSISTENCE (local fallback + Firebase)
 // ══════════════════════════════════════════════════════════════
 const SK='trek_v4';
 let DB={users:{},trips:{},cur:null}; // cur = tripId
@@ -814,11 +848,38 @@ let biCharts={};
 
 const COLORS=['linear-gradient(135deg,#b8720f,#8b3222)','linear-gradient(135deg,#3d6435,#1e6fa5)','linear-gradient(135deg,#7a6e5f,#b8720f)','linear-gradient(135deg,#8b3222,#c94b1a)','linear-gradient(135deg,#1e6fa5,#3d6435)','linear-gradient(135deg,#b8720f,#3d6435)'];
 const CAT_ICONS={accommodation:'🏕️',activity:'🏃',food:'🔥',fuel:'⛽',other:'💳'};
-const panelLabels={dashboard:'Overview',insights:'Insights',itinerary:'Itinerary',route:'Route & Map',accommodation:'Accommodation',fuel:'Fuel & Costs',costs:'Trip Costs',food:'Food & Meals',packing:'Packing List',crew:'Crew',docs:'Documents',gallery:'Gallery'};
+const panelLabels={dashboard:'Overview',itinerary:'Itinerary',route:'Route & Map',accommodation:'Accommodation',fuel:'Fuel & Costs',costs:'Trip Costs',food:'Food & Meals',packing:'Packing List',crew:'Crew',docs:'Documents',gallery:'Gallery'};
 
 function $(id){return document.getElementById(id);}
-function sv(){try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}}
+function sv(){
+  try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
+  // Firebase sync: save current trip to Firestore
+  if(FB_READY&&ME&&DB.cur&&DB.trips[DB.cur]){
+    try{
+      fbDb.collection('trips').doc(DB.cur).set({
+        ...DB.trips[DB.cur],
+        _owner:ME.id,
+        _updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true}).catch(e=>console.warn('Firestore write:',e));
+    }catch(e){}
+  }
+}
 function ld(){try{const d=JSON.parse(localStorage.getItem(SK)||'{}');if(d.users)DB.users=d.users;if(d.trips)DB.trips=d.trips;if(d.cur)DB.cur=d.cur;}catch(e){}}
+async function loadFromFirebase(uid){
+  if(!FB_READY)return;
+  try{
+    const snap=await fbDb.collection('trips').where('_crewIds','array-contains',uid).get();
+    snap.forEach(doc=>{
+      const data=doc.data();
+      // Merge with local — Firebase is source of truth
+      DB.trips[doc.id]={...data,id:doc.id};
+    });
+    // Also own trips
+    const own=await fbDb.collection('trips').where('_owner','==',uid).get();
+    own.forEach(doc=>{DB.trips[doc.id]={...doc.data(),id:doc.id};});
+    localStorage.setItem(SK,JSON.stringify(DB));
+  }catch(e){console.warn('Firestore read:',e);}
+}
 function T(){return DB.trips[DB.cur]||null;}
 function fmtDate(s){if(!s)return'—';try{const d=new Date(s.includes('T')?s:s+'T00:00:00');return d.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});}catch(e){return s;}}
 function fmtR(n){return'R '+(Number(n)||0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
@@ -839,6 +900,22 @@ function doLogin(){
   const email=$('li-email').value.trim().toLowerCase();
   const pass=$('li-pass').value;
   if(!email||!pass){authErr('Please enter email and password.');return;}
+  if(FB_READY){
+    fbAuth.signInWithEmailAndPassword(email,pass)
+      .then(cred=>{
+        const fbUser=cred.user;
+        // Ensure local user record exists
+        if(!DB.users[fbUser.uid]){
+          DB.users[fbUser.uid]={id:fbUser.uid,name:fbUser.displayName||email.split('@')[0],email,initials:(fbUser.displayName||email).slice(0,2).toUpperCase(),avatar:COLORS[0]};
+        }
+        ME=DB.users[fbUser.uid];
+        DB.lastUser=ME.id;
+        loadFromFirebase(ME.id).then(()=>{sv();launchApp();});
+      })
+      .catch(e=>{authErr(e.code==='auth/user-not-found'||e.code==='auth/wrong-password'?'Incorrect email or password.':'Sign in failed: '+e.message);});
+    return;
+  }
+  // Local fallback
   const user=Object.values(DB.users).find(u=>u.email===email);
   if(!user||user.password!==btoa(pass)){authErr('Incorrect email or password.');return;}
   ME=user; DB.lastUser=user.id; sv(); launchApp();
@@ -849,12 +926,32 @@ function doRegister(){
   const pass=$('re-pass').value;
   if(!name||!email||!pass){authErr('All fields are required.');return;}
   if(pass.length<6){authErr('Password must be at least 6 characters.');return;}
+  if(FB_READY){
+    fbAuth.createUserWithEmailAndPassword(email,pass)
+      .then(cred=>{
+        const fbUser=cred.user;
+        return fbUser.updateProfile({displayName:name}).then(()=>{
+          const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+          const avatar=COLORS[Object.keys(DB.users).length%6];
+          const userObj={id:fbUser.uid,name,email,initials,avatar};
+          DB.users[fbUser.uid]=userObj;
+          ME=userObj; DB.lastUser=ME.id;
+          // Save user profile to Firestore
+          fbDb.collection('users').doc(fbUser.uid).set(userObj).catch(()=>{});
+          sv(); launchApp();
+        });
+      })
+      .catch(e=>{authErr(e.code==='auth/email-already-in-use'?'An account with this email already exists.':'Registration failed: '+e.message);});
+    return;
+  }
+  // Local fallback
   if(Object.values(DB.users).find(u=>u.email===email)){authErr('An account with this email already exists.');return;}
   const id='u'+Date.now();
   DB.users[id]={id,name,email,password:btoa(pass),initials:name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2),avatar:COLORS[Object.keys(DB.users).length%6]};
   ME=DB.users[id]; sv(); launchApp();
 }
 function doLogout(){
+  if(FB_READY&&fbAuth)fbAuth.signOut().catch(()=>{});
   ME=null; DB.lastUser=null; sv();
   $('app').classList.remove('visible');
   $('authScreen').classList.remove('hidden');
@@ -867,14 +964,33 @@ function doLogout(){
 // ══════════════════════════════════════════════════════════════
 window.addEventListener('load',()=>{
   ld();
+  initFirebase();
+  // If Firebase is ready, listen for auth state
+  if(FB_READY){
+    fbAuth.onAuthStateChanged(user=>{
+      if(user&&!ME){
+        if(!DB.users[user.uid]){
+          DB.users[user.uid]={id:user.uid,name:user.displayName||user.email.split('@')[0],email:user.email,initials:(user.displayName||user.email).slice(0,2).toUpperCase(),avatar:COLORS[0]};
+        }
+        ME=DB.users[user.uid]; DB.lastUser=ME.id;
+        loadFromFirebase(ME.id).then(()=>{
+          sv();
+          $('loader').classList.add('out');
+          setTimeout(()=>{$('loader').style.display='none';launchApp();},700);
+        });
+        return;
+      }
+    });
+  }
   setTimeout(()=>{
     $('loader').classList.add('out');
     setTimeout(()=>{
       $('loader').style.display='none';
-      // auto-login if last user remembered
-      if(DB.lastUser&&DB.users[DB.lastUser]){
+      if(!FB_READY&&DB.lastUser&&DB.users[DB.lastUser]){
         ME=DB.users[DB.lastUser];
         launchApp();
+      } else if(!FB_READY){
+        // show auth
       }
     },700);
   },2000);
@@ -882,6 +998,8 @@ window.addEventListener('load',()=>{
 
 function launchApp(){
   $('authScreen').classList.add('hidden');
+  // Show Firebase setup banner on auth screen next time if not configured
+  if(!FB_READY)$('fbSetupBanner').style.display='block';
   $('app').classList.add('visible');
   $('sbAvatar').textContent=ME.initials;
   $('sbAvatar').style.background=ME.avatar||COLORS[0];
@@ -895,7 +1013,8 @@ function launchApp(){
 function newTripObj(name,dest,start,end,type,accom,vehs,ppl,notes,fuelP,cons,stops){
   const id='t'+Date.now();
   const inviteCode=Math.random().toString(36).slice(2,8).toUpperCase();
-  return{id,name,dest,startDate:start,endDate:end,type,accom,vehicleCount:parseInt(vehs)||1,people:parseInt(ppl)||1,notes,fuelPrice:parseFloat(fuelP)||24.5,avgCons:parseFloat(cons)||12.5,stops:stops||[],itinerary:[],accommodation:[],packing:[],food:[],crew:[{...ME,role:'Organiser',status:'confirmed',isOrganiser:true}],docs:[],photos:[],vehicles:[],expenses:[],_routeKm:0,inviteCode,createdBy:ME.id};
+  const crewList=[{...ME,role:'Organiser',status:'confirmed',isOrganiser:true}];
+  return{id,name,dest,startDate:start,endDate:end,type,accom,vehicleCount:parseInt(vehs)||1,people:parseInt(ppl)||1,notes,fuelPrice:parseFloat(fuelP)||24.5,avgCons:parseFloat(cons)||12.5,stops:stops||[],itinerary:[],accommodation:[],packing:[],food:[],crew:crewList,docs:[],photos:[],vehicles:[],expenses:[],_routeKm:0,inviteCode,createdBy:ME.id,_crewIds:[ME.id]};
 }
 function openNewTripModal(){
   wizStops=[]; goWizPane(1);
@@ -984,7 +1103,7 @@ function renderAll(){
   const t=T();
   if(!t){$('tbTitle').textContent='TREK — No trip';$('dashContent').innerHTML=`<div class="empty"><div class="ei">🗺️</div><div class="et">No expedition yet</div><div class="es">Click "+ New Expedition" to start planning</div></div>`;return;}
   $('tbTitle').textContent=t.name+' — '+(panelLabels[currentPanel]||'');
-  renderDash(t); renderInsights(t); renderItinerary(t); renderStops(t); renderAccom(t); renderFuel(t); renderCosts(t); renderFood(t); renderPacking(t); renderCrew(t); renderDocs(t); renderGallery(t); updatePackBadge(t);
+  renderDash(t); renderItinerary(t); renderStops(t); renderAccom(t); renderFuel(t); renderCosts(t); renderFood(t); renderPacking(t); renderCrew(t); renderDocs(t); renderGallery(t); updatePackBadge(t);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1001,6 +1120,7 @@ function renderDash(t){
   const myCost=calcMyCost(t);
   const totalCost=t.expenses?t.expenses.reduce((a,e)=>a+Number(e.amount),0):0;
   const fuelTotal=calcTotalFuel(t);
+  // Combined dashboard: hero + stats + cards + BI charts below
   $('dashContent').innerHTML=`
   <div class="dash-hero">
     <div class="dh-name">${t.name}</div>
@@ -1017,7 +1137,7 @@ function renderDash(t){
     <div class="stat"><div class="stat-n">${nights}</div><div class="stat-l">Nights</div></div>
     <div class="stat"><div class="stat-n">${t.accommodation.filter(a=>!a.placeholder).length}</div><div class="stat-l">Accommodations</div></div>
     <div class="stat"><div class="stat-n">${pct}%</div><div class="stat-l">Packed</div></div>
-    <div class="stat"><div class="stat-n">${fmtR(myCost)}</div><div class="stat-l">My Cost</div></div>
+    <div class="stat"><div class="stat-n">${fmtR(myCost)}</div><div class="stat-l">My Est. Cost</div></div>
   </div>
   <div class="dash-grid">
     <div class="card dc">
@@ -1027,8 +1147,8 @@ function renderDash(t){
     <div class="card dc">
       <div class="dc-title">💰 My Trip Cost</div>
       <div style="font-family:'Playfair Display';font-size:2rem;font-weight:700;color:var(--amber)">${fmtR(myCost)}</div>
-      <div style="font-size:.75rem;color:var(--text3);margin-top:.2rem">of ${fmtR(totalCost)} total · ${fmtR(fuelTotal)} fuel est.</div>
-      <div class="prog-wrap" style="margin-top:.6rem"><div class="prog-fill" style="width:${totalCost>0?Math.min(100,Math.round(myCost/totalCost*100)):0}%"></div></div>
+      <div style="font-size:.75rem;color:var(--text3);margin-top:.2rem">Expenses: ${fmtR(totalCost)} · Fuel share: ${fmtR(fuelTotal/(t.crew.length||1))}</div>
+      <div class="prog-wrap" style="margin-top:.6rem"><div class="prog-fill" style="width:${(totalCost+fuelTotal)>0?Math.min(100,Math.round(myCost/(totalCost+fuelTotal/(t.crew.length||1))*100)):0}%"></div></div>
     </div>
     <div class="card dc">
       <div class="dc-title">🎒 Packing</div>
@@ -1041,17 +1161,19 @@ function renderDash(t){
       ${t.food.length&&t.food[0].dinner.length?`<div style="font-size:.95rem;font-weight:600;color:var(--text)">${t.food[0].dinner[0]}</div><div style="font-size:.78rem;color:var(--text3);font-style:italic;margin-top:.15rem">${t.food[0].day} · ${t.food[0].loc}</div>`:`<div class="empty" style="padding:1rem 0"><div class="ei" style="font-size:1.8rem">🔥</div><div class="es">No meals planned</div></div>`}
     </div>
   </div>`;
+  // Render BI charts below dashboard
+  renderInsights(t);
 }
 
 function calcMyCost(t){
-  if(!t.expenses)return 0;
-  return t.expenses.reduce((a,e)=>{
+  const expCost=(t.expenses||[]).reduce((a,e)=>{
     const split=e.splits&&e.splits[ME.id];
     if(split!==undefined)return a+(Number(e.amount)*split/100);
-    // equal split
-    const n=t.crew.length||1;
-    return a+Number(e.amount)/n;
+    return a+Number(e.amount)/(t.crew.length||1);
   },0);
+  // Add my share of fuel
+  const fuelShare=calcTotalFuel(t)/(t.crew.length||1);
+  return expCost+fuelShare;
 }
 function calcTotalFuel(t){
   const km=t._routeKm||t.stops.reduce((a,s)=>a+Number(s.km||0),0)||0;
@@ -1292,8 +1414,11 @@ function showRPill(name){
 // ══════════════════════════════════════════════════════════════
 function renderItinerary(t){
   const el=$('itinList');
-  if(!t.itinerary.length){el.innerHTML=`<div class="empty"><div class="ei">📅</div><div class="et">No days yet</div><div class="es">Add route stops — days auto-populate. Or click "+ Add Day".</div></div>`;return;}
-  el.innerHTML=t.itinerary.map((d,i)=>`
+  const startNm=t.stops.length>0?t.stops[0].name:null;
+  const endNm=t.stops.length>1?t.stops[t.stops.length-1].name:null;
+  const visItin=t.itinerary.filter(d=>d.location!==startNm&&d.location!==endNm);
+  if(!visItin.length){el.innerHTML=`<div class="empty"><div class="ei">📅</div><div class="et">No days yet</div><div class="es">Add route stops with nights — days auto-populate. Or click "+ Add Day".</div></div>`;return;}
+  el.innerHTML=visItin.map((d)=>{const i=t.itinerary.indexOf(d);return`
     <div class="day-card ${d.fromRoute?'from-route':''}">
       <div class="dh" onclick="tog('dbd${i}')">
         <div class="dn">D${d.day}</div>
@@ -1311,7 +1436,7 @@ function renderItinerary(t){
         ${d.km?`<div class="dv-badge"><div class="dv-i"><span>Distance</span><span>${d.km} km</span></div><div class="dv-i"><span>Drive</span><span>${d.driveTime||'—'}</span></div></div>`:''}
         ${d.notes?`<div style="grid-column:1/-1;font-size:.8rem;color:var(--text3);font-style:italic;padding-top:.4rem">📝 ${d.notes}</div>`:''}
       </div>
-    </div>`).join('');
+    </div>`}).join('');
 }
 function udF(i,f,v){const t=T();t.itinerary[i][f]=v;t.itinerary[i].fromRoute=false;sv();renderDash(t);}
 function tog(id){$(id)&&$(id).classList.toggle('open');}
@@ -1431,7 +1556,7 @@ function drawMap(t,latlngs,stops){
         const km=Math.round(d.routes[0].distance/1000);
         if(T()){T()._routeKm=km;sv();updateFuelKm(T());}
         // update stats display
-        renderStops(T());renderDash(T());renderInsights(T());
+        renderStops(T());renderDash(T());
       }
     }).catch(()=>{leafPolyline=L.polyline(latlngs,{color:'#b8720f',weight:2.5,opacity:.6,dashArray:'6 4'}).addTo(leafMap);});
   }
@@ -1443,14 +1568,17 @@ function drawMap(t,latlngs,stops){
 const accomEmoji={camp:'🏕️',chalet:'🏠',lodge:'🏡',guesthouse:'🏘️'};
 function renderAccom(t){
   const el=$('accomContent');
-  // Group by stop
+  // Group by stop — exclude start/end
   const grouped={};
+  const sNm=t.stops.length>0?t.stops[0].name:null;
+  const eNm=t.stops.length>1?t.stops[t.stops.length-1].name:null;
   t.accommodation.forEach(a=>{
+    if(a.stopName===sNm||a.stopName===eNm)return;
     const key=a.stopName||'Other';
     if(!grouped[key])grouped[key]=[];
     grouped[key].push(a);
   });
-  // Stops without accommodation
+  // Stops without accommodation (excluding start/end)
   t.stops.filter(s=>!s.isStart&&!s.isEnd&&parseInt(s.nights)>0).forEach(s=>{
     if(!grouped[s.name])grouped[s.name]=[];
   });
@@ -1468,11 +1596,16 @@ function renderAccom(t){
           <div class="ac-card">
             <div class="ac-img ${a.type}">${accomEmoji[a.type]||'🏕️'}</div>
             <div class="ac-body">
-              <button class="ac-del" onclick="removeAccom('${a.id}')">✕</button>
+              <div style="display:flex;gap:.4rem;margin-bottom:.5rem;flex-wrap:wrap">
+                <button class="btn-primary" style="font-size:.6rem;padding:.28rem .6rem" onclick="editAccom('${a.id}')">✏ Edit</button>
+                <button class="btn-secondary" style="font-size:.6rem;padding:.28rem .6rem" onclick="addAccomCost('${esc(a.name)}','${a.stopName}')">＋ Cost</button>
+                <button class="btn-ghost" style="font-size:.7rem;margin-left:auto" onclick="removeAccom('${a.id}')">✕</button>
+              </div>
               <div class="ac-name">${a.name||'Unnamed'}</div>
               <div class="ac-meta">📍 ${a.stopName}${a.ref?' · 🔖 '+a.ref:''}</div>
               ${a.notes?`<div class="ac-meta" style="font-style:italic">${a.notes}</div>`:''}
               <div class="ac-nights">${a.nights} night${a.nights!==1?'s':''} · ${fmtDate(a.checkin)||'—'}</div>
+              ${a.cost?`<div style="font-size:.78rem;font-weight:700;color:var(--amber);margin-top:.3rem">💰 ${fmtR(a.cost)}</div>`:''}
               <div style="margin-top:.38rem"><span class="tag t-${a.type}">${a.type}</span></div>
             </div>
           </div>`).join('')}
@@ -1481,24 +1614,67 @@ function renderAccom(t){
     </div>`).join('');
 }
 function openAccomForStop(stopName){
-  // Pre-fill the stop selector
   const sel=$('na-stop');
   const t=T();if(!t)return;
   sel.innerHTML=t.stops.filter(s=>!s.isStart&&!s.isEnd).map(s=>`<option value="${esc(s.name)}" ${s.name===stopName?'selected':''}>${s.name}</option>`).join('');
+  // Default check-in date from trip start + nights before this stop
+  if(t.startDate){
+    let d=new Date(t.startDate+'T00:00:00');
+    for(const s of t.stops){
+      if(s.name===stopName)break;
+      if(!s.isStart&&!s.isEnd)d.setDate(d.getDate()+(parseInt(s.nights)||0));
+    }
+    $('na-ci').value=d.toISOString().slice(0,10);
+  }
+  // Default nights from stop
+  const stop=t.stops.find(s=>s.name===stopName);
+  if(stop)$('na-ni').value=stop.nights||1;
   openModal('addAccomMod');
+}
+function editAccom(id){
+  const t=T();const a=t.accommodation.find(x=>x.id===id);if(!a)return;
+  // Pre-fill modal with existing data
+  const sel=$('na-stop');
+  sel.innerHTML=t.stops.filter(s=>!s.isStart&&!s.isEnd).map(s=>`<option value="${esc(s.name)}" ${s.name===a.stopName?'selected':''}>${s.name}</option>`).join('');
+  $('na-nm').value=a.name||'';
+  $('na-tp').value=a.type||'camp';
+  $('na-ni').value=a.nights||1;
+  $('na-ci').value=a.checkin||'';
+  $('na-rf').value=a.ref||'';
+  $('na-nt').value=a.notes||'';
+  // Remove old entry when saved — mark with edit id
+  $('na-nm').dataset.editId=id;
+  openModal('addAccomMod');
+}
+function addAccomCost(name,stopName){
+  const t=T();if(!t)return;
+  // Open expense modal pre-filled for accommodation
+  const ps=$('nc-paid');ps.innerHTML=t.crew.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  buildSplitRows();
+  $('nc-desc').value=name+' ('+stopName+')';
+  $('nc-cat').value='accommodation';
+  openModal('addCostMod');
 }
 function addAccom(){
   const t=T();if(!t){toast('Create a trip first','err');return;}
   const name=$('na-nm').value.trim();if(!name){toast('Enter a name','err');return;}
-  const id='a'+Date.now();
   const stopName=$('na-stop').value||t.stops.filter(s=>!s.isStart&&!s.isEnd)[0]?.name||'';
-  t.accommodation.push({id,name,type:$('na-tp').value,stopName,nights:Number($('na-ni').value)||1,checkin:$('na-ci').value,ref:$('na-rf').value.trim(),notes:$('na-nt').value.trim(),placeholder:false});
-  // Remove placeholder for this stop if exists
-  const pIdx=t.accommodation.findIndex(a=>a.placeholder&&a.stopName===stopName);
-  if(pIdx>-1)t.accommodation.splice(pIdx,1);
+  const editId=$('na-nm').dataset.editId;
+  if(editId){
+    // Edit mode — update existing
+    const a=t.accommodation.find(x=>x.id===editId);
+    if(a){a.name=name;a.type=$('na-tp').value;a.stopName=stopName;a.nights=Number($('na-ni').value)||1;a.checkin=$('na-ci').value;a.ref=$('na-rf').value.trim();a.notes=$('na-nt').value.trim();a.placeholder=false;}
+    delete $('na-nm').dataset.editId;
+    toast('🏕️ Updated','ok');
+  } else {
+    const id='a'+Date.now();
+    t.accommodation.push({id,name,type:$('na-tp').value,stopName,nights:Number($('na-ni').value)||1,checkin:$('na-ci').value,ref:$('na-rf').value.trim(),notes:$('na-nt').value.trim(),placeholder:false,cost:0});
+    const pIdx=t.accommodation.findIndex(a=>a.placeholder&&a.stopName===stopName);
+    if(pIdx>-1)t.accommodation.splice(pIdx,1);
+    toast('🏕️ Accommodation added','ok');
+  }
   sv();renderAccom(t);renderDash(t);closeModal('addAccomMod');
   ['na-nm','na-ni','na-ci','na-rf','na-nt'].forEach(id2=>$(id2).value='');
-  toast('🏕️ Accommodation added','ok');
 }
 function removeAccom(id){if(!confirm('Remove?'))return;const t=T();t.accommodation=t.accommodation.filter(a=>a.id!==id);sv();renderAccom(t);renderDash(t);}
 
@@ -1515,13 +1691,13 @@ function renderFuel(t){
   const km=t._routeKm||t.stops.reduce((a,s)=>a+Number(s.km||0),0)||0;
   const price=t.fuelPrice||24.5;
   const grand=t.vehicles.reduce((a,v)=>a+(km/100)*v.consumption*price,0);
-  const grandL=t.vehicles.reduce((a,v)=>a+(km/100)*v.consumption,0);
+  const grandL=km>0?t.vehicles.reduce((a,v)=>a+(km/100)*v.consumption,0):0;
   el.innerHTML=`
   <div class="total-fuel-banner">
     <div>
       <div class="tfb-label">Estimated Total Fuel Cost</div>
-      <div class="tfb-amount">${fmtR(grand)}</div>
-      <div class="tfb-sub">${grandL.toFixed(0)}L total · ${km.toLocaleString()} km · R${price}/L</div>
+      <div class="tfb-amount">${grand>0?fmtR(grand):km===0?'Add route km to calculate':t.vehicles.length===0?'Add a vehicle to calculate':fmtR(grand)}</div>
+      <div class="tfb-sub">${grandL>0?grandL.toFixed(0)+'L total · ':''} ${km?km.toLocaleString()+' km · ':''}R${price}/L</div>
     </div>
     <div class="tfb-details">
       <div class="tfb-di">
@@ -1534,7 +1710,7 @@ function renderFuel(t){
       </div>
     </div>
   </div>
-  <div class="fuel-veh-grid">${t.vehicles.length?t.vehicles.map((v,i)=>{const L=(km/100)*v.consumption;const cost=L*price;return`<div class="fv-card"><div class="fv-name">🚗 ${v.name}</div><div class="fv-meta">${v.driver?v.driver+' · ':''}${v.fuelType} · ${v.consumption}L/100km · ${v.tank}L tank</div><div class="fv-cost">${fmtR(cost)}</div><div style="font-size:.72rem;color:var(--text3);margin-top:.15rem">${L.toFixed(1)}L · ~${Math.ceil(L/v.tank)} fill${Math.ceil(L/v.tank)!==1?'s':''}</div><button class="btn-danger" style="margin-top:.6rem" onclick="removeVeh(${i})">Remove</button></div>`;}).join(''):`<div class="empty" style="grid-column:1/-1;padding:1.5rem 0"><div class="ei" style="font-size:2rem">🚗</div><div class="es">No vehicles added yet</div></div>`}</div>
+  <div class="fuel-veh-grid">${t.vehicles.length?t.vehicles.map((v,i)=>{const L=km>0?(km/100)*v.consumption:0;const cost=L*price;return`<div class="fv-card"><div class="fv-name">🚗 ${v.name}</div><div class="fv-meta">${v.driver?v.driver+' · ':''}${v.fuelType} · ${v.consumption}L/100km · ${v.tank}L tank</div><div class="fv-cost">${fmtR(cost)}</div><div style="font-size:.72rem;color:var(--text3);margin-top:.15rem">${L.toFixed(1)}L · ~${Math.ceil(L/v.tank)} fill${Math.ceil(L/v.tank)!==1?'s':''}</div><button class="btn-danger" style="margin-top:.6rem" onclick="removeVeh(${i})">Remove</button></div>`;}).join(''):`<div class="empty" style="grid-column:1/-1;padding:1.5rem 0"><div class="ei" style="font-size:2rem">🚗</div><div class="es">No vehicles added yet</div></div>`}</div>
   <div class="card card-pad">
     <div style="font-size:.82rem;font-weight:700;color:var(--text2);margin-bottom:1rem">⚙️ Calculator Settings</div>
     <div class="form-row">
@@ -1586,7 +1762,7 @@ function addExpense(){
   const splits={};
   t.crew.forEach(m=>{splits[m.id]=parseFloat($('sp-'+m.id)?.value)||0;});
   t.expenses.push({id:'e'+Date.now(),desc,category:$('nc-cat').value,amount:amt,paidBy:$('nc-paid').value,splits,date:new Date().toISOString().slice(0,10)});
-  sv();renderCosts(t);renderDash(t);renderInsights(t);closeModal('addCostMod');
+  sv();renderCosts(t);renderDash(t);closeModal('addCostMod');
   $('nc-desc').value='';$('nc-amt').value='';
   toast('💰 Expense added','ok');
 }
@@ -1620,15 +1796,19 @@ function renderCosts(t){
     </div>`).join('')}
   <button class="btn-primary" style="margin-top:.5rem" onclick="openExpenseModal()">＋ Add Expense</button>`;
 }
-function removeExpense(i){if(!confirm('Remove expense?'))return;T().expenses.splice(i,1);sv();renderCosts(T());renderDash(T());renderInsights(T());}
+function removeExpense(i){if(!confirm('Remove expense?'))return;T().expenses.splice(i,1);sv();renderCosts(T());renderDash(T());}
 
 // ══════════════════════════════════════════════════════════════
 //  FOOD
 // ══════════════════════════════════════════════════════════════
 function renderFood(t){
   const el=$('foodList');
-  if(!t.food.length){el.innerHTML=`<div class="tip-banner"><span>💡</span>Add route stops — meal days auto-populate. Expand any day to add meals, or leave blank for later.</div><div class="empty"><div class="ei">🔥</div><div class="et">No meal days yet</div></div>`;return;}
-  el.innerHTML=t.food.map((d,di)=>`
+  // Filter out start/end locations
+  const startName=t.stops.length>0?t.stops[0].name:null;
+  const endName=t.stops.length>1?t.stops[t.stops.length-1].name:null;
+  const visibleFood=t.food.filter(d=>d.loc!==startName&&d.loc!==endName);
+  if(!visibleFood.length){el.innerHTML=`<div class="tip-banner"><span>💡</span>Add route stops with nights — meal days auto-populate. Expand any day to add meals, or leave blank for later.</div><div class="empty"><div class="ei">🔥</div><div class="et">No meal days yet</div></div>`;return;}
+  el.innerHTML=visibleFood.map((d)=>{const di=t.food.indexOf(d);return`
     <div class="fd">
       <div class="fdh" onclick="tog('fdb${di}')">
         <div class="fdt">${d.day}</div>
@@ -1637,19 +1817,19 @@ function renderFood(t){
         <span style="font-size:.7rem;color:var(--text3)">▼</span>
       </div>
       <div class="fdb" id="fdb${di}">
-        ${['breakfast','lunch','dinner'].map(meal=>`
+        ${['breakfast','lunch','dinner','padkos'].map(meal=>`
           <div>
-            <div class="ml">${meal==='breakfast'?'🌅 Breakfast':meal==='lunch'?'☀️ Lunch':'🔥 Dinner'}</div>
+            <div class="ml">${meal==='breakfast'?'🌅 Breakfast':meal==='lunch'?'☀️ Lunch':meal==='padkos'?'🚗 Padkos (on the road)':'🔥 Dinner'}</div>
             <div id="mi-${di}-${meal}">
               ${(d[meal]||[]).map((item,ii)=>`<div class="mi-item"><span style="flex:1">${item}</span><button class="mi-del" onclick="remMealItem(${di},'${meal}',${ii})">✕</button></div>`).join('')}
             </div>
             <div class="madd">
-              <input type="text" id="mii-${di}-${meal}" placeholder="${meal==='breakfast'?'Rusks & coffee…':meal==='lunch'?'Braai rolls…':'Potjie, boerewors…'}" onkeydown="if(event.key==='Enter')addMealItem(${di},'${meal}')">
+              <input type="text" id="mii-${di}-${meal}" placeholder="${meal==='breakfast'?'Rusks & coffee…':meal==='lunch'?'Braai rolls…':meal==='padkos'?'Biltong, chips, rusks…':'Potjie, boerewors…'}" onkeydown="if(event.key==='Enter')addMealItem(${di},'${meal}')">
               <button onclick="addMealItem(${di},'${meal}')">＋</button>
             </div>
           </div>`).join('')}
       </div>
-    </div>`).join('');
+    </div>`}).join('');
 }
 function addFoodDay(){const t=T();if(!t)return;const d=$('nfd-d').value.trim();if(!d){toast('Enter a day label','err');return;}t.food.push({day:d,loc:$('nfd-l').value.trim(),breakfast:[],lunch:[],dinner:[],fromRoute:false});sv();renderFood(t);renderDash(t);closeModal('addFoodDayMod');['nfd-d','nfd-l'].forEach(id=>$(id).value='');toast('🔥 Day added','ok');}
 function addMealItem(di,meal){const inp=$(`mii-${di}-${meal}`);if(!inp||!inp.value.trim())return;const t=T();if(!t.food[di][meal])t.food[di][meal]=[];t.food[di][meal].push(inp.value.trim());inp.value='';t.food[di].fromRoute=false;sv();const c=$(`mi-${di}-${meal}`);c.innerHTML=t.food[di][meal].map((item,ii)=>`<div class="mi-item"><span style="flex:1">${item}</span><button class="mi-del" onclick="remMealItem(${di},'${meal}',${ii})">✕</button></div>`).join('');}
@@ -1725,6 +1905,7 @@ function addCrew(){
   const existingUser=Object.values(DB.users).find(u=>u.email===email);
   const crewMember=existingUser?{...existingUser,role:$('invRole').value,vehicle:$('invVeh').value,status:'confirmed'}:{id:'pending-'+Date.now(),name,email,initials,role:$('invRole').value,vehicle:$('invVeh').value,status:'pending',avatar:COLORS[t.crew.length%6]};
   t.crew.push(crewMember);
+  t._crewIds=[...new Set([...(t._crewIds||[]),ME.id,...t.crew.map(m=>m.id).filter(id=>!id.startsWith('pending-'))])];
   sv();renderCrew(t);renderDash(t);
   ['invName','invEmail'].forEach(id=>$(id).value='');
   toast('📨 '+name+(existingUser?' added to trip!':' invited'),'ok');
@@ -1756,7 +1937,7 @@ document.querySelectorAll('.ni').forEach(item=>{
       const sel=$('na-stop');if(sel){const t2=T();sel.innerHTML=t2.stops.filter(s=>!s.isStart&&!s.isEnd).map(s=>`<option value="${esc(s.name)}">${s.name}</option>`).join('');}
     }
     if(panel==='costs')openExpenseModal_prefill();
-    if(panel==='insights'&&T())renderInsights(T());
+
   });
 });
 function openExpenseModal_prefill(){/* Just ensure modal is not open on nav */}
