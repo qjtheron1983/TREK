@@ -1,0 +1,1908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1a1208">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trek">
+<link rel="manifest" href="manifest.json">
+<title>TREK — Expedition Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --ink: #1a1208;
+  --parchment: #f5ede0;
+  --parchment-dark: #e8d9c4;
+  --parchment-mid: #efe3cf;
+  --amber: #c17f24;
+  --amber-light: #e09a35;
+  --rust: #8b3a2a;
+  --sage: #4a6741;
+  --sage-light: #6a8f62;
+  --dust: #9c8b72;
+  --dust-light: #c2ae95;
+  --night: #0d0b07;
+  --campfire: #d4541a;
+  --sky: #4a7fa5;
+  --cream: #faf4ea;
+  --shadow: rgba(26,18,8,0.3);
+  --glow: rgba(193,127,36,0.15);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--ink);
+  color: var(--parchment);
+  font-family: 'Crimson Pro', Georgia, serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(ellipse at 20% 50%, rgba(139,58,42,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(74,103,65,0.08) 0%, transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ─── LOADING SCREEN ─── */
+#loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--ink);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+#loader.hidden { opacity: 0; pointer-events: none; transform: scale(1.02); }
+.loader-compass {
+  width: 80px; height: 80px;
+  border: 2px solid var(--amber);
+  border-radius: 50%;
+  position: relative;
+  animation: compassSpin 3s ease-in-out forwards;
+}
+.loader-compass::before {
+  content: '↑';
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -60%);
+  color: var(--amber); font-size: 28px;
+  font-family: 'Space Mono';
+}
+@keyframes compassSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(720deg); }
+}
+.loader-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem; font-weight: 900; letter-spacing: 0.3em;
+  color: var(--parchment); margin-top: 2rem;
+  animation: fadeIn 0.5s 0.3s both;
+}
+.loader-sub {
+  font-family: 'Space Mono'; font-size: 0.65rem;
+  color: var(--dust); letter-spacing: 0.4em; text-transform: uppercase;
+  margin-top: 0.5rem;
+  animation: fadeIn 0.5s 0.6s both;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ─── LAYOUT ─── */
+#app { display: flex; min-height: 100vh; }
+
+/* ─── SIDEBAR ─── */
+#sidebar {
+  width: 260px; min-height: 100vh;
+  background: var(--night);
+  border-right: 1px solid rgba(193,127,36,0.2);
+  display: flex; flex-direction: column;
+  position: fixed; left: 0; top: 0; bottom: 0; z-index: 100;
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+}
+#sidebar.collapsed { transform: translateX(-260px); }
+
+.sidebar-logo {
+  padding: 2rem 1.5rem 1.5rem;
+  border-bottom: 1px solid rgba(193,127,36,0.15);
+}
+.logo-mark {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; font-weight: 900; letter-spacing: 0.15em;
+  color: var(--parchment);
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.logo-compass { font-size: 1.4rem; }
+.logo-sub {
+  font-family: 'Space Mono'; font-size: 0.55rem;
+  color: var(--dust); letter-spacing: 0.4em; text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+.sidebar-trip-selector {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(193,127,36,0.1);
+}
+.sidebar-trip-selector label {
+  font-family: 'Space Mono'; font-size: 0.6rem;
+  color: var(--dust); letter-spacing: 0.3em; text-transform: uppercase;
+  display: block; margin-bottom: 0.5rem;
+}
+.trip-select {
+  width: 100%; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(193,127,36,0.3);
+  color: var(--parchment); padding: 0.5rem 0.75rem;
+  font-family: 'Crimson Pro'; font-size: 0.95rem;
+  border-radius: 4px; cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c17f24' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center;
+}
+.trip-select:focus { outline: none; border-color: var(--amber); }
+.trip-select option { background: var(--night); }
+
+.btn-new-trip {
+  width: 100%; margin-top: 0.5rem;
+  background: linear-gradient(135deg, var(--amber), var(--amber-light));
+  color: var(--ink); border: none; padding: 0.5rem;
+  font-family: 'Space Mono'; font-size: 0.65rem;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  cursor: pointer; border-radius: 4px;
+  transition: all 0.2s;
+}
+.btn-new-trip:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(193,127,36,0.4); }
+
+.sidebar-nav { flex: 1; padding: 1rem 0; }
+.nav-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  color: var(--dust); cursor: pointer;
+  transition: all 0.2s; border-left: 3px solid transparent;
+  font-size: 0.95rem;
+}
+.nav-item:hover { color: var(--parchment); background: rgba(255,255,255,0.03); }
+.nav-item.active {
+  color: var(--amber); border-left-color: var(--amber);
+  background: rgba(193,127,36,0.07);
+}
+.nav-icon { font-size: 1.1rem; width: 20px; text-align: center; }
+.nav-label { font-family: 'Crimson Pro'; font-size: 0.95rem; }
+.nav-badge {
+  margin-left: auto; background: var(--rust);
+  color: white; font-size: 0.6rem; padding: 1px 6px;
+  border-radius: 10px; font-family: 'Space Mono';
+}
+
+.sidebar-countdown {
+  margin: 0 1rem 1rem;
+  background: linear-gradient(135deg, rgba(193,127,36,0.1), rgba(139,58,42,0.1));
+  border: 1px solid rgba(193,127,36,0.25);
+  border-radius: 8px; padding: 1rem;
+}
+.countdown-label {
+  font-family: 'Space Mono'; font-size: 0.55rem;
+  color: var(--dust); letter-spacing: 0.3em; text-transform: uppercase;
+  margin-bottom: 0.75rem; display: block;
+}
+.countdown-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 0.25rem; }
+.countdown-unit { text-align: center; }
+.countdown-num {
+  font-family: 'Playfair Display'; font-size: 1.4rem; font-weight: 700;
+  color: var(--amber-light); line-height: 1;
+}
+.countdown-unit-label {
+  font-family: 'Space Mono'; font-size: 0.45rem;
+  color: var(--dust); text-transform: uppercase; letter-spacing: 0.2em;
+}
+
+/* ─── MAIN CONTENT ─── */
+#main {
+  margin-left: 260px;
+  flex: 1; min-height: 100vh;
+  transition: margin-left 0.3s;
+}
+#main.expanded { margin-left: 0; }
+
+/* ─── TOP BAR ─── */
+.topbar {
+  background: rgba(13,11,7,0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(193,127,36,0.15);
+  padding: 1rem 2rem;
+  display: flex; align-items: center; gap: 1rem;
+  position: sticky; top: 0; z-index: 50;
+}
+.menu-toggle {
+  background: none; border: 1px solid rgba(193,127,36,0.3);
+  color: var(--amber); padding: 0.4rem 0.6rem;
+  cursor: pointer; border-radius: 4px; font-size: 1rem;
+  transition: all 0.2s;
+}
+.menu-toggle:hover { background: rgba(193,127,36,0.1); }
+.topbar-title {
+  font-family: 'Playfair Display'; font-size: 1.3rem; font-style: italic;
+  color: var(--parchment-mid); flex: 1;
+}
+.topbar-actions { display: flex; gap: 0.5rem; }
+.btn-icon {
+  background: none; border: 1px solid rgba(193,127,36,0.25);
+  color: var(--dust); padding: 0.4rem 0.75rem;
+  cursor: pointer; border-radius: 4px; font-size: 0.85rem;
+  transition: all 0.2s; font-family: 'Crimson Pro';
+}
+.btn-icon:hover { color: var(--parchment); border-color: var(--amber); }
+
+/* ─── PANELS ─── */
+.panel {
+  display: none; padding: 2rem;
+  animation: panelIn 0.4s ease;
+}
+.panel.active { display: block; }
+@keyframes panelIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+.panel-header {
+  margin-bottom: 2rem;
+  display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+}
+.panel-title {
+  font-family: 'Playfair Display'; font-size: 2rem; font-weight: 700;
+  color: var(--parchment);
+}
+.panel-subtitle {
+  font-family: 'Crimson Pro'; font-size: 1rem; font-style: italic;
+  color: var(--dust); margin-top: 0.25rem;
+}
+
+/* ─── DASHBOARD ─── */
+.dashboard-hero {
+  background: linear-gradient(135deg, rgba(139,58,42,0.2) 0%, rgba(26,18,8,0.6) 50%, rgba(74,103,65,0.2) 100%);
+  border: 1px solid rgba(193,127,36,0.2);
+  border-radius: 12px; padding: 2.5rem;
+  margin-bottom: 2rem; position: relative; overflow: hidden;
+}
+.dashboard-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Ccircle cx='30' cy='30' r='1' fill='rgba(193,127,36,0.1)'/%3E%3C/svg%3E");
+  background-size: 30px 30px;
+}
+.hero-trip-name {
+  font-family: 'Playfair Display'; font-size: 3rem; font-weight: 900;
+  color: var(--parchment); position: relative; z-index: 1;
+  text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+}
+.hero-meta {
+  position: relative; z-index: 1;
+  display: flex; gap: 2rem; margin-top: 1rem; flex-wrap: wrap;
+}
+.hero-meta-item { display: flex; align-items: center; gap: 0.5rem; }
+.hero-meta-icon { color: var(--amber); font-size: 1.1rem; }
+.hero-meta-text { font-family: 'Crimson Pro'; font-size: 1rem; color: var(--parchment-mid); }
+
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.stat-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(193,127,36,0.15);
+  border-radius: 8px; padding: 1.25rem;
+  transition: all 0.2s;
+}
+.stat-card:hover { border-color: rgba(193,127,36,0.35); background: rgba(193,127,36,0.05); }
+.stat-num {
+  font-family: 'Playfair Display'; font-size: 2rem; font-weight: 700;
+  color: var(--amber-light);
+}
+.stat-label { font-family: 'Space Mono'; font-size: 0.6rem; color: var(--dust); letter-spacing: 0.2em; text-transform: uppercase; margin-top: 0.25rem; }
+
+.dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media (max-width: 768px) { .dash-grid { grid-template-columns: 1fr; } }
+
+.dash-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(193,127,36,0.12);
+  border-radius: 10px; padding: 1.5rem;
+}
+.dash-card-title {
+  font-family: 'Playfair Display'; font-size: 1.1rem; font-weight: 700;
+  color: var(--parchment-mid); margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+
+/* ─── ITINERARY ─── */
+.day-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(193,127,36,0.12);
+  border-radius: 10px; overflow: hidden; margin-bottom: 1rem;
+  transition: border-color 0.2s;
+}
+.day-card:hover { border-color: rgba(193,127,36,0.3); }
+.day-header {
+  display: flex; align-items: center; gap: 1rem;
+  padding: 1rem 1.5rem; cursor: pointer;
+  background: rgba(193,127,36,0.05);
+  border-bottom: 1px solid rgba(193,127,36,0.1);
+}
+.day-num {
+  font-family: 'Playfair Display'; font-size: 1.6rem; font-weight: 700;
+  color: var(--amber); min-width: 50px;
+}
+.day-info { flex: 1; }
+.day-date { font-family: 'Space Mono'; font-size: 0.65rem; color: var(--dust); letter-spacing: 0.2em; }
+.day-location { font-family: 'Playfair Display'; font-size: 1.1rem; color: var(--parchment); margin-top: 0.15rem; }
+.day-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.4rem; }
+.tag {
+  font-family: 'Space Mono'; font-size: 0.55rem;
+  padding: 2px 8px; border-radius: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.tag-camp { background: rgba(74,103,65,0.3); color: var(--sage-light); border: 1px solid rgba(74,103,65,0.4); }
+.tag-drive { background: rgba(76,127,165,0.2); color: var(--sky); border: 1px solid rgba(76,127,165,0.3); }
+.tag-activity { background: rgba(212,84,26,0.2); color: var(--campfire); border: 1px solid rgba(212,84,26,0.3); }
+.tag-chalet { background: rgba(193,127,36,0.2); color: var(--amber-light); border: 1px solid rgba(193,127,36,0.3); }
+
+.day-body { padding: 1.5rem; display: none; }
+.day-body.open { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+@media (max-width: 900px) { .day-body.open { grid-template-columns: 1fr; } }
+.day-section-title {
+  font-family: 'Space Mono'; font-size: 0.6rem; color: var(--amber);
+  letter-spacing: 0.3em; text-transform: uppercase; margin-bottom: 0.5rem;
+  padding-bottom: 0.3rem; border-bottom: 1px solid rgba(193,127,36,0.15);
+}
+.day-section-text { font-size: 0.95rem; color: var(--parchment-mid); line-height: 1.6; }
+.day-drive-badge {
+  grid-column: 1/-1;
+  background: rgba(76,127,165,0.1); border: 1px solid rgba(76,127,165,0.2);
+  border-radius: 6px; padding: 0.75rem 1rem;
+  display: flex; gap: 2rem; flex-wrap: wrap;
+}
+
+.add-day-btn {
+  width: 100%; padding: 1rem;
+  background: none; border: 2px dashed rgba(193,127,36,0.25);
+  color: var(--dust); cursor: pointer; border-radius: 10px;
+  font-family: 'Crimson Pro'; font-size: 1rem;
+  transition: all 0.2s;
+}
+.add-day-btn:hover { border-color: var(--amber); color: var(--amber); background: rgba(193,127,36,0.05); }
+
+/* ─── ACCOMMODATION ─── */
+.accom-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+.accom-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(193,127,36,0.12);
+  border-radius: 12px; overflow: hidden;
+  transition: all 0.3s; cursor: pointer;
+}
+.accom-card:hover {
+  border-color: rgba(193,127,36,0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.accom-img {
+  height: 120px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem;
+}
+.accom-img.camp { background: linear-gradient(135deg, rgba(74,103,65,0.4), rgba(26,18,8,0.6)); }
+.accom-img.chalet { background: linear-gradient(135deg, rgba(193,127,36,0.3), rgba(26,18,8,0.6)); }
+.accom-img.lodge { background: linear-gradient(135deg, rgba(139,58,42,0.4), rgba(26,18,8,0.6)); }
+.accom-body { padding: 1.25rem; }
+.accom-name { font-family: 'Playfair Display'; font-size: 1.1rem; color: var(--parchment); font-weight: 700; }
+.accom-meta { font-family: 'Crimson Pro'; font-size: 0.9rem; color: var(--dust); margin-top: 0.25rem; }
+.accom-nights {
+  margin-top: 0.75rem;
+  font-family: 'Space Mono'; font-size: 0.6rem; color: var(--amber);
+  letter-spacing: 0.2em; text-transform: uppercase;
+}
+.accom-tags { display: flex; gap: 0.4rem; margin-top: 0.5rem; flex-wrap: wrap; }
+
+.add-accom-btn {
+  border: 2px dashed rgba(193,127,36,0.25);
+  border-radius: 12px; overflow: hidden;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  min-height: 200px; background: none;
+  flex-direction: column; gap: 0.5rem;
+  color: var(--dust);
+}
+.add-accom-btn:hover { border-color: var(--amber); color: var(--amber); background: rgba(193,127,36,0.03); }
+.add-accom-btn span:first-child { font-size: 2rem; }
+.add-accom-btn span:last-child { font-family: 'Crimson Pro'; font-size: 0.9rem; }
+
+/* ─── PACKING ─── */
+.packing-categories { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+.pack-cat {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(193,127,36,0.12);
+  border-radius: 10px; padding: 1.25rem;
+}
+.pack-cat-header {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;
+}
+.pack-cat-icon { font-size: 1.3rem; }
+.pack-cat-title { font-family: 'Playfair Display'; font-size: 1rem; font-weight: 700; color: var(--parchment-mid); }
+.pack-cat-count { margin-left: auto; font-family: 'Space Mono'; font-size: 0.65rem; color: var(--dust); }
+
+.pack-item {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.4rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+}
+.pack-item:last-of-type { border-bottom: none; }
+.pack-check {
+  width: 18px; height: 18px; border-radius: 3px;
+  border: 1.5px solid rgba(193,127,36,0.4);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.2s;
+  background: transparent;
+}
+.pack-item.checked .pack-check { background: var(--sage); border-color: var(--sage); }
+.pack-item.checked .pack-check::after { content: '✓'; font-size: 11px; color: white; }
+.pack-item.checked .pack-text { color: var(--dust); text-decoration: line-through; }
+.pack-text { font-family: 'Crimson Pro'; font-size: 0.95rem; color: var(--parchment-mid); }
+.pack-text small { display: block; font-size: 0.8rem; color: var(--dust); font-style: italic; }
+
+.pack-add-input {
+  display: flex; gap: 0.5rem; margin-top: 0.75rem;
+}
+.pack-add-input input {
+  flex: 1; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(193,127,36,0.2);
+  color: var(--parchment); padding: 0.35rem 0.6rem;
+  font-family: 'Crimson Pro'; font-size: 0.9rem;
+  border-radius: 4px;
+}
+.pack-add-input input:focus { outline: none; border-color: var(--amber); }
+.pack-add-input button {
+  background: rgba(193,127,36,0.2); border: 1px solid rgba(193,127,36,0.3);
+  color: var(--amber); padding: 0.35rem 0.75rem; cursor: pointer;
+  border-radius: 4px; font-size: 0.9rem; transition: all 0.2s;
+}
+.pack-add-input button:hover { background: rgba(193,127,36,0.35); }
+
+/* ─── CREW ─── */
+.crew-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+.crew-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(193,127,36,0.12);
+  border-radius: 12px; padding: 1.5rem; text-align: center;
+  transition: all 0.2s;
+}
+.crew-card:hover { border-color: rgba(193,127,36,0.3); }
+.crew-avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--amber), var(--rust));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display'; font-size: 1.6rem; font-weight: 700;
+  color: white; margin: 0 auto 1rem;
+}
+.crew-name { font-family: 'Playfair Display'; font-size: 1.1rem; color: var(--parchment); font-weight: 700; }
+.crew-role { font-family: 'Space Mono'; font-size: 0.6rem; color: var(--dust); letter-spacing: 0.2em; text-transform: uppercase; margin-top: 0.25rem; }
+.crew-status {
+  margin-top: 0.75rem;
+  font-family: 'Space Mono'; font-size: 0.6rem; padding: 3px 10px; border-radius: 10px;
+}
+.crew-status.confirmed { background: rgba(74,103,65,0.3); color: var(--sage-light); }
+.crew-status.pending { background: rgba(193,127,36,0.2); color: var(--amber-light); }
+
+.invite-form {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(193,127,36,0.15);
+  border-radius: 10px; padding: 1.5rem;
+}
+.invite-form h3 { font-family: 'Playfair Display'; font-size: 1.2rem; color: var(--parchment); margin-bottom: 1rem; }
+.form-row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.form-group { flex: 1; min-width: 200px; }
+.form-group label { display: block; font-family: 'Space Mono'; font-size: 0.6rem; color: var(--dust); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.4rem; }
+.form-group input, .form-group select {
+  width: 100%; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(193,127,36,0.2);
+  color: var(--parchment); padding: 0.6rem 0.75rem;
+  font-family: 'Crimson Pro'; font-size: 1rem;
+  border-radius: 6px;
+}
+.form-group input:focus, .form-group select:focus { outline: none; border-color: var(--amber); }
+.form-group select option { background: var(--night); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--amber), var(--amber-light));
+  color: var(--ink); border: none; padding: 0.65rem 1.5rem;
+  font-family: 'Space Mono'; font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+  cursor: pointer; border-radius: 6px; transition: all 0.2s;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(193,127,36,0.4); }
+
+/* ─── FOOD ─── */
+.food-day {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(193,127,36,0.12);
+  border-radius: 10px; margin-bottom: 1rem; overflow: hidden;
+}
+.food-day-header {
+  padding: 0.75rem 1.25rem;
+  background: rgba(193,127,36,0.06);
+  display: flex; align-items: center; gap: 1rem; cursor: pointer;
+}
+.food-day-title { font-family: 'Playfair Display'; font-size: 1rem; color: var(--parchment); }
+.food-day-loc { font-family: 'Crimson Pro'; font-size: 0.85rem; color: var(--dust); font-style: italic; }
+.food-day-body { padding: 1rem 1.25rem; display: none; }
+.food-day-body.open { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+@media (max-width: 768px) { .food-day-body.open { grid-template-columns: 1fr; } }
+.meal-slot { }
+.meal-label { font-family: 'Space Mono'; font-size: 0.6rem; color: var(--amber); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.4rem; }
+.meal-item {
+  font-family: 'Crimson Pro'; font-size: 0.9rem; color: var(--parchment-mid);
+  padding: 0.25rem 0; border-bottom: 1px dashed rgba(193,127,36,0.1);
+}
+.meal-add {
+  font-size: 0.8rem; color: var(--dust); cursor: pointer; margin-top: 0.25rem;
+  font-style: italic; transition: color 0.2s;
+}
+.meal-add:hover { color: var(--amber); }
+
+/* ─── DOCS ─── */
+.docs-upload-zone {
+  border: 2px dashed rgba(193,127,36,0.3);
+  border-radius: 12px; padding: 3rem; text-align: center;
+  margin-bottom: 2rem; cursor: pointer; transition: all 0.2s;
+  background: rgba(193,127,36,0.02);
+}
+.docs-upload-zone:hover, .docs-upload-zone.dragover {
+  border-color: var(--amber); background: rgba(193,127,36,0.07);
+}
+.docs-upload-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.6; }
+.docs-upload-text { font-family: 'Playfair Display'; font-size: 1.2rem; color: var(--parchment-mid); }
+.docs-upload-sub { font-family: 'Crimson Pro'; font-size: 0.9rem; color: var(--dust); margin-top: 0.5rem; font-style: italic; }
+
+.docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+.doc-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(193,127,36,0.15);
+  border-radius: 8px; padding: 1.25rem; text-align: center;
+  cursor: pointer; transition: all 0.2s;
+}
+.doc-card:hover { border-color: rgba(193,127,36,0.4); transform: translateY(-2px); }
+.doc-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.doc-name { font-family: 'Crimson Pro'; font-size: 0.9rem; color: var(--parchment-mid); word-break: break-all; }
+.doc-meta { font-family: 'Space Mono'; font-size: 0.55rem; color: var(--dust); margin-top: 0.4rem; text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* ─── GALLERY ─── */
+.gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.75rem; }
+.gallery-item {
+  aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(193,127,36,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; cursor: pointer; transition: all 0.2s;
+  position: relative;
+}
+.gallery-item:hover { border-color: rgba(193,127,36,0.4); transform: scale(1.02); }
+.gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+.gallery-add {
+  border: 2px dashed rgba(193,127,36,0.25);
+  cursor: pointer; color: var(--dust); flex-direction: column; gap: 0.5rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; aspect-ratio: 1; border-radius: 8px;
+  background: none; transition: all 0.2s;
+}
+.gallery-add:hover { border-color: var(--amber); color: var(--amber); }
+
+/* ─── ROUTE ─── */
+.route-map {
+  background: rgba(74,103,65,0.08);
+  border: 1px solid rgba(74,103,65,0.2);
+  border-radius: 12px; padding: 2rem; margin-bottom: 2rem;
+  min-height: 300px; position: relative; overflow: hidden;
+}
+.route-map-bg {
+  position: absolute; inset: 0; opacity: 0.06;
+  background-image: 
+    repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(74,103,65,0.8) 39px, rgba(74,103,65,0.8) 40px),
+    repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(74,103,65,0.8) 39px, rgba(74,103,65,0.8) 40px);
+}
+.route-visual {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 0; min-height: 260px;
+  padding: 1rem 0;
+}
+.route-stop {
+  display: flex; flex-direction: column; align-items: center;
+  position: relative; cursor: pointer;
+  animation: routeIn 0.5s ease both;
+}
+@keyframes routeIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: none; } }
+.route-stop-dot {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--amber), var(--amber-light));
+  border: 3px solid var(--parchment);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  transition: transform 0.2s;
+}
+.route-stop:hover .route-stop-dot { transform: scale(1.2); }
+.route-stop-name {
+  font-family: 'Crimson Pro'; font-size: 0.8rem; color: var(--parchment);
+  margin-top: 0.5rem; text-align: center; max-width: 80px;
+  font-style: italic;
+}
+.route-stop-nights {
+  font-family: 'Space Mono'; font-size: 0.55rem; color: var(--dust);
+  letter-spacing: 0.1em;
+}
+.route-line {
+  flex: 1; height: 2px; min-width: 30px; max-width: 80px;
+  background: linear-gradient(90deg, var(--amber), transparent, var(--amber));
+  position: relative; align-self: center; margin-bottom: 36px;
+}
+.route-line::after {
+  content: '→';
+  position: absolute; right: -6px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--amber); font-size: 0.8rem;
+}
+.route-km {
+  position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+  font-family: 'Space Mono'; font-size: 0.5rem; color: var(--dust);
+  white-space: nowrap;
+}
+
+.route-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
+.route-stat {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(193,127,36,0.12);
+  border-radius: 8px; padding: 1rem; text-align: center;
+}
+.route-stat-num { font-family: 'Playfair Display'; font-size: 1.6rem; font-weight: 700; color: var(--sky); }
+.route-stat-label { font-family: 'Space Mono'; font-size: 0.55rem; color: var(--dust); text-transform: uppercase; letter-spacing: 0.2em; }
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  padding: 1rem;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--night);
+  border: 1px solid rgba(193,127,36,0.3);
+  border-radius: 16px; padding: 2rem;
+  width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+  transform: scale(0.95) translateY(20px); transition: transform 0.3s;
+}
+.modal-overlay.open .modal { transform: none; }
+.modal-title { font-family: 'Playfair Display'; font-size: 1.6rem; font-weight: 700; color: var(--parchment); margin-bottom: 1.5rem; }
+.modal-close {
+  position: absolute; top: 1rem; right: 1rem;
+  background: none; border: none; color: var(--dust); font-size: 1.3rem;
+  cursor: pointer; transition: color 0.2s;
+}
+.modal-close:hover { color: var(--parchment); }
+.modal-footer { display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: flex-end; }
+.btn-secondary {
+  background: none; border: 1px solid rgba(193,127,36,0.3);
+  color: var(--dust); padding: 0.6rem 1.25rem;
+  font-family: 'Space Mono'; font-size: 0.65rem; letter-spacing: 0.15em;
+  cursor: pointer; border-radius: 6px; transition: all 0.2s;
+}
+.btn-secondary:hover { border-color: var(--amber); color: var(--parchment); }
+
+/* ─── TOAST ─── */
+.toast-container { position: fixed; bottom: 2rem; right: 2rem; z-index: 2000; display: flex; flex-direction: column; gap: 0.5rem; }
+.toast {
+  background: var(--night); border: 1px solid rgba(193,127,36,0.4);
+  color: var(--parchment); padding: 0.75rem 1.25rem;
+  border-radius: 8px; font-family: 'Crimson Pro'; font-size: 0.95rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  animation: toastIn 0.3s ease;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: none; } }
+.toast.success { border-color: rgba(74,103,65,0.5); }
+.toast.success::before { content: '✓'; color: var(--sage-light); font-weight: bold; }
+
+/* ─── PROGRESS BAR ─── */
+.progress-bar-wrap { background: rgba(255,255,255,0.06); border-radius: 4px; overflow: hidden; height: 6px; margin-top: 0.5rem; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--sage), var(--amber)); border-radius: 4px; transition: width 0.5s ease; }
+
+/* ─── INPUT FILE HIDDEN ─── */
+input[type="file"] { display: none; }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(193,127,36,0.3); border-radius: 3px; }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  #sidebar { width: 240px; }
+  #main { margin-left: 0; }
+  .panel { padding: 1rem; }
+  .hero-trip-name { font-size: 2rem; }
+  .dash-grid { grid-template-columns: 1fr; }
+}
+
+.section-divider {
+  border: none; border-top: 1px solid rgba(193,127,36,0.1);
+  margin: 2rem 0;
+}
+
+.empty-state {
+  text-align: center; padding: 3rem; color: var(--dust);
+  font-family: 'Crimson Pro'; font-size: 1rem; font-style: italic;
+}
+.empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+
+.highlight { color: var(--amber-light); }
+
+/* ─── TRIP CREATION WIZARD ─── */
+.wizard-step { display: none; }
+.wizard-step.active { display: block; }
+.wizard-progress {
+  display: flex; gap: 0.5rem; margin-bottom: 2rem;
+}
+.wiz-step {
+  flex: 1; height: 4px; border-radius: 2px;
+  background: rgba(255,255,255,0.1);
+  transition: background 0.3s;
+}
+.wiz-step.done { background: var(--amber); }
+.wiz-step.current { background: var(--amber-light); }
+</style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loader">
+  <div class="loader-compass"></div>
+  <div class="loader-title">TREK</div>
+  <div class="loader-sub">Expedition Planner</div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- APP -->
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <nav id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark"><span class="logo-compass">✦</span> TREK</div>
+      <div class="logo-sub">Expedition Planner</div>
+    </div>
+
+    <div class="sidebar-trip-selector">
+      <label>Current Trip</label>
+      <select class="trip-select" id="tripSelect" onchange="switchTrip(this.value)">
+        <option value="namibia">Namibia 2026</option>
+        <option value="kgalagadi">Kgalagadi 2025</option>
+        <option value="new">+ New Trip...</option>
+      </select>
+      <button class="btn-new-trip" onclick="openNewTripModal()">＋ Plan New Trip</button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="showPanel('dashboard')">
+        <span class="nav-icon">🗺️</span>
+        <span class="nav-label">Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('itinerary')">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">Itinerary</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('route')">
+        <span class="nav-icon">🧭</span>
+        <span class="nav-label">Route</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('accommodation')">
+        <span class="nav-icon">🏕️</span>
+        <span class="nav-label">Accommodation</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('food')">
+        <span class="nav-icon">🔥</span>
+        <span class="nav-label">Food & Meals</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('packing')">
+        <span class="nav-icon">🎒</span>
+        <span class="nav-label">Packing List</span>
+        <span class="nav-badge" id="packBadge">3</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('crew')">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">Crew</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('docs')">
+        <span class="nav-icon">📄</span>
+        <span class="nav-label">Documents</span>
+      </div>
+      <div class="nav-item" onclick="showPanel('gallery')">
+        <span class="nav-icon">📸</span>
+        <span class="nav-label">Gallery</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-countdown" id="countdownWidget">
+      <span class="countdown-label">Departure in</span>
+      <div class="countdown-grid">
+        <div class="countdown-unit">
+          <div class="countdown-num" id="cdDays">00</div>
+          <div class="countdown-unit-label">Days</div>
+        </div>
+        <div class="countdown-unit">
+          <div class="countdown-num" id="cdHours">00</div>
+          <div class="countdown-unit-label">Hrs</div>
+        </div>
+        <div class="countdown-unit">
+          <div class="countdown-num" id="cdMins">00</div>
+          <div class="countdown-unit-label">Min</div>
+        </div>
+        <div class="countdown-unit">
+          <div class="countdown-num" id="cdSecs">00</div>
+          <div class="countdown-unit-label">Sec</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main id="main">
+    <div class="topbar">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title" id="topbarTitle">Namibia 2026 — Overview</div>
+      <div class="topbar-actions">
+        <button class="btn-icon" onclick="shareTrip()">⬆ Share</button>
+        <button class="btn-icon" onclick="exportTrip()">⬇ Export</button>
+      </div>
+    </div>
+
+    <!-- ─── DASHBOARD PANEL ─── -->
+    <section class="panel active" id="panel-dashboard">
+      <div class="dashboard-hero">
+        <div class="hero-trip-name" id="heroTripName">Namibia 2026</div>
+        <div class="hero-meta">
+          <div class="hero-meta-item"><span class="hero-meta-icon">📅</span><span class="hero-meta-text" id="heroDateRange">18 Dec 2026 — 10 Jan 2027</span></div>
+          <div class="hero-meta-item"><span class="hero-meta-icon">📍</span><span class="hero-meta-text">Namibia, Southern Africa</span></div>
+          <div class="hero-meta-item"><span class="hero-meta-icon">👥</span><span class="hero-meta-text" id="heroCrew">6 Travellers</span></div>
+          <div class="hero-meta-item"><span class="hero-meta-icon">🏕️</span><span class="hero-meta-text">4 Camps · 3 Chalets · 2 Lodges</span></div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num">24</div>
+          <div class="stat-label">Days Total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">3,847</div>
+          <div class="stat-label">km Route</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">12</div>
+          <div class="stat-label">Stops</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">87%</div>
+          <div class="stat-label">Packed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">6</div>
+          <div class="stat-label">Crew Members</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">4</div>
+          <div class="stat-label">Vehicles</div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="dash-card">
+          <div class="dash-card-title">🏕️ Upcoming Stop</div>
+          <div style="font-family:'Playfair Display';font-size:1.3rem;color:var(--parchment);font-weight:700;">Swakopmund</div>
+          <div style="font-family:'Crimson Pro';font-size:0.95rem;color:var(--dust);margin-top:0.25rem;font-style:italic;">Tiger Reef Camp · 4 nights</div>
+          <div style="margin-top:1rem;font-family:'Crimson Pro';font-size:0.9rem;color:var(--parchment-mid);">
+            Daredevil Adventures, Swartkoppies dunes, Moon Landscape drive
+          </div>
+          <div style="margin-top:0.75rem;">
+            <span class="tag tag-camp">Camp</span>
+            <span class="tag tag-activity">Activities</span>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-title">🎒 Packing Progress</div>
+          <div style="font-family:'Crimson Pro';font-size:0.9rem;color:var(--dust);">87 of 102 items packed</div>
+          <div class="progress-bar-wrap" style="margin-top:0.75rem;">
+            <div class="progress-bar-fill" style="width:87%;"></div>
+          </div>
+          <div style="margin-top:1rem;font-family:'Space Mono';font-size:0.6rem;color:var(--rust);">⚠ 3 items still needed</div>
+          <div style="margin-top:0.5rem;font-family:'Crimson Pro';font-size:0.9rem;color:var(--parchment-mid);">
+            Recovery tracks · Spare tyre pump · Snorkel kit
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-title">👥 Crew Status</div>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--amber),var(--rust));display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:white;font-family:'Playfair Display';">Q</div>
+              <div style="flex:1;font-family:'Crimson Pro';font-size:0.95rem;">Quintus</div>
+              <span class="crew-status confirmed">Confirmed</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--sage),var(--sky));display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:white;font-family:'Playfair Display';">A</div>
+              <div style="flex:1;font-family:'Crimson Pro';font-size:0.95rem;">Annetje</div>
+              <span class="crew-status confirmed">Confirmed</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--dust),var(--amber));display:flex;align-items:center;justify-content:center;font-size:0.9rem;color:white;font-family:'Playfair Display';">J</div>
+              <div style="flex:1;font-family:'Crimson Pro';font-size:0.95rem;">Johan</div>
+              <span class="crew-status pending">Awaiting</span>
+            </div>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-title">🔥 Tonight's Dinner</div>
+          <div style="font-family:'Playfair Display';font-size:1.2rem;color:var(--parchment);">Potjie Braai</div>
+          <div style="font-family:'Crimson Pro';font-size:0.9rem;color:var(--dust);font-style:italic;">Sesriem camp — Dec 22</div>
+          <div style="margin-top:0.75rem;font-family:'Crimson Pro';font-size:0.9rem;color:var(--parchment-mid);">
+            Kudu potjie · Roosterbrood · Malva pudding on the fire
+          </div>
+          <div style="margin-top:0.75rem;">
+            <span class="tag tag-activity" style="cursor:pointer" onclick="showPanel('food')">View meal plan →</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── ITINERARY PANEL ─── -->
+    <section class="panel" id="panel-itinerary">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Itinerary</div>
+          <div class="panel-subtitle">Day by day — every camp, drive, and adventure</div>
+        </div>
+        <button class="btn-primary" onclick="openAddDayModal()">＋ Add Day</button>
+      </div>
+      <div id="itineraryList"></div>
+      <button class="add-day-btn" onclick="openAddDayModal()">＋ Add another day to the expedition</button>
+    </section>
+
+    <!-- ─── ROUTE PANEL ─── -->
+    <section class="panel" id="panel-route">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Route</div>
+          <div class="panel-subtitle">The path of the expedition</div>
+        </div>
+        <button class="btn-primary" onclick="addRouteStop()">＋ Add Stop</button>
+      </div>
+      <div class="route-map">
+        <div class="route-map-bg"></div>
+        <div class="route-visual" id="routeVisual"></div>
+      </div>
+      <div class="route-stats" id="routeStats">
+        <div class="route-stat"><div class="route-stat-num">3,847</div><div class="route-stat-label">Total km</div></div>
+        <div class="route-stat"><div class="route-stat-num">12</div><div class="route-stat-label">Stops</div></div>
+        <div class="route-stat"><div class="route-stat-num">46.5</div><div class="route-stat-label">hrs Driving</div></div>
+        <div class="route-stat"><div class="route-stat-num">24</div><div class="route-stat-label">Nights</div></div>
+      </div>
+    </section>
+
+    <!-- ─── ACCOMMODATION PANEL ─── -->
+    <section class="panel" id="panel-accommodation">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Accommodation</div>
+          <div class="panel-subtitle">Camps, chalets, lodges and guest houses</div>
+        </div>
+        <button class="btn-primary" onclick="openAddAccomModal()">＋ Add Accommodation</button>
+      </div>
+      <div class="accom-grid" id="accomGrid"></div>
+    </section>
+
+    <!-- ─── FOOD PANEL ─── -->
+    <section class="panel" id="panel-food">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Food & Meals</div>
+          <div class="panel-subtitle">Braais, potjies, and provisions for the road</div>
+        </div>
+        <button class="btn-primary" onclick="openAddMealModal()">＋ Add Meal</button>
+      </div>
+      <div id="foodList"></div>
+    </section>
+
+    <!-- ─── PACKING PANEL ─── -->
+    <section class="panel" id="panel-packing">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Packing List</div>
+          <div class="panel-subtitle">Everything the expedition needs</div>
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+          <button class="btn-secondary" onclick="resetPacking()">↺ Reset</button>
+          <button class="btn-primary" onclick="openAddCategoryModal()">＋ Category</button>
+        </div>
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <div style="font-family:'Crimson Pro';font-size:1rem;color:var(--dust);"><span id="packedCount" style="color:var(--amber-light);font-family:'Playfair Display';font-size:1.5rem;font-weight:700;">87</span> / <span id="totalCount">102</span> items packed</div>
+          <div class="progress-bar-wrap" style="flex:1;min-width:120px;max-width:300px;">
+            <div class="progress-bar-fill" id="packProgress" style="width:87%;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="packing-categories" id="packingList"></div>
+    </section>
+
+    <!-- ─── CREW PANEL ─── -->
+    <section class="panel" id="panel-crew">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Crew</div>
+          <div class="panel-subtitle">The people on this expedition</div>
+        </div>
+      </div>
+      <div class="crew-grid" id="crewGrid"></div>
+      <hr class="section-divider">
+      <div class="invite-form">
+        <h3>Invite Someone</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="inviteName" placeholder="Jannie van der Berg">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="inviteEmail" placeholder="jannie@example.com">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Role</label>
+            <select id="inviteRole">
+              <option value="Traveller">Traveller</option>
+              <option value="Navigator">Navigator</option>
+              <option value="Chef">Camp Chef</option>
+              <option value="Medic">Medic</option>
+              <option value="Organiser">Organiser</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Vehicle</label>
+            <select id="inviteVehicle">
+              <option>Vehicle 1 (Lead)</option>
+              <option>Vehicle 2</option>
+              <option>Vehicle 3</option>
+              <option>Vehicle 4</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="inviteMember()">📨 Send Invite</button>
+      </div>
+    </section>
+
+    <!-- ─── DOCS PANEL ─── -->
+    <section class="panel" id="panel-docs">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Documents</div>
+          <div class="panel-subtitle">Itineraries, permits, maps, and more</div>
+        </div>
+      </div>
+      <div class="docs-upload-zone" id="docsDropZone" onclick="document.getElementById('docFileInput').click()"
+        ondragover="event.preventDefault();this.classList.add('dragover')"
+        ondragleave="this.classList.remove('dragover')"
+        ondrop="handleDocDrop(event)">
+        <div class="docs-upload-icon">📎</div>
+        <div class="docs-upload-text">Drop files here or click to upload</div>
+        <div class="docs-upload-sub">PDFs, spreadsheets, images, Word docs — anything goes</div>
+      </div>
+      <input type="file" id="docFileInput" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.jpg,.png" onchange="handleDocUpload(event)">
+      <div class="docs-grid" id="docsGrid"></div>
+    </section>
+
+    <!-- ─── GALLERY PANEL ─── -->
+    <section class="panel" id="panel-gallery">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Gallery</div>
+          <div class="panel-subtitle">Memories from the expedition</div>
+        </div>
+        <button class="btn-primary" onclick="document.getElementById('photoFileInput').click()">＋ Add Photos</button>
+      </div>
+      <input type="file" id="photoFileInput" multiple accept="image/*" onchange="handlePhotoUpload(event)">
+      <div class="gallery-grid" id="galleryGrid">
+        <button class="gallery-add" onclick="document.getElementById('photoFileInput').click()">
+          <span>＋</span>
+          <span style="font-family:'Crimson Pro';font-size:0.85rem;">Add photos</span>
+        </button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ─── MODAL: New Trip ─── -->
+<div class="modal-overlay" id="newTripModal">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeModal('newTripModal')">✕</button>
+    <div class="modal-title">Plan a New Expedition</div>
+    <div class="wizard-progress">
+      <div class="wiz-step current" id="ws1"></div>
+      <div class="wiz-step" id="ws2"></div>
+      <div class="wiz-step" id="ws3"></div>
+    </div>
+    <div class="wizard-step active" id="wizStep1">
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label>Trip Name</label>
+        <input type="text" id="newTripName" placeholder="Kgalagadi 2027">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Destination</label>
+          <input type="text" id="newTripDest" placeholder="Kgalagadi, South Africa">
+        </div>
+        <div class="form-group">
+          <label>Type</label>
+          <select id="newTripType">
+            <option>4x4 Overland</option>
+            <option>Game Reserve</option>
+            <option>Desert Expedition</option>
+            <option>Coastal</option>
+            <option>Mountain</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Departure Date</label>
+          <input type="date" id="newTripStart">
+        </div>
+        <div class="form-group">
+          <label>Return Date</label>
+          <input type="date" id="newTripEnd">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('newTripModal')">Cancel</button>
+        <button class="btn-primary" onclick="wizardNext(2)">Next →</button>
+      </div>
+    </div>
+    <div class="wizard-step" id="wizStep2">
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label>Number of Vehicles</label>
+        <select id="newTripVehicles">
+          <option>1</option><option>2</option><option>3</option><option>4</option><option>5+</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label>Accommodation Style</label>
+        <select id="newTripAccom">
+          <option>Mix of camping & chalets</option>
+          <option>Camping only</option>
+          <option>Chalets/lodges only</option>
+          <option>Wild camping</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label>Notes</label>
+        <input type="text" id="newTripNotes" placeholder="Special requirements, permits needed...">
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="wizardNext(1)">← Back</button>
+        <button class="btn-primary" onclick="createNewTrip()">🗺️ Create Trip</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: Add Day ─── -->
+<div class="modal-overlay" id="addDayModal">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeModal('addDayModal')">✕</button>
+    <div class="modal-title">Add Itinerary Day</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="newDayDate">
+      </div>
+      <div class="form-group">
+        <label>Location / Camp</label>
+        <input type="text" id="newDayLocation" placeholder="Sesriem">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Overnight Accom</label>
+        <input type="text" id="newDayAccom" placeholder="Sossus Dune Lodge">
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="newDayType">
+          <option value="camp">🏕️ Camping</option>
+          <option value="chalet">🏠 Chalet</option>
+          <option value="lodge">🏡 Lodge</option>
+          <option value="drive">🚗 Drive Day</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label>Morning Activity</label>
+      <input type="text" id="newDayMorning" placeholder="Dune 45 sunrise climb">
+    </div>
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label>Afternoon Activity</label>
+      <input type="text" id="newDayAfternoon" placeholder="Dead Vlei walk">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Drive Distance (km)</label>
+        <input type="number" id="newDayDrive" placeholder="347">
+      </div>
+      <div class="form-group">
+        <label>Drive Duration</label>
+        <input type="text" id="newDayDriveTime" placeholder="4.5 hrs">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label>Notes</label>
+      <input type="text" id="newDayNotes" placeholder="Book 4x4 permits in advance...">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('addDayModal')">Cancel</button>
+      <button class="btn-primary" onclick="addDay()">＋ Add to Itinerary</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MODAL: Add Accommodation ─── -->
+<div class="modal-overlay" id="addAccomModal">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeModal('addAccomModal')">✕</button>
+    <div class="modal-title">Add Accommodation</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="newAccomName" placeholder="Tiger Reef Camp">
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="newAccomType">
+          <option value="camp">🏕️ Camp Site</option>
+          <option value="chalet">🏠 Chalet</option>
+          <option value="lodge">🏡 Lodge</option>
+          <option value="guesthouse">🏘️ Guesthouse</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" id="newAccomLocation" placeholder="Swakopmund">
+      </div>
+      <div class="form-group">
+        <label>Nights</label>
+        <input type="number" id="newAccomNights" placeholder="4" min="1">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Check-in Date</label>
+        <input type="date" id="newAccomCheckIn">
+      </div>
+      <div class="form-group">
+        <label>Booking Ref</label>
+        <input type="text" id="newAccomRef" placeholder="NR-2026-0045">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:1rem;">
+      <label>Notes / Facilities</label>
+      <input type="text" id="newAccomNotes" placeholder="Braai facilities, pool, self-catering...">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('addAccomModal')">Cancel</button>
+      <button class="btn-primary" onclick="addAccommodation()">＋ Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───
+const TRIPS = {
+  namibia: {
+    name: 'Namibia 2026', dest: 'Namibia', startDate: '2026-12-18', endDate: '2027-01-10',
+    crew: [
+      { name: 'Quintus', role: 'Organiser', status: 'confirmed', initials: 'Q' },
+      { name: 'Annetje', role: 'Navigator', status: 'confirmed', initials: 'A' },
+      { name: 'Johan', role: 'Traveller', status: 'pending', initials: 'J' },
+      { name: 'Marié', role: 'Camp Chef', status: 'confirmed', initials: 'M' },
+      { name: 'Bennie', role: 'Medic', status: 'confirmed', initials: 'B' },
+      { name: 'Sarel', role: 'Traveller', status: 'pending', initials: 'S' },
+    ],
+    itinerary: [
+      { date:'2026-12-18', day:1, location:'Kaapstad → Hardeveld Lodge', accom:'Hardeveld Lodge', type:'lodge', morning:'Departure from Cape Town', afternoon:'', drive:'352', driveTime:'3.5 hrs', notes:'Fuel up before leaving' },
+      { date:'2026-12-19', day:2, location:'Hardeveld Lodge → Hobas Bush Chalet', accom:'Hobas Bush Chalet', type:'chalet', morning:'Scenic drive through Namaqualand', afternoon:'Canyon Sunset viewpoint', drive:'479', driveTime:'5.5 hrs', notes:'Fish River Canyon viewpoint' },
+      { date:'2026-12-20', day:3, location:'Hobas Bush Chalet → Duwisib', accom:'Duwisib Guesthouse', type:'chalet', morning:'Duwisib Castle visit', afternoon:'Duwisib Castle', drive:'406', driveTime:'4.5 hrs', notes:'' },
+      { date:'2026-12-21', day:4, location:'Duwisib → Sesriem', accom:'Sesriem', type:'camp', morning:'Sesriem Canyon', afternoon:'Dooievlei drive', drive:'158', driveTime:'2.5 hrs', notes:'Book Sossusvlei 4x4 entry' },
+      { date:'2026-12-24', day:7, location:'Sesriem → Swakopmund', accom:'Tiger Reef Camp', type:'camp', morning:'Last Sossusvlei sunrise', afternoon:'Swartkoppies drive', drive:'347', driveTime:'4.5 hrs', notes:'Daredevil Adventures booking confirmed' },
+    ],
+    accommodation: [
+      { name: 'Hardeveld Lodge', type: 'lodge', location: 'Springbok area', nights: 1, checkin: '2026-12-18', ref: 'HL-2026-01', notes: 'Dinner included', icon: '🏡' },
+      { name: 'Hobas Bush Chalet', type: 'chalet', location: 'Fish River Canyon', nights: 1, checkin: '2026-12-19', ref: 'HBC-019', notes: 'BFKB', icon: '🏠' },
+      { name: 'Duwisib Guesthouse', type: 'chalet', location: 'Duwisib', nights: 1, checkin: '2026-12-20', ref: '', notes: '', icon: '🏘️' },
+      { name: 'Sesriem Camp', type: 'camp', location: 'Sesriem', nights: 3, checkin: '2026-12-21', ref: 'NWR-SR-23', notes: 'Sites 12-14 booked', icon: '🏕️' },
+      { name: 'Tiger Reef Camp', type: 'camp', location: 'Swakopmund', nights: 4, checkin: '2026-12-24', ref: 'TRC-26-12', notes: 'Ocean view sites, braai facilities', icon: '🏕️' },
+      { name: 'Myl 108 Camp', type: 'camp', location: 'Skeleton Coast', nights: 7, checkin: '2026-12-28', ref: 'SKC-108', notes: 'Permit required', icon: '🏕️' },
+      { name: 'Spitzkoppe Camp', type: 'camp', location: 'Spitzkoppe', nights: 2, checkin: '2027-01-04', ref: '', notes: '', icon: '🏕️' },
+      { name: 'Mariental River Chalets', type: 'chalet', location: 'Mariental', nights: 1, checkin: '2027-01-07', ref: 'MRC-07', notes: '', icon: '🏠' },
+    ],
+    packing: [
+      { cat: 'Camping', icon: '🏕️', items: [
+        { text: 'Tent / roof tent', note: '', checked: true },
+        { text: 'Sleeping bags', note: 'Rate to -5°C min', checked: true },
+        { text: 'Sleeping mats', note: '', checked: true },
+        { text: 'Camp chairs (4x)', note: '', checked: true },
+        { text: 'Folding camp table', note: '', checked: false },
+        { text: 'Lantern & spare batteries', note: '', checked: true },
+        { text: 'Headlamps (all crew)', note: '', checked: true },
+      ]},
+      { cat: '4x4 & Recovery', icon: '🚗', items: [
+        { text: 'Hi-lift jack', note: '', checked: true },
+        { text: 'Recovery tracks (2x)', note: '⚠ Still needed!', checked: false },
+        { text: 'Tow rope & shackles', note: '', checked: true },
+        { text: 'Spare tyre (x2)', note: '', checked: true },
+        { text: 'Tyre pump / compressor', note: '⚠ Check pressure rating', checked: false },
+        { text: 'Snorkel kit', note: '⚠ Still to fit', checked: false },
+        { text: 'Toolbox & basic spares', note: '', checked: true },
+        { text: 'Fuel jerry cans (2x 20L)', note: '', checked: true },
+      ]},
+      { cat: 'Kitchen & Food', icon: '🔥', items: [
+        { text: 'Braai grid', note: '', checked: true },
+        { text: 'Potjie pot (no. 3)', note: '', checked: true },
+        { text: 'Cast iron pan', note: '', checked: true },
+        { text: 'Gas stove & cylinder', note: '', checked: true },
+        { text: 'Fridge/freezer (12V)', note: '', checked: true },
+        { text: 'Cooler box (backup)', note: '', checked: true },
+        { text: 'Plates, mugs, cutlery', note: '', checked: true },
+        { text: 'Washing basin', note: '', checked: true },
+      ]},
+      { cat: 'Navigation', icon: '🧭', items: [
+        { text: 'GPS unit / Maps.me offline', note: '', checked: true },
+        { text: 'Road Atlas Southern Africa', note: '', checked: true },
+        { text: 'Printed permits', note: '', checked: true },
+        { text: 'Satellite communicator', note: 'Garmin inReach', checked: true },
+        { text: 'Radio (2-way, all vehicles)', note: '', checked: true },
+      ]},
+      { cat: 'Clothing', icon: '👕', items: [
+        { text: 'Warm jacket (desert cold nights)', note: '', checked: true },
+        { text: 'Sun hat', note: '', checked: true },
+        { text: 'Buff/neck gaiter', note: '', checked: true },
+        { text: 'Hiking boots', note: '', checked: true },
+        { text: 'Sandals', note: '', checked: true },
+      ]},
+      { cat: 'Medical', icon: '🩺', items: [
+        { text: 'First aid kit (full)', note: '', checked: true },
+        { text: 'Personal meds (30 day supply)', note: '', checked: true },
+        { text: 'Sunscreen (SPF50+)', note: '', checked: true },
+        { text: 'Insect repellent', note: '', checked: true },
+        { text: 'Water purification tabs', note: '', checked: true },
+        { text: 'Snake bite kit', note: '', checked: true },
+      ]},
+    ],
+    food: [
+      { day: 'Day 1 – Fri 18 Dec', loc: 'Hardeveld Lodge', breakfast: 'Lodge breakfast', lunch: 'On the road – packed rolls', dinner: 'Lodge dinner included' },
+      { day: 'Day 2 – Sat 19 Dec', loc: 'Hobas → Fish River Canyon', breakfast: 'Rusks & coffee', lunch: 'Braai sausage at Canyon viewpoint', dinner: 'Canyon Sunset potjie' },
+      { day: 'Day 4 – Mon 21 Dec', loc: 'Sesriem', breakfast: 'Eggs & toast', lunch: 'Braai at camp', dinner: 'Roosterbrood & boerewors' },
+      { day: 'Day 5 – Tue 22 Dec', loc: 'Sesriem', breakfast: 'Porridge', lunch: 'Sandwiches', dinner: 'Kudu potjie · Malva pudding 🔥' },
+      { day: 'Day 7 – Thu 24 Dec', loc: 'Tiger Reef, Swakop', breakfast: 'Sesriem – rusks on road', lunch: 'Dros or Spur Swakop', dinner: 'Christmas Eve braai on the beach' },
+    ],
+    docs: [
+      { name: 'Namibia Route Plan v2.pdf', type: 'pdf', size: '2.4 MB', date: 'Dec 2025', icon: '📄' },
+      { name: 'NWR Booking Confirmation.pdf', type: 'pdf', size: '380 KB', date: 'Nov 2025', icon: '📄' },
+      { name: 'Myl 108 Permit.pdf', type: 'pdf', size: '180 KB', date: 'Oct 2025', icon: '📄' },
+      { name: 'Day Spreadsheet Namibia.xlsx', type: 'xlsx', size: '52 KB', date: 'Dec 2025', icon: '📊' },
+    ],
+    photos: [],
+    route: [
+      { name: 'Cape Town', emoji: '🌊', km: 0, nights: 0 },
+      { name: 'Springbok', emoji: '🌵', km: 560, nights: 1 },
+      { name: 'Fish River Canyon', emoji: '🏔️', km: 490, nights: 1 },
+      { name: 'Duwisib', emoji: '🏰', km: 400, nights: 1 },
+      { name: 'Sesriem', emoji: '🏜️', km: 160, nights: 3 },
+      { name: 'Swakopmund', emoji: '🌊', km: 350, nights: 4 },
+      { name: 'Myl 108', emoji: '🦭', km: 280, nights: 7 },
+      { name: 'Spitzkoppe', emoji: '🗻', km: 540, nights: 2 },
+      { name: 'Mariental', emoji: '🛖', km: 660, nights: 1 },
+      { name: 'Springbok', emoji: '🌵', km: 407, nights: 0 },
+    ]
+  }
+};
+
+let currentTrip = 'namibia';
+
+// ─── INIT ───
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hidden');
+    renderAll();
+    startCountdown();
+  }, 2200);
+});
+
+function renderAll() {
+  const trip = TRIPS[currentTrip];
+  if (!trip) return;
+  renderItinerary(trip);
+  renderAccommodation(trip);
+  renderPacking(trip);
+  renderCrew(trip);
+  renderFood(trip);
+  renderDocs(trip);
+  renderGallery(trip);
+  renderRoute(trip);
+  updatePackBadge(trip);
+}
+
+// ─── COUNTDOWN ───
+function startCountdown() {
+  function update() {
+    const trip = TRIPS[currentTrip];
+    if (!trip) return;
+    const target = new Date(trip.startDate);
+    const now = new Date();
+    const diff = target - now;
+    if (diff <= 0) {
+      document.getElementById('cdDays').textContent = '00';
+      document.getElementById('cdHours').textContent = '00';
+      document.getElementById('cdMins').textContent = '00';
+      document.getElementById('cdSecs').textContent = '00';
+      return;
+    }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cdDays').textContent = String(d).padStart(2,'0');
+    document.getElementById('cdHours').textContent = String(h).padStart(2,'0');
+    document.getElementById('cdMins').textContent = String(m).padStart(2,'0');
+    document.getElementById('cdSecs').textContent = String(s).padStart(2,'0');
+  }
+  update(); setInterval(update, 1000);
+}
+
+// ─── ITINERARY ───
+function renderItinerary(trip) {
+  const list = document.getElementById('itineraryList');
+  if (!trip.itinerary.length) { list.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div>No days added yet. Start building your itinerary!</div>'; return; }
+  list.innerHTML = trip.itinerary.map((d, i) => {
+    const typeTag = { camp:'<span class="tag tag-camp">Camp</span>', chalet:'<span class="tag tag-chalet">Chalet</span>', lodge:'<span class="tag tag-chalet">Lodge</span>', drive:'<span class="tag tag-drive">Drive Day</span>' }[d.type] || '';
+    const driveTag = d.drive ? '<span class="tag tag-drive">🚗 ' + d.driveTime + '</span>' : '';
+    return `<div class="day-card">
+      <div class="day-header" onclick="toggleDay(${i})">
+        <div class="day-num">D${d.day}</div>
+        <div class="day-info">
+          <div class="day-date">${formatDate(d.date)}</div>
+          <div class="day-location">${d.location}</div>
+          <div class="day-tags">${typeTag}${driveTag}${d.morning ? '<span class="tag tag-activity">Activity</span>' : ''}</div>
+        </div>
+        <span style="color:var(--dust);font-size:0.8rem;">▼</span>
+      </div>
+      <div class="day-body" id="dayBody${i}">
+        <div>
+          <div class="day-section-title">🌅 Morning</div>
+          <div class="day-section-text">${d.morning || '—'}</div>
+        </div>
+        <div>
+          <div class="day-section-title">🌞 Afternoon</div>
+          <div class="day-section-text">${d.afternoon || '—'}</div>
+        </div>
+        <div>
+          <div class="day-section-title">🏕️ Overnight</div>
+          <div class="day-section-text">${d.accom || '—'}</div>
+        </div>
+        ${d.drive ? `<div class="day-drive-badge">
+          <div><span style="font-family:'Space Mono';font-size:0.6rem;color:var(--sky);">DISTANCE</span><br><span style="font-family:'Playfair Display';font-size:1.2rem;color:var(--parchment);">${d.drive} km</span></div>
+          <div><span style="font-family:'Space Mono';font-size:0.6rem;color:var(--sky);">DRIVE TIME</span><br><span style="font-family:'Playfair Display';font-size:1.2rem;color:var(--parchment);">${d.driveTime}</span></div>
+        </div>` : ''}
+        ${d.notes ? `<div style="grid-column:1/-1;font-family:'Crimson Pro';font-size:0.9rem;color:var(--dust);font-style:italic;">📝 ${d.notes}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleDay(i) {
+  const body = document.getElementById('dayBody' + i);
+  body.classList.toggle('open');
+}
+
+// ─── ACCOMMODATION ───
+function renderAccommodation(trip) {
+  const grid = document.getElementById('accomGrid');
+  const typeEmoji = { camp: '🏕️', chalet: '🏠', lodge: '🏡', guesthouse: '🏘️' };
+  grid.innerHTML = trip.accommodation.map((a, i) => `
+    <div class="accom-card">
+      <div class="accom-img ${a.type}">${typeEmoji[a.type] || '🏕️'}</div>
+      <div class="accom-body">
+        <div class="accom-name">${a.name}</div>
+        <div class="accom-meta">📍 ${a.location}</div>
+        ${a.ref ? `<div class="accom-meta" style="margin-top:0.2rem;">🔖 ${a.ref}</div>` : ''}
+        <div class="accom-nights">${a.nights} night${a.nights>1?'s':''} · from ${formatDate(a.checkin)}</div>
+        ${a.notes ? `<div style="font-family:'Crimson Pro';font-size:0.85rem;color:var(--dust);margin-top:0.4rem;font-style:italic;">${a.notes}</div>` : ''}
+        <div class="accom-tags"><span class="tag ${a.type==='camp'?'tag-camp':'tag-chalet'}">${a.type}</span></div>
+      </div>
+    </div>
+  `).join('') + `<button class="add-accom-btn" onclick="openAddAccomModal()"><span>＋</span><span>Add accommodation</span></button>`;
+}
+
+// ─── PACKING ───
+function renderPacking(trip) {
+  const list = document.getElementById('packingList');
+  list.innerHTML = trip.packing.map((cat, ci) => `
+    <div class="pack-cat">
+      <div class="pack-cat-header">
+        <span class="pack-cat-icon">${cat.icon}</span>
+        <span class="pack-cat-title">${cat.cat}</span>
+        <span class="pack-cat-count">${cat.items.filter(i=>i.checked).length}/${cat.items.length}</span>
+      </div>
+      ${cat.items.map((item, ii) => `
+        <div class="pack-item ${item.checked?'checked':''}" onclick="togglePack(${ci},${ii})">
+          <div class="pack-check"></div>
+          <div class="pack-text">${item.text}${item.note?`<small>${item.note}</small>`:''}</div>
+        </div>
+      `).join('')}
+      <div class="pack-add-input">
+        <input type="text" placeholder="Add item..." id="packInput${ci}">
+        <button onclick="addPackItem(${ci})">＋</button>
+      </div>
+    </div>
+  `).join('');
+  updatePackProgress(trip);
+}
+function togglePack(ci, ii) {
+  TRIPS[currentTrip].packing[ci].items[ii].checked = !TRIPS[currentTrip].packing[ci].items[ii].checked;
+  renderPacking(TRIPS[currentTrip]);
+  updatePackBadge(TRIPS[currentTrip]);
+  showToast('Item updated');
+}
+function addPackItem(ci) {
+  const inp = document.getElementById('packInput' + ci);
+  if (!inp.value.trim()) return;
+  TRIPS[currentTrip].packing[ci].items.push({ text: inp.value.trim(), note: '', checked: false });
+  renderPacking(TRIPS[currentTrip]);
+  updatePackBadge(TRIPS[currentTrip]);
+  showToast('Item added to packing list');
+}
+function updatePackProgress(trip) {
+  const total = trip.packing.reduce((a,c)=>a+c.items.length,0);
+  const packed = trip.packing.reduce((a,c)=>a+c.items.filter(i=>i.checked).length,0);
+  const pct = total ? Math.round(packed/total*100) : 0;
+  document.getElementById('packedCount').textContent = packed;
+  document.getElementById('totalCount').textContent = total;
+  document.getElementById('packProgress').style.width = pct + '%';
+}
+function updatePackBadge(trip) {
+  const needed = trip.packing.reduce((a,c)=>a+c.items.filter(i=>!i.checked).length,0);
+  const badge = document.getElementById('packBadge');
+  badge.textContent = needed;
+  badge.style.display = needed > 0 ? '' : 'none';
+}
+function resetPacking() {
+  if (!confirm('Reset all packing items?')) return;
+  TRIPS[currentTrip].packing.forEach(cat => cat.items.forEach(i => i.checked = false));
+  renderPacking(TRIPS[currentTrip]);
+  updatePackBadge(TRIPS[currentTrip]);
+  showToast('Packing list reset');
+}
+
+// ─── CREW ───
+function renderCrew(trip) {
+  const grid = document.getElementById('crewGrid');
+  const colors = ['135deg,var(--amber),var(--rust)','135deg,var(--sage),var(--sky)','135deg,var(--dust),var(--amber)','135deg,var(--rust),var(--campfire)','135deg,var(--sky),var(--sage)','135deg,var(--amber-light),var(--dust)'];
+  grid.innerHTML = trip.crew.map((m,i) => `
+    <div class="crew-card">
+      <div class="crew-avatar" style="background:linear-gradient(${colors[i%colors.length]})">${m.initials}</div>
+      <div class="crew-name">${m.name}</div>
+      <div class="crew-role">${m.role}</div>
+      <div class="crew-status ${m.status}">${m.status==='confirmed'?'✓ Confirmed':'⏳ Awaiting'}</div>
+    </div>
+  `).join('');
+}
+function inviteMember() {
+  const name = document.getElementById('inviteName').value.trim();
+  const role = document.getElementById('inviteRole').value;
+  if (!name) { showToast('Please enter a name', 'error'); return; }
+  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  TRIPS[currentTrip].crew.push({ name, role, status: 'pending', initials });
+  renderCrew(TRIPS[currentTrip]);
+  document.getElementById('inviteName').value = '';
+  document.getElementById('inviteEmail').value = '';
+  showToast(`📨 Invite sent to ${name}`, 'success');
+}
+
+// ─── FOOD ───
+function renderFood(trip) {
+  const list = document.getElementById('foodList');
+  list.innerHTML = trip.food.map((d,i) => `
+    <div class="food-day">
+      <div class="food-day-header" onclick="toggleFoodDay(${i})">
+        <div>
+          <div class="food-day-title">${d.day}</div>
+          <div class="food-day-loc">📍 ${d.loc}</div>
+        </div>
+        <span style="color:var(--dust);font-size:0.8rem;margin-left:auto;">▼</span>
+      </div>
+      <div class="food-day-body" id="foodDay${i}">
+        <div class="meal-slot">
+          <div class="meal-label">🌅 Breakfast</div>
+          <div class="meal-item">${d.breakfast || '—'}</div>
+          <div class="meal-add" onclick="editMeal(${i},'breakfast')">＋ edit</div>
+        </div>
+        <div class="meal-slot">
+          <div class="meal-label">☀️ Lunch</div>
+          <div class="meal-item">${d.lunch || '—'}</div>
+          <div class="meal-add" onclick="editMeal(${i},'lunch')">＋ edit</div>
+        </div>
+        <div class="meal-slot">
+          <div class="meal-label">🔥 Dinner</div>
+          <div class="meal-item">${d.dinner || '—'}</div>
+          <div class="meal-add" onclick="editMeal(${i},'dinner')">＋ edit</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+function toggleFoodDay(i) {
+  document.getElementById('foodDay'+i).classList.toggle('open');
+}
+function editMeal(di, meal) {
+  const val = prompt('Enter meal:', TRIPS[currentTrip].food[di][meal]);
+  if (val === null) return;
+  TRIPS[currentTrip].food[di][meal] = val;
+  renderFood(TRIPS[currentTrip]);
+  showToast('Meal updated 🍽️', 'success');
+  setTimeout(() => document.getElementById('foodDay'+di).classList.add('open'), 100);
+}
+
+// ─── DOCS ───
+function renderDocs(trip) {
+  const grid = document.getElementById('docsGrid');
+  if (!trip.docs.length) { grid.innerHTML = ''; return; }
+  grid.innerHTML = trip.docs.map(d => `
+    <div class="doc-card">
+      <div class="doc-icon">${d.icon}</div>
+      <div class="doc-name">${d.name}</div>
+      <div class="doc-meta">${d.size} · ${d.date}</div>
+    </div>
+  `).join('');
+}
+function handleDocUpload(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(f => {
+    const icon = f.type.includes('pdf') ? '📄' : f.type.includes('sheet') || f.name.includes('.xls') ? '📊' : f.type.includes('image') ? '🖼️' : '📎';
+    TRIPS[currentTrip].docs.push({ name: f.name, type: f.type, size: (f.size/1024).toFixed(0)+' KB', date: 'Just now', icon });
+  });
+  renderDocs(TRIPS[currentTrip]);
+  showToast(`${files.length} document${files.length>1?'s':''} uploaded`, 'success');
+}
+function handleDocDrop(e) {
+  e.preventDefault();
+  document.getElementById('docsDropZone').classList.remove('dragover');
+  const dt = e.dataTransfer;
+  if (dt.files.length) handleDocUpload({ target: dt });
+}
+
+// ─── GALLERY ───
+function renderGallery(trip) {
+  const grid = document.getElementById('galleryGrid');
+  const addBtn = `<button class="gallery-add" onclick="document.getElementById('photoFileInput').click()"><span>＋</span><span style="font-family:'Crimson Pro';font-size:0.85rem;">Add photos</span></button>`;
+  if (!trip.photos.length) { grid.innerHTML = addBtn; return; }
+  grid.innerHTML = trip.photos.map(p => `
+    <div class="gallery-item"><img src="${p.src}" alt="${p.name}" loading="lazy"></div>
+  `).join('') + addBtn;
+}
+function handlePhotoUpload(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      TRIPS[currentTrip].photos.push({ src: ev.target.result, name: f.name });
+      renderGallery(TRIPS[currentTrip]);
+    };
+    reader.readAsDataURL(f);
+  });
+  showToast(`${files.length} photo${files.length>1?'s':''} added 📸`, 'success');
+}
+
+// ─── ROUTE ───
+function renderRoute(trip) {
+  const visual = document.getElementById('routeVisual');
+  visual.innerHTML = trip.route.map((stop, i) => {
+    const line = i < trip.route.length - 1 ? `<div class="route-line"><span class="route-km">${trip.route[i+1].km} km</span></div>` : '';
+    return `<div class="route-stop" style="animation-delay:${i*0.08}s">
+      <div class="route-stop-dot">${stop.emoji}</div>
+      <div class="route-stop-name">${stop.name}</div>
+      ${stop.nights ? `<div class="route-stop-nights">${stop.nights}n</div>` : ''}
+    </div>${line}`;
+  }).join('');
+}
+
+// ─── NAVIGATION ───
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const panel = document.getElementById('panel-' + id);
+  if (panel) panel.classList.add('active');
+  const navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(n => { if (n.getAttribute('onclick') && n.getAttribute('onclick').includes(id)) n.classList.add('active'); });
+  const titles = { dashboard:'Overview', itinerary:'Itinerary', route:'Route', accommodation:'Accommodation', food:'Food & Meals', packing:'Packing List', crew:'Crew', docs:'Documents', gallery:'Gallery' };
+  document.getElementById('topbarTitle').textContent = (TRIPS[currentTrip]?.name || 'Trip') + ' — ' + (titles[id] || id);
+  if (window.innerWidth < 768) document.getElementById('sidebar').classList.add('collapsed');
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('collapsed');
+  document.getElementById('main').classList.toggle('expanded');
+}
+
+// ─── MODALS ───
+function openNewTripModal() { openModal('newTripModal'); }
+function openAddDayModal() { openModal('addDayModal'); }
+function openAddAccomModal() { openModal('addAccomModal'); }
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+// ─── WIZARD ───
+function wizardNext(step) {
+  document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('wizStep' + step).classList.add('active');
+  document.querySelectorAll('.wiz-step').forEach((s,i) => {
+    s.classList.remove('done','current');
+    if (i+1 < step) s.classList.add('done');
+    if (i+1 === step) s.classList.add('current');
+  });
+}
+
+function createNewTrip() {
+  const name = document.getElementById('newTripName').value.trim();
+  const dest = document.getElementById('newTripDest').value.trim();
+  const start = document.getElementById('newTripStart').value;
+  const end = document.getElementById('newTripEnd').value;
+  if (!name) { showToast('Please enter a trip name', 'error'); return; }
+  const key = name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  TRIPS[key] = {
+    name, dest, startDate: start, endDate: end,
+    crew: [], itinerary: [], accommodation: [], packing: [
+      { cat: 'Camping', icon: '🏕️', items: [{ text: 'Tent', note: '', checked: false },{ text: 'Sleeping bag', note: '', checked: false }] },
+      { cat: '4x4 & Recovery', icon: '🚗', items: [{ text: 'Hi-lift jack', note: '', checked: false },{ text: 'Recovery tracks', note: '', checked: false }] },
+    ],
+    food: [], docs: [], photos: [], route: []
+  };
+  const sel = document.getElementById('tripSelect');
+  const opt = document.createElement('option');
+  opt.value = key; opt.textContent = name;
+  sel.insertBefore(opt, sel.lastElementChild);
+  sel.value = key;
+  switchTrip(key);
+  closeModal('newTripModal');
+  showToast('🗺️ ' + name + ' created!', 'success');
+  wizardNext(1);
+}
+
+function switchTrip(val) {
+  if (val === 'new') { openNewTripModal(); document.getElementById('tripSelect').value = currentTrip; return; }
+  if (!TRIPS[val]) return;
+  currentTrip = val;
+  document.getElementById('heroTripName').textContent = TRIPS[val].name;
+  renderAll();
+  startCountdown();
+}
+
+// ─── ADD DAY ───
+function addDay() {
+  const date = document.getElementById('newDayDate').value;
+  const location = document.getElementById('newDayLocation').value.trim();
+  const accom = document.getElementById('newDayAccom').value.trim();
+  const type = document.getElementById('newDayType').value;
+  const morning = document.getElementById('newDayMorning').value.trim();
+  const afternoon = document.getElementById('newDayAfternoon').value.trim();
+  const drive = document.getElementById('newDayDrive').value;
+  const driveTime = document.getElementById('newDayDriveTime').value.trim();
+  const notes = document.getElementById('newDayNotes').value.trim();
+  if (!location) { showToast('Please enter a location', 'error'); return; }
+  const trip = TRIPS[currentTrip];
+  trip.itinerary.push({ date, day: trip.itinerary.length + 1, location, accom, type, morning, afternoon, drive, driveTime, notes });
+  trip.itinerary.sort((a,b) => new Date(a.date) - new Date(b.date));
+  trip.itinerary.forEach((d,i) => d.day = i+1);
+  renderItinerary(trip);
+  closeModal('addDayModal');
+  showToast('📅 Day added to itinerary', 'success');
+  document.getElementById('newDayLocation').value = '';
+  document.getElementById('newDayAccom').value = '';
+  document.getElementById('newDayMorning').value = '';
+  document.getElementById('newDayAfternoon').value = '';
+  document.getElementById('newDayDrive').value = '';
+  document.getElementById('newDayDriveTime').value = '';
+  document.getElementById('newDayNotes').value = '';
+}
+
+// ─── ADD ACCOMMODATION ───
+function addAccommodation() {
+  const name = document.getElementById('newAccomName').value.trim();
+  const type = document.getElementById('newAccomType').value;
+  const location = document.getElementById('newAccomLocation').value.trim();
+  const nights = parseInt(document.getElementById('newAccomNights').value) || 1;
+  const checkin = document.getElementById('newAccomCheckIn').value;
+  const ref = document.getElementById('newAccomRef').value.trim();
+  const notes = document.getElementById('newAccomNotes').value.trim();
+  if (!name) { showToast('Please enter accommodation name', 'error'); return; }
+  const typeEmoji = { camp:'🏕️', chalet:'🏠', lodge:'🏡', guesthouse:'🏘️' };
+  TRIPS[currentTrip].accommodation.push({ name, type, location, nights, checkin, ref, notes, icon: typeEmoji[type] });
+  renderAccommodation(TRIPS[currentTrip]);
+  closeModal('addAccomModal');
+  showToast('🏕️ Accommodation added', 'success');
+  document.getElementById('newAccomName').value = '';
+  document.getElementById('newAccomLocation').value = '';
+  document.getElementById('newAccomNights').value = '';
+  document.getElementById('newAccomRef').value = '';
+  document.getElementById('newAccomNotes').value = '';
+}
+
+// ─── EXPORT / SHARE ───
+function exportTrip() {
+  const trip = TRIPS[currentTrip];
+  const json = JSON.stringify(trip, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = (trip.name || 'trip').replace(/\s+/g,'-') + '.trek.json';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Trip exported as .trek.json 📥', 'success');
+}
+function shareTrip() {
+  if (navigator.share) {
+    navigator.share({ title: TRIPS[currentTrip].name + ' — TREK', text: 'Check out our expedition plan!', url: window.location.href });
+  } else {
+    navigator.clipboard?.writeText(window.location.href);
+    showToast('Link copied to clipboard 🔗', 'success');
+  }
+}
+
+// ─── TOAST ───
+function showToast(msg, type = '') {
+  const container = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.textContent = msg;
+  container.appendChild(t);
+  setTimeout(() => t.style.opacity = '0', 2800);
+  setTimeout(() => t.remove(), 3100);
+}
+
+// ─── UTILS ───
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function addRouteStop() {
+  const name = prompt('Stop name:');
+  if (!name) return;
+  const km = prompt('Distance from previous stop (km):') || '0';
+  const nights = parseInt(prompt('Nights here:') || '0');
+  const emojis = ['📍','🏔️','🌊','🏜️','🌵','🦁','🏕️','🗻','🌿'];
+  TRIPS[currentTrip].route.push({ name, emoji: emojis[Math.floor(Math.random()*emojis.length)], km: parseInt(km), nights });
+  renderRoute(TRIPS[currentTrip]);
+  showToast('🧭 Stop added to route', 'success');
+}
+
+// ─── PWA SERVICE WORKER ───
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
