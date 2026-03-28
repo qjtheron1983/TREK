@@ -997,41 +997,52 @@ async function joinTrip(){
   if(!code){toast('Enter an invite code','err');return;}
   if(code.length<4){toast('Code too short','err');return;}
   toast('Searching…');
+  console.log('[JOIN] Starting join with code:',code,'FB_READY:',FB_READY,'ME:',ME?.id);
+  
   // 1. Check locally first
   let foundTrip=Object.values(DB.trips).find(t=>t.inviteCode===code);
-  // 2. Firebase search — two strategies
+  if(foundTrip)console.log('[JOIN] Found locally:',foundTrip.id);
+
+  // 2. Firebase search
   if(!foundTrip&&FB_READY){
-    // Strategy A: invite_codes lookup doc — contains full trip snapshot, no second read needed
+    // Strategy A: invite_codes lookup
     try{
+      console.log('[JOIN] Trying invite_codes/'+code);
       const ld=await fbDb.collection('invite_codes').doc(code).get();
+      console.log('[JOIN] invite_codes exists:',ld.exists,'data:',ld.exists?JSON.stringify(ld.data()).slice(0,100):'none');
       if(ld.exists){
         const data=ld.data();
         if(data.tripSnapshot){
-          // Full trip stored in invite_codes — no permission issue
           const t=JSON.parse(data.tripSnapshot);
           t.id=data.tripId;
           foundTrip=t;
-          console.log('Strategy A: found trip via snapshot',data.tripId);
+          console.log('[JOIN] Strategy A success via snapshot, tripId:',data.tripId);
         } else if(data.tripId){
-          // Fallback: try reading trip directly
+          console.log('[JOIN] No snapshot, trying direct read of trips/'+data.tripId);
           try{
             const tripDoc=await fbDb.collection('trips').doc(data.tripId).get();
+            console.log('[JOIN] trips doc exists:',tripDoc.exists);
             if(tripDoc.exists)foundTrip={...tripDoc.data(),id:tripDoc.id};
-          }catch(e2){console.warn('Strategy A trip read failed (permission?):', e2.message);}
+          }catch(e2){console.error('[JOIN] trips direct read failed:',e2.code,e2.message);}
         }
       }
-    }catch(e){console.warn('Strategy A (invite_codes lookup) failed:',e.code, e.message);}
-    // Strategy B: where query (needs Firestore index — may throw)
+    }catch(e){console.error('[JOIN] Strategy A failed:',e.code,e.message);}
+    
+    // Strategy B: where query
     if(!foundTrip){
       try{
+        console.log('[JOIN] Trying where inviteCode=='+code);
         const snap=await fbDb.collection('trips').where('inviteCode','==',code).limit(1).get();
+        console.log('[JOIN] Strategy B results:',snap.size);
         if(!snap.empty){const doc=snap.docs[0];foundTrip={...doc.data(),id:doc.id};}
-      }catch(e){console.warn('Strategy B (where inviteCode query) failed:',e.code, e.message);}
+      }catch(e){console.error('[JOIN] Strategy B failed:',e.code,e.message);}
     }
   }
+  
+  console.log('[JOIN] foundTrip:',foundTrip?foundTrip.id:'NOT FOUND');
   if(!foundTrip){
     if(!FB_READY)toast('No Firebase connection — make sure you are signed in','err');
-    else toast('Code "'+code+'" not found. The organiser must open the Crew tab first to register the code, then share it again.','err');
+    else toast('Code "'+code+'" not found — check code and try again','err');
     return;
   }
   // Check if already a member
