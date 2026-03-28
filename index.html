@@ -785,6 +785,7 @@ if('serviceWorker' in navigator){
           <div id="spSearchResults" style="margin-top:.4rem"></div>
         </div>
         <div style="padding:0 1rem .75rem">
+          <div id="spPlaylistActions" style="margin-bottom:.5rem"></div>
           <div style="font-size:.62rem;font-weight:700;color:#b3b3b3;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.4rem">Playlist</div>
           <div id="spPlaylist"><div style="text-align:center;color:#b3b3b3;font-size:.82rem;padding:1rem;font-style:italic">No tracks yet 🎶</div></div>
         </div>
@@ -3400,7 +3401,7 @@ function toggleSB(){$('sidebar').classList.toggle('off');}
 // ══════════════════════════════════════════════════════════════
 const SP_CLIENT_ID='ee0ad780e03b4032a7bdd5d8a4f18445';
 const SP_REDIRECT=window.location.origin+window.location.pathname;
-const SP_SCOPES='user-read-private playlist-read-private user-library-read';
+const SP_SCOPES='user-read-private playlist-read-private user-library-read playlist-modify-public playlist-modify-private';
 const SP_TRACKS={};
 let spSearchTimer=null;
 
@@ -3547,7 +3548,9 @@ function spRenderPlaylist(t){
     const num=document.createElement('div');num.style.cssText='color:#b3b3b3;font-size:.7rem;font-weight:700;width:16px;text-align:right;flex-shrink:0';num.textContent=i+1;
     const thumb=document.createElement('div');thumb.style.cssText='width:36px;height:36px;border-radius:4px;overflow:hidden;flex-shrink:0;background:#333;display:flex;align-items:center;justify-content:center';
     thumb.innerHTML=tr.img?`<img src="${tr.img}" style="width:100%;height:100%;object-fit:cover">`:'🎵';
-    const info=document.createElement('div');info.style.cssText='flex:1;overflow:hidden';
+    const info=document.createElement('div');info.style.cssText='flex:1;overflow:hidden;cursor:pointer';
+    info.onclick=()=>spOpenTrack(tr.id);
+    info.title='Open in Spotify';
     info.innerHTML=`<div style="font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff">${tr.name}</div><div style="font-size:.68rem;color:#b3b3b3">${tr.artist||''}</div>`;
     const actions=document.createElement('div');actions.style.cssText='display:flex;align-items:center;gap:.25rem;flex-shrink:0';
     const btnD=document.createElement('button');btnD.textContent='👎';btnD.style.cssText='background:transparent;border:none;color:#b3b3b3;cursor:pointer;font-size:.85rem;padding:2px';btnD.onclick=()=>spVote(tr.id,-1);
@@ -3560,14 +3563,99 @@ function spRenderPlaylist(t){
   });
 }
 
+async function spGetMyId(){
+  const tok=spToken();if(!tok)return null;
+  try{
+    const r=await fetch('https://api.spotify.com/v1/me',{headers:{Authorization:'Bearer '+tok}});
+    const d=await r.json();return d.id||null;
+  }catch(e){return null;}
+}
+
+async function spCreatePlaylist(){
+  const t=T();if(!t)return;
+  const list=(t.playlist||[]).sort((a,b)=>(b.votes||0)-(a.votes||0));
+  if(!list.length){toast('No tracks in playlist yet','err');return;}
+  const tok=spToken();
+  if(!tok){toast('Connect Spotify first','err');return;}
+  toast('Creating playlist…');
+  try{
+    const userId=await spGetMyId();
+    if(!userId){toast('Could not get Spotify user','err');return;}
+    // Create playlist
+    const plRes=await fetch('https://api.spotify.com/v1/users/'+userId+'/playlists',{
+      method:'POST',
+      headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        name:'🚙 TREK — '+(t.name||'Expedition'),
+        description:'Created by TREK Expedition Planner · '+list.length+' tracks voted by the crew',
+        public:true
+      })
+    });
+    const pl=await plRes.json();
+    if(!pl.id){toast('Could not create playlist','err');return;}
+    // Add tracks in chunks of 100
+    const uris=list.map(tr=>'spotify:track:'+tr.id);
+    for(let i=0;i<uris.length;i+=100){
+      await fetch('https://api.spotify.com/v1/playlists/'+pl.id+'/tracks',{
+        method:'POST',
+        headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},
+        body:JSON.stringify({uris:uris.slice(i,i+100)})
+      });
+    }
+    // Store playlist URL in trip
+    t.spotifyPlaylistUrl=pl.external_urls?.spotify||'https://open.spotify.com/playlist/'+pl.id;
+    t.spotifyPlaylistId=pl.id;
+    sv();renderSpotify(t);
+    toast('Playlist created! Opening Spotify…','ok');
+    window.open(t.spotifyPlaylistUrl,'_blank');
+  }catch(e){toast('Failed to create playlist','err');console.error(e);}
+}
+
+function spOpenTrack(spotifyId){
+  window.open('https://open.spotify.com/track/'+spotifyId,'_blank');
+}
+
 function renderSpotify(t){
   const ca=$('spConnectArea'),sa=$('spSearchArea');if(!ca)return;
   const tok=spToken();
   if(tok){
-    ca.innerHTML='<div style="display:flex;align-items:center;gap:.45rem"><div style="width:8px;height:8px;background:#1DB954;border-radius:50%"></div><span style="color:#1DB954;font-size:.72rem;font-weight:700">Connected</span><button onclick="spDisconnect()" style="background:transparent;border:1px solid #535353;border-radius:4px;color:#b3b3b3;font-size:.65rem;padding:2px 6px;cursor:pointer;margin-left:.2rem">Disconnect</button></div>';
+    const hasPlaylist=t?.spotifyPlaylistUrl;
+    ca.innerHTML='';
+    const wrap=document.createElement('div');wrap.style.cssText='display:flex;align-items:center;gap:.4rem;flex-wrap:wrap';
+    const dot=document.createElement('div');dot.style.cssText='width:8px;height:8px;background:#1DB954;border-radius:50%';
+    const lbl=document.createElement('span');lbl.style.cssText='color:#1DB954;font-size:.72rem;font-weight:700';lbl.textContent='Connected';
+    const dis=document.createElement('button');dis.textContent='Disconnect';dis.style.cssText='background:transparent;border:1px solid #535353;border-radius:4px;color:#b3b3b3;font-size:.62rem;padding:2px 6px;cursor:pointer';dis.onclick=spDisconnect;
+    wrap.appendChild(dot);wrap.appendChild(lbl);wrap.appendChild(dis);
+    ca.appendChild(wrap);
     if(sa)sa.style.display='block';
+    // Create / Open playlist button below search area
+    const plArea=$('spPlaylistActions');
+    if(plArea){
+      plArea.innerHTML='';
+      if(hasPlaylist){
+        const openBtn=document.createElement('button');
+        openBtn.textContent='🎵 Open in Spotify';
+        openBtn.style.cssText='background:#1DB954;border:none;border-radius:20px;color:#000;font-size:.72rem;font-weight:800;padding:.35rem .85rem;cursor:pointer;margin-bottom:.6rem';
+        openBtn.onclick=()=>window.open(t.spotifyPlaylistUrl,'_blank');
+        plArea.appendChild(openBtn);
+        const re=document.createElement('button');
+        re.textContent='↻ Update Spotify playlist';
+        re.style.cssText='background:transparent;border:1px solid #535353;border-radius:20px;color:#b3b3b3;font-size:.65rem;padding:.28rem .7rem;cursor:pointer;margin-left:.4rem';
+        re.onclick=spCreatePlaylist;
+        plArea.appendChild(re);
+      } else {
+        const createBtn=document.createElement('button');
+        createBtn.textContent='⬆ Export to Spotify';
+        createBtn.style.cssText='background:transparent;border:1.5px solid #1DB954;border-radius:20px;color:#1DB954;font-size:.72rem;font-weight:700;padding:.35rem .85rem;cursor:pointer;margin-bottom:.6rem';
+        createBtn.onclick=spCreatePlaylist;
+        plArea.appendChild(createBtn);
+      }
+    }
   }else{
-    ca.innerHTML='<button onclick="spInit()" style="padding:.38rem .85rem;background:#1DB954;border:none;border-radius:20px;color:#000;font-weight:800;font-size:.75rem;cursor:pointer">🎵 Connect Spotify</button>';
+    ca.innerHTML='';
+    const btn=document.createElement('button');btn.textContent='🎵 Connect Spotify';
+    btn.style.cssText='padding:.38rem .85rem;background:#1DB954;border:none;border-radius:20px;color:#000;font-weight:800;font-size:.75rem;cursor:pointer';
+    btn.onclick=spInit;ca.appendChild(btn);
     if(sa)sa.style.display='none';
   }
   if(t)spRenderPlaylist(t);
