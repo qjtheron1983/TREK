@@ -1050,12 +1050,21 @@ async function joinTrip(){
   if(!hasMyVeh){
     foundTrip.vehicles.push({name:vname,fuelType:$('jt-ftype').value,consumption:cons,tank:Number($('jt-tank').value)||80,driver:ME.name,uid:ME.id});
   }
+  // Preserve original owner — the organiser, not the joiner
+  // _owner stays as whoever created the trip
+  if(!foundTrip._owner)foundTrip._owner=foundTrip.createdBy||ME.id;
   DB.trips[foundTrip.id]=foundTrip;
   DB.cur=foundTrip.id;
-  sv();
-  // Save back to Firebase
+  // Save locally
+  try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
+  // Write back to Firebase — preserving original _owner, adding joiner to _crewIds
   if(FB_READY){
-    fbDb.collection('trips').doc(foundTrip.id).set(foundTrip,{merge:true}).catch(()=>{});
+    fbDb.collection('trips').doc(foundTrip.id).set({
+      ...foundTrip,
+      _updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true})
+    .then(()=>console.log('Joined trip saved to Firebase'))
+    .catch(e=>console.error('Join save failed:',e));
   }
   rebuildSel(); renderAll(); startCD();
   closeModal('joinTripMod');
@@ -1114,8 +1123,10 @@ function sv(){
   if(FB_READY&&ME&&DB.cur&&DB.trips[DB.cur]){
     try{
       const _t=DB.trips[DB.cur];
+      // Preserve original _owner — only set it if not already set
+      const _owner=_t._owner||ME.id;
       fbDb.collection('trips').doc(DB.cur).set({
-        ..._t,_owner:ME.id,
+        ..._t,_owner,
         _updatedAt:firebase.firestore.FieldValue.serverTimestamp()
       },{merge:true}).catch(e=>console.warn('Firestore write:',e));
       // Always write invite_codes lookup — needed for join to work
