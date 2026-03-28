@@ -1064,7 +1064,9 @@ async function joinTrip(){
   if(!foundTrip._owner)foundTrip._owner=foundTrip.createdBy||ME.id;
   DB.trips[foundTrip.id]=foundTrip;
   DB.cur=foundTrip.id;
-  sv();
+  // DO NOT call sv() — joiner cannot write this trip to Firebase (permission denied)
+  // Save locally only using the correct SK key
+  try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
 
   if(FB_READY){
     // Write a join_request — joiner CAN write this, organiser reads it on next load
@@ -1086,6 +1088,11 @@ async function joinTrip(){
     fbDb.collection('join_requests').doc(foundTrip.id+'_'+ME.id).set(joinReq)
       .then(()=>console.log('[JOIN] join_request written'))
       .catch(e=>console.error('[JOIN] join_request failed:',e));
+    // Also record this tripId in the user's own doc so it loads on refresh
+    fbDb.collection('users').doc(ME.id).set(
+      {joinedTrips:firebase.firestore.FieldValue.arrayUnion(foundTrip.id)},
+      {merge:true}
+    ).catch(e=>console.warn('[JOIN] user joinedTrips write failed:',e));
   }
 
   rebuildSel(); renderAll(); startCD();
@@ -1168,12 +1175,33 @@ async function loadFromFirebase(uid){
     // Firebase is the source of truth — wipe all local trips first
     DB.trips={};
 
-    const [crewSnap,ownSnap]=await Promise.all([
+    // Also get the user's own doc to find joinedTrips
+    const userDoc=await fbDb.collection('users').doc(uid).get();
+    const joinedTripIds=(userDoc.exists&&userDoc.data().joinedTrips)||[];
+
+    const promises=[
       fbDb.collection('trips').where('_crewIds','array-contains',uid).get(),
       fbDb.collection('trips').where('_owner','==',uid).get()
-    ]);
+    ];
+    // Load each joined trip individually (bypasses _crewIds restriction while organiser hasn't saved yet)
+    const joinedPromises=joinedTripIds.map(tid=>
+      fbDb.collection('trips').doc(tid).get().catch(()=>null)
+    );
+    const [crewSnap,ownSnap,...joinedDocs]=await Promise.all([...promises,...joinedPromises]);
     crewSnap.forEach(doc=>{DB.trips[doc.id]={...doc.data(),id:doc.id};});
     ownSnap.forEach(doc=>{DB.trips[doc.id]={...doc.data(),id:doc.id};});
+    // Load joined trips — may succeed once organiser has saved us to _crewIds
+    joinedDocs.forEach(doc=>{if(doc&&doc.exists)DB.trips[doc.id]={...doc.data(),id:doc.id};});
+    // If a joined trip still can't be read, restore from invite_codes snapshot
+    for(const tid of joinedTripIds){
+      if(!DB.trips[tid]){
+        try{
+          // Find the invite code for this trip from local storage
+          const localDb=JSON.parse(localStorage.getItem(SK)||'{}');
+          if(localDb.trips&&localDb.trips[tid])DB.trips[tid]=localDb.trips[tid];
+        }catch(e){}
+      }
+    }
 
     // Set cur to first available if missing or stale
     if(!DB.cur||!DB.trips[DB.cur]){
