@@ -11,6 +11,8 @@
 <title>TREK — Expedition Planner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 :root{
   --ink:#0f0c07;--night:#1a1510;--parchment:#f2e8d9;--parchment-mid:#d9cbb8;--parchment-dark:#c4b49a;
@@ -289,13 +291,22 @@ body{
 }
 .add-day-dashed:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-dim);}
 
-/* ── ROUTE / GOOGLE MAP ── */
-#mapContainer{width:100%;height:420px;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:1.5rem;position:relative;background:rgba(255,255,255,.02);}
-.map-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;color:var(--dust);}
-.map-placeholder .mp-icon{font-size:3rem;opacity:.3;}
-.map-placeholder .mp-text{font-family:'Playfair Display';font-size:1.1rem;font-style:italic;}
-.map-placeholder .mp-sub{font-size:.85rem;font-style:italic;opacity:.7;}
-#gmap{width:100%;height:100%;display:none;}
+/* ── ROUTE / LEAFLET MAP ── */
+#mapContainer{width:100%;height:440px;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:1.5rem;position:relative;background:#1a1510;}
+#leafletMap{width:100%;height:100%;}
+/* Leaflet dark overrides */
+.leaflet-tile-pane{filter:brightness(.85) saturate(.7) hue-rotate(10deg);}
+.leaflet-popup-content-wrapper{background:#1a1510;border:1px solid var(--amber);color:var(--parchment);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.5);}
+.leaflet-popup-tip{background:#1a1510;}
+.leaflet-popup-content{font-family:'Crimson Pro',serif;font-size:.95rem;margin:.6rem .9rem;}
+.leaflet-control-zoom a{background:#1a1510;color:var(--amber);border-color:var(--border);}
+.leaflet-control-zoom a:hover{background:var(--amber);color:var(--ink);}
+.leaflet-control-attribution{background:rgba(13,11,7,.7);color:var(--dust);font-size:.55rem;}
+.leaflet-control-attribution a{color:var(--dust-light);}
+.map-empty{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;color:var(--dust);padding:2rem;text-align:center;}
+.map-empty span:first-child{font-size:3rem;opacity:.3;}
+.map-empty span:nth-child(2){font-family:'Playfair Display';font-size:1.1rem;font-style:italic;color:var(--parchment-mid);}
+.map-empty span:last-child{font-size:.88rem;font-style:italic;opacity:.7;}
 .route-stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:1rem;margin-bottom:1.5rem;}
 .rs{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.9rem;text-align:center;}
 .rs-num{font-family:'Playfair Display';font-size:1.5rem;font-weight:700;color:var(--sky);}
@@ -547,28 +558,13 @@ input[type=file]{display:none;}
     <!-- ROUTE -->
     <section class="panel" id="panel-route">
       <div class="ph">
-        <div><div class="ph-title">Route & Map</div><div class="ph-sub">Stops auto-plotted on Google Maps as you add them</div></div>
-        <button class="btn-primary" onclick="openModal('addStopMod')">＋ Add Stop</button>
+        <div><div class="ph-title">Route &amp; Map</div><div class="ph-sub">Free map — stops auto-plot as you add them</div></div>
+        <button class="btn-primary" onclick="openModal('addStopMod')">&#65291; Add Stop</button>
       </div>
-      <div id="mapContainer">
-        <div class="map-placeholder" id="mapPlaceholder">
-          <div class="mp-icon">🗺️</div>
-          <div class="mp-text">Add a Google Maps API key to enable live maps</div>
-          <div class="mp-sub">Settings → Maps API Key, or add stops to see the route table</div>
-        </div>
-        <div id="gmap"></div>
-      </div>
+      <div id="mapContainer"><div id="leafletMap"></div></div>
       <div class="route-stats-grid" id="routeStatsGrid"></div>
       <div class="card" style="padding:1.25rem;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.75rem;">
-          <div style="font-family:'Playfair Display';font-size:1rem;font-weight:700;color:var(--parchment-mid);">📍 Route Stops</div>
-          <div style="display:flex;gap:.5rem;align-items:center;">
-            <div class="fg" style="min-width:0;margin:0;">
-              <input type="text" id="mapsApiInput" placeholder="Google Maps API Key (optional)" style="padding:.38rem .6rem;font-size:.8rem;width:220px;">
-            </div>
-            <button class="btn-secondary" style="padding:.38rem .7rem;font-size:.6rem;" onclick="initMap()">Apply Key</button>
-          </div>
-        </div>
+        <div style="font-family:'Playfair Display';font-size:1rem;font-weight:700;color:var(--parchment-mid);margin-bottom:1rem;">&#128205; Route Stops</div>
         <table class="stops-table" id="stopsTable">
           <thead><tr><th>#</th><th>Location</th><th>Nights</th><th>km from prev</th><th>Drive time</th><th></th></tr></thead>
           <tbody id="stopsTbody"></tbody>
@@ -796,7 +792,6 @@ input[type=file]{display:none;}
 // ═══════════════════════════════════════
 let trips = {};       // { key: tripObj }
 let cur = null;       // current trip key
-let gmap = null;      // google map instance
 let cdTimer = null;
 
 const COLORS = [
@@ -1105,93 +1100,122 @@ function renderStops(t) {
   renderRouteStats(t);
 }
 function renderRouteStats(t) {
-  const totalKm = t.stops.reduce((s,x)=>s+Number(x.km||0),0);
+  const manualKm = t.stops.reduce((s,x)=>s+Number(x.km||0),0);
+  const totalKm = t._routeKm || manualKm;
   const totalNights = t.stops.reduce((s,x)=>s+Number(x.nights||0),0);
   const totalStops = t.stops.length;
+  const driveHrs = totalKm>0 ? Math.round(totalKm/80*10)/10 : '—';
   $('routeStatsGrid').innerHTML = `
-    <div class="rs"><div class="rs-num">${totalKm.toLocaleString()}</div><div class="rs-lbl">Total km</div></div>
+    <div class="rs"><div class="rs-num" id="rs-km">${totalKm.toLocaleString()}</div><div class="rs-lbl">Total km</div></div>
     <div class="rs"><div class="rs-num">${totalStops}</div><div class="rs-lbl">Stops</div></div>
     <div class="rs"><div class="rs-num">${totalNights}</div><div class="rs-lbl">Nights</div></div>
-    <div class="rs"><div class="rs-num">${totalKm>0?Math.round(totalKm/80*10)/10:'—'}</div><div class="rs-lbl">Est. Drive Hrs</div></div>`;
+    <div class="rs"><div class="rs-num">${driveHrs}</div><div class="rs-lbl">Est. Drive Hrs</div></div>`;
 }
 function updateFuelKm(t) {
-  const totalKm = t.stops.reduce((s,x)=>s+Number(x.km||0),0);
+  // Prefer OSRM-calculated route distance, fall back to sum of manual km entries
+  const totalKm = t._routeKm || t.stops.reduce((s,x)=>s+Number(x.km||0),0);
   $('fuelTotalKm').value = totalKm || '';
   calcFuel();
 }
 
-// Google Maps integration
-let mapLoaded = false;
-function initMap() {
-  const key = $('mapsApiInput').value.trim();
-  if (!key) { toast('Please enter a Google Maps API key','err'); return; }
-  if (mapLoaded) { refreshMap(trips[cur]); return; }
-  const script = document.createElement('script');
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&callback=onMapReady`;
-  script.async = true;
-  document.head.appendChild(script);
-  window.onMapReady = () => {
-    mapLoaded = true;
-    $('gmap').style.display = 'block';
-    $('mapPlaceholder').style.display = 'none';
-    gmap = new google.maps.Map($('gmap'), { zoom: 6, center: {lat:-22, lng:18}, mapTypeId:'terrain', styles: darkMapStyle });
-    if (trips[cur]) refreshMap(trips[cur]);
-    toast('🗺️ Google Maps loaded','ok');
-  };
-  toast('Loading Google Maps…');
+// ── LEAFLET / OPENSTREETMAP MAP (free, no API key) ──
+let leafMap = null;
+let leafMarkers = [];
+let leafPolyline = null;
+let leafMapReady = false;
+
+function initLeaflet() {
+  if (leafMapReady) return;
+  if (typeof L === 'undefined') return;
+  leafMap = L.map('leafletMap', { zoomControl: true, attributionControl: true }).setView([-22, 18], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 19
+  }).addTo(leafMap);
+  leafMapReady = true;
+  if (trips[cur]) refreshMap(trips[cur]);
 }
 
 function refreshMap(t) {
-  if (!mapLoaded || !gmap || !t.stops.length) return;
-  const geocoder = new google.maps.Geocoder();
-  const bounds = new google.maps.LatLngBounds();
-  const waypoints = [];
-  // clear old markers/polyline
-  if (window._mapMarkers) window._mapMarkers.forEach(m=>m.setMap(null));
-  if (window._mapPoly) window._mapPoly.setMap(null);
-  window._mapMarkers = [];
+  if (!leafMapReady || !leafMap) return;
+  // Clear existing layers
+  leafMarkers.forEach(m => leafMap.removeLayer(m));
+  leafMarkers = [];
+  if (leafPolyline) { leafMap.removeLayer(leafPolyline); leafPolyline = null; }
+
+  if (!t.stops.length) return;
+
+  // Geocode all stops using free Nominatim API then draw route via OSRM
+  const coords = new Array(t.stops.length).fill(null);
   let pending = t.stops.length;
-  const coords = new Array(t.stops.length);
+
   t.stops.forEach((stop, i) => {
-    geocoder.geocode({ address: stop.name }, (res, status) => {
-      if (status === 'OK') {
-        coords[i] = res[0].geometry.location;
-        const marker = new google.maps.Marker({
-          position: coords[i], map: gmap,
-          title: stop.name,
-          label: { text: String(i+1), color: '#0f0c07', fontFamily: 'Space Mono', fontSize: '11px', fontWeight: 'bold' },
-          icon: { path: google.maps.SymbolPath.CIRCLE, scale: 14, fillColor: '#c17f24', fillOpacity: 1, strokeColor: '#f2e8d9', strokeWeight: 2 }
-        });
-        const infoW = new google.maps.InfoWindow({ content: `<div style="color:#0f0c07;font-family:Georgia;padding:4px 8px;"><b>${stop.name}</b><br>${stop.nights} night${stop.nights!==1?'s':''} · ${stop.km||0}km from prev</div>` });
-        marker.addListener('click', () => infoW.open(gmap, marker));
-        window._mapMarkers.push(marker);
-        bounds.extend(coords[i]);
+    fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(stop.name)}&format=json&limit=1`, {
+      headers: { 'Accept-Language': 'en', 'User-Agent': 'TREKExpeditionPlanner/1.0' }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data && data[0]) {
+        coords[i] = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
       }
+    })
+    .catch(() => {})
+    .finally(() => {
       pending--;
-      if (pending === 0) {
-        const validCoords = coords.filter(Boolean);
-        if (validCoords.length > 1) {
-          window._mapPoly = new google.maps.Polyline({ path: validCoords, geodesic: true, strokeColor: '#c17f24', strokeOpacity: .85, strokeWeight: 2.5, map: gmap });
-        }
-        if (validCoords.length > 0) gmap.fitBounds(bounds);
-      }
+      if (pending === 0) drawMap(t, coords);
     });
   });
 }
 
-const darkMapStyle = [
-  {elementType:'geometry',stylers:[{color:'#1a1510'}]},
-  {elementType:'labels.text.stroke',stylers:[{color:'#1a1510'}]},
-  {elementType:'labels.text.fill',stylers:[{color:'#9c8b72'}]},
-  {featureType:'water',elementType:'geometry',stylers:[{color:'#0d1b2a'}]},
-  {featureType:'road',elementType:'geometry',stylers:[{color:'#2c2015'}]},
-  {featureType:'road',elementType:'geometry.stroke',stylers:[{color:'#212121'}]},
-  {featureType:'landscape.natural',elementType:'geometry',stylers:[{color:'#23200e'}]},
-  {featureType:'poi',elementType:'geometry',stylers:[{color:'#1e1a0f'}]},
-  {featureType:'administrative',elementType:'geometry',stylers:[{color:'#3d3827'}]},
-  {featureType:'administrative.country',elementType:'labels.text.fill',stylers:[{color:'#c17f24'}]},
-  {featureType:'administrative.locality',elementType:'labels.text.fill',stylers:[{color:'#bfae96'}]},
-];
+function drawMap(t, coords) {
+  const valid = coords.map((c,i) => ({c, stop:t.stops[i], i})).filter(x=>x.c);
+  if (!valid.length) return;
+
+  const bounds = [];
+
+  // Custom amber circular marker
+  valid.forEach(({c, stop, i}) => {
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:32px;height:32px;border-radius:50%;background:#c17f24;border:2.5px solid #f2e8d9;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#0f0c07;box-shadow:0 2px 8px rgba(0,0,0,.5)">${i+1}</div>`,
+      iconSize: [32,32], iconAnchor:[16,16], popupAnchor:[0,-18]
+    });
+    const marker = L.marker(c, {icon}).addTo(leafMap);
+    marker.bindPopup(`<strong>${stop.name}</strong><br>${stop.nights} night${stop.nights!==1?'s':''}`);
+    leafMarkers.push(marker);
+    bounds.push(c);
+  });
+
+  leafMap.fitBounds(bounds, {padding:[40,40]});
+
+  // Draw route via OSRM (free, open-source routing)
+  if (valid.length >= 2) {
+    const coordStr = valid.map(x=>x.c[1]+','+x.c[0]).join(';');
+    fetch(`https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`)
+    .then(r=>r.json())
+    .then(data=>{
+      if (data.routes && data.routes[0]) {
+        const route = data.routes[0];
+        const latlngs = route.geometry.coordinates.map(c=>[c[1],c[0]]);
+        leafPolyline = L.polyline(latlngs, {color:'#c17f24', weight:3, opacity:.85}).addTo(leafMap);
+        // Update km stat from actual route distance
+        const km = Math.round(route.distance / 1000);
+        if (trips[cur]) {
+          trips[cur]._routeKm = km;
+          save();
+          updateFuelKm(trips[cur]);
+        }
+        const el = document.getElementById('rs-km');
+        if (el) el.textContent = km.toLocaleString();
+      }
+    })
+    .catch(()=>{
+      // Fallback: straight-line polyline if OSRM fails
+      leafPolyline = L.polyline(valid.map(x=>x.c), {color:'#c17f24', weight:2.5, opacity:.7, dashArray:'6 4'}).addTo(leafMap);
+    });
+  }
+}
+
 
 // ═══════════════════════════════════════
 //  ACCOMMODATION
@@ -1504,7 +1528,7 @@ document.querySelectorAll('.nav-item').forEach(item=>{
     const t=trips[cur];
     $('topTitle').textContent=(t?t.name:'No trip')+(panelTitles[panel]?' — '+panelTitles[panel]:'');
     if (window.innerWidth<900) $('sidebar').classList.add('off');
-    if (panel==='route' && mapLoaded && t) refreshMap(t);
+    if (panel==='route') { setTimeout(()=>{ initLeaflet(); if(trips[cur]) refreshMap(trips[cur]); if(leafMap) leafMap.invalidateSize(); },100); }
     if (panel==='fuel') calcFuel();
   });
 });
