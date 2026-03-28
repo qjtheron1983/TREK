@@ -20,6 +20,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <!-- Firebase -->
@@ -788,6 +789,35 @@ if('serviceWorker' in navigator){
           <div id="spPlaylistActions" style="margin-bottom:.5rem"></div>
           <div style="font-size:.62rem;font-weight:700;color:#b3b3b3;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.4rem">Playlist</div>
           <div id="spPlaylist"><div style="text-align:center;color:#b3b3b3;font-size:.82rem;padding:1rem;font-style:italic">No tracks yet 🎶</div></div>
+        </div>
+        <!-- NOW PLAYING BAR -->
+        <div id="spNowPlaying" style="display:none;background:#000;border-top:1px solid #282828;padding:.65rem 1rem">
+          <div style="display:flex;align-items:center;gap:.75rem">
+            <div id="spNpThumb" style="width:40px;height:40px;border-radius:4px;background:#282828;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🎵</div>
+            <div style="flex:1;overflow:hidden">
+              <div id="spNpTitle" style="font-size:.82rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+              <div id="spNpArtist" style="font-size:.68rem;color:#b3b3b3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0">
+              <button onclick="spPrev()" style="background:transparent;border:none;color:#b3b3b3;cursor:pointer;font-size:1.1rem;padding:4px" title="Previous">⏮</button>
+              <button id="spPlayBtn" onclick="spToggle()" style="background:#1DB954;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center" title="Play/Pause">▶</button>
+              <button onclick="spNext()" style="background:transparent;border:none;color:#b3b3b3;cursor:pointer;font-size:1.1rem;padding:4px" title="Next">⏭</button>
+            </div>
+          </div>
+          <!-- Progress bar -->
+          <div id="spProgress" style="margin-top:.5rem;cursor:pointer" onclick="spSeek(event)">
+            <div style="background:#535353;border-radius:2px;height:3px;position:relative">
+              <div id="spProgressFill" style="background:#1DB954;height:100%;border-radius:2px;width:0%;transition:width .5s linear"></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:.2rem">
+            <span id="spPosLbl" style="font-size:.58rem;color:#b3b3b3">0:00</span>
+            <span id="spDurLbl" style="font-size:.58rem;color:#b3b3b3">0:00</span>
+          </div>
+        </div>
+        <div id="spPremiumMsg" style="display:none;background:#1a1a1a;border-top:1px solid #282828;padding:.65rem 1rem;text-align:center">
+          <div style="font-size:.75rem;color:#b3b3b3">In-app playback requires <strong style="color:#fff">Spotify Premium</strong></div>
+          <div style="font-size:.68rem;color:#535353;margin-top:.2rem">Tap any track to open in Spotify app</div>
         </div>
       </div>
 
@@ -3401,7 +3431,7 @@ function toggleSB(){$('sidebar').classList.toggle('off');}
 // ══════════════════════════════════════════════════════════════
 const SP_CLIENT_ID='ee0ad780e03b4032a7bdd5d8a4f18445';
 const SP_REDIRECT=window.location.origin+window.location.pathname;
-const SP_SCOPES='user-read-private playlist-read-private user-library-read playlist-modify-public playlist-modify-private';
+const SP_SCOPES='user-read-private playlist-read-private user-library-read playlist-modify-public playlist-modify-private streaming user-read-playback-state user-modify-playback-state';
 const SP_TRACKS={};
 let spSearchTimer=null;
 
@@ -3548,15 +3578,27 @@ function spRenderPlaylist(t){
     const num=document.createElement('div');num.style.cssText='color:#b3b3b3;font-size:.7rem;font-weight:700;width:16px;text-align:right;flex-shrink:0';num.textContent=i+1;
     const thumb=document.createElement('div');thumb.style.cssText='width:36px;height:36px;border-radius:4px;overflow:hidden;flex-shrink:0;background:#333;display:flex;align-items:center;justify-content:center';
     thumb.innerHTML=tr.img?`<img src="${tr.img}" style="width:100%;height:100%;object-fit:cover">`:'🎵';
-    const info=document.createElement('div');info.style.cssText='flex:1;overflow:hidden;cursor:pointer';
-    info.onclick=()=>spOpenTrack(tr.id);
-    info.title='Open in Spotify';
+    const info=document.createElement('div');info.style.cssText='flex:1;overflow:hidden';
     info.innerHTML=`<div style="font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff">${tr.name}</div><div style="font-size:.68rem;color:#b3b3b3">${tr.artist||''}</div>`;
+    // Play button
+    const playBtn=document.createElement('button');
+    const isPlaying=spIsPlaying&&spCurrentTrackId===tr.id;
+    playBtn.textContent=isPlaying?'⏸':'▶';
+    playBtn.style.cssText='background:transparent;border:none;color:'+(isPlaying?'#1DB954':'#b3b3b3')+';cursor:pointer;font-size:.9rem;padding:2px 4px;flex-shrink:0';
+    playBtn.title=spPlayerReady?'Play':'Open in Spotify';
+    playBtn.onclick=()=>{
+      if(spPlayerReady){
+        const allUris=list.map(t=>'spotify:track:'+t.id);
+        spPlayTrack(tr.id,allUris);
+      } else {
+        spOpenTrack(tr.id);
+      }
+    };
     const actions=document.createElement('div');actions.style.cssText='display:flex;align-items:center;gap:.25rem;flex-shrink:0';
     const btnD=document.createElement('button');btnD.textContent='👎';btnD.style.cssText='background:transparent;border:none;color:#b3b3b3;cursor:pointer;font-size:.85rem;padding:2px';btnD.onclick=()=>spVote(tr.id,-1);
     const votes=document.createElement('span');votes.style.cssText='color:#1DB954;font-weight:800;font-size:.75rem;min-width:18px;text-align:center';votes.textContent=tr.votes||0;
     const btnU=document.createElement('button');btnU.textContent='👍';btnU.style.cssText='background:transparent;border:none;color:#1DB954;cursor:pointer;font-size:.85rem;padding:2px';btnU.onclick=()=>spVote(tr.id,1);
-    actions.appendChild(btnD);actions.appendChild(votes);actions.appendChild(btnU);
+    actions.appendChild(playBtn);actions.appendChild(btnD);actions.appendChild(votes);actions.appendChild(btnU);
     if(tr.addedBy===ME.id){const del=document.createElement('button');del.textContent='✕';del.style.cssText='background:transparent;border:none;color:#535353;cursor:pointer;font-size:.7rem;padding:2px 4px';del.onclick=()=>spRemove(tr.id);actions.appendChild(del);}
     row.appendChild(num);row.appendChild(thumb);row.appendChild(info);row.appendChild(actions);
     el.appendChild(row);
@@ -3615,10 +3657,146 @@ function spOpenTrack(spotifyId){
   window.open('https://open.spotify.com/track/'+spotifyId,'_blank');
 }
 
+// ══════════════════════════════════════════════════════════
+//  SPOTIFY WEB PLAYBACK SDK
+// ══════════════════════════════════════════════════════════
+let spPlayer=null, spDeviceId=null, spPlayerReady=false;
+let spCurrentTrackId=null, spIsPlaying=false;
+let spProgressInterval=null, spPosition=0, spDuration=0;
+
+function spFmtTime(ms){const s=Math.floor(ms/1000);return Math.floor(s/60)+':'+(s%60).toString().padStart(2,'0');}
+
+window.onSpotifyWebPlaybackSDKReady=()=>{
+  const tok=spToken();if(!tok)return;
+  spPlayer=new Spotify.Player({
+    name:'TREK Expedition Player',
+    getOAuthToken:cb=>{cb(spToken());},
+    volume:0.8
+  });
+  spPlayer.addListener('ready',({device_id})=>{
+    spDeviceId=device_id;spPlayerReady=true;
+    console.log('Spotify player ready, device:',device_id);
+  });
+  spPlayer.addListener('not_ready',({device_id})=>{
+    spDeviceId=null;spPlayerReady=false;
+    console.log('Spotify player not ready');
+  });
+  spPlayer.addListener('initialization_error',({message})=>{
+    console.warn('Spotify init error:',message);
+    spShowPremiumMsg();
+  });
+  spPlayer.addListener('authentication_error',({message})=>{
+    console.warn('Spotify auth error:',message);
+  });
+  spPlayer.addListener('account_error',({message})=>{
+    console.warn('Spotify account error (Premium required):',message);
+    spShowPremiumMsg();
+  });
+  spPlayer.addListener('player_state_changed',state=>{
+    if(!state)return;
+    spIsPlaying=!state.paused;
+    spPosition=state.position;
+    spDuration=state.duration;
+    const track=state.track_window?.current_track;
+    if(track){
+      spCurrentTrackId=track.id;
+      spUpdateNowPlaying(track,state);
+    }
+    const btn=$('spPlayBtn');
+    if(btn)btn.textContent=spIsPlaying?'⏸':'▶';
+    // Progress tracking
+    clearInterval(spProgressInterval);
+    if(spIsPlaying){
+      spProgressInterval=setInterval(()=>{
+        spPosition+=500;
+        spUpdateProgress();
+      },500);
+    }
+  });
+  spPlayer.connect();
+};
+
+function spShowPremiumMsg(){
+  const np=$('spNowPlaying'),pm=$('spPremiumMsg');
+  if(np)np.style.display='none';
+  if(pm)pm.style.display='block';
+}
+
+function spUpdateNowPlaying(track,state){
+  const np=$('spNowPlaying');if(!np)return;
+  np.style.display='block';
+  const img=track.album?.images?.[2]?.url||track.album?.images?.[0]?.url||'';
+  const th=$('spNpThumb');
+  if(th)th.innerHTML=img?`<img src="${img}" style="width:100%;height:100%;object-fit:cover">`:'🎵';
+  const ti=$('spNpTitle');if(ti)ti.textContent=track.name||'—';
+  const ar=$('spNpArtist');if(ar)ar.textContent=(track.artists||[]).map(a=>a.name).join(', ')||'—';
+  spUpdateProgress();
+}
+
+function spUpdateProgress(){
+  const fill=$('spProgressFill'),pos=$('spPosLbl'),dur=$('spDurLbl');
+  if(fill&&spDuration>0)fill.style.width=Math.min(100,(spPosition/spDuration)*100)+'%';
+  if(pos)pos.textContent=spFmtTime(spPosition);
+  if(dur)dur.textContent=spFmtTime(spDuration);
+}
+
+async function spTransferPlayback(){
+  if(!spDeviceId)return false;
+  const tok=spToken();if(!tok)return false;
+  try{
+    await fetch('https://api.spotify.com/v1/me/player',{
+      method:'PUT',
+      headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},
+      body:JSON.stringify({device_ids:[spDeviceId],play:false})
+    });
+    return true;
+  }catch(e){return false;}
+}
+
+async function spPlayTrack(spotifyId,contextUris){
+  if(!spPlayerReady){toast('Player not ready — try again in a moment','err');return;}
+  const tok=spToken();if(!tok){toast('Connect Spotify first','err');return;}
+  await spTransferPlayback();
+  try{
+    const body=contextUris
+      ?{uris:contextUris,offset:{uri:'spotify:track:'+spotifyId}}
+      :{uris:['spotify:track:'+spotifyId]};
+    await fetch('https://api.spotify.com/v1/me/player/play?device_id='+spDeviceId,{
+      method:'PUT',
+      headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+  }catch(e){console.error('spPlayTrack:',e);toast('Playback failed — Premium required','err');spShowPremiumMsg();}
+}
+
+async function spToggle(){
+  if(!spPlayer){toast('Player not ready','err');return;}
+  await spPlayer.togglePlay();
+}
+async function spNext(){if(spPlayer)await spPlayer.nextTrack();}
+async function spPrev(){if(spPlayer)await spPlayer.previousTrack();}
+async function spSeek(e){
+  if(!spPlayer||!spDuration)return;
+  const bar=e.currentTarget.querySelector('div');
+  const rect=bar.getBoundingClientRect();
+  const pct=Math.max(0,Math.min(1,(e.clientX-rect.left)/rect.width));
+  spPosition=Math.floor(pct*spDuration);
+  await spPlayer.seek(spPosition);
+  spUpdateProgress();
+}
+
+function spInitPlayer(){
+  // SDK is already loaded via script tag — trigger ready if already loaded
+  if(window.Spotify&&!spPlayer){
+    window.onSpotifyWebPlaybackSDKReady();
+  }
+}
+
 function renderSpotify(t){
   const ca=$('spConnectArea'),sa=$('spSearchArea');if(!ca)return;
   const tok=spToken();
   if(tok){
+    if(!spPlayer)setTimeout(spInitPlayer,500);
     const hasPlaylist=t?.spotifyPlaylistUrl;
     ca.innerHTML='';
     const wrap=document.createElement('div');wrap.style.cssText='display:flex;align-items:center;gap:.4rem;flex-wrap:wrap';
