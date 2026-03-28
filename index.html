@@ -13,6 +13,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="TREK">
 <meta name="format-detection" content="telephone=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>TREK — Expedition Planner by Forgebit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -511,6 +514,18 @@ input[type=file]{display:none;}
 </style>
 </head>
 <body class="COLORS">
+<script>
+// Unregister ALL service workers immediately — prevents iOS 404 from stale SW cache
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>{r.unregister();console.log('SW unregistered:',r.scope);});
+  });
+  // Also clear all caches
+  if('caches' in window){
+    caches.keys().then(keys=>keys.forEach(k=>{caches.delete(k);console.log('Cache cleared:',k);}));
+  }
+}
+</script>
 <!-- LOADER -->
 <div id="loader">
   <div class="lring"></div>
@@ -821,7 +836,7 @@ input[type=file]{display:none;}
   <div style="border-top:1px solid var(--border2);margin:.9rem 0 1rem"></div>
   <div style="font-size:.78rem;font-weight:700;color:var(--text2);margin-bottom:.75rem">💰 Add Cost (optional)</div>
   <div class="form-row">
-    <div class="fg"><label>Total Amount (R)</label><input type="number" id="na-cost" placeholder="1 200" step="0.01" oninput="updateAccomSplit()"></div>
+    <div class="fg"><label>Total Amount (R)</label><input type="number" id="na-cost" placeholder="1 200" step="0.01" oninput="updateAccomSplitAmounts()"></div>
     <div class="fg"><label>Paid by</label><select id="na-costpaid"></select></div>
   </div>
   <div id="na-splitrows" style="display:none"></div>
@@ -1163,13 +1178,20 @@ window.addEventListener('load',()=>{
 
 function launchApp(){
   $('authScreen').classList.add('hidden');
-  // Show Firebase setup banner on auth screen next time if not configured
   if(!FB_READY)$('fbSetupBanner').style.display='block';
   $('app').classList.add('visible');
   $('sbAvatar').textContent=ME.initials;
   $('sbAvatar').style.background=ME.avatar||COLORS[0];
   $('sbUname').textContent=ME.name;
   rebuildSel(); renderAll(); startCD();
+  // Background map init so OSRM runs and fuel shows on dashboard
+  const t=T();
+  if(t&&t.stops.length>=2){
+    setTimeout(()=>{
+      if(!leafReady){initLeaflet();}
+      refreshMap(t);
+    },800);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1269,14 +1291,17 @@ function createTrip(){
 
   DB.trips[id]=t; DB.cur=id;
   syncFromStops(t); sv(); closeModal('newTripMod'); rebuildSel(); renderAll(); startCD(); renderBudget(t);
-  // Auto-fetch activities for all overnight stops after a short delay
+  // Background: init map hidden + run OSRM so fuel calculates immediately
   setTimeout(()=>{
     const cur=T();if(!cur)return;
+    // Init leaflet (uses hidden map container) and fetch OSRM distances
+    if(!leafReady){initLeaflet();}
+    if(cur.stops.length>=2)refreshMap(cur);
+    // Auto-fetch activities for all overnight stops (staggered)
     cur.stops.filter(s=>!s.isStart&&!s.isEnd&&parseInt(s.nights)>0).forEach((s,idx)=>{
-      // Stagger requests to avoid rate limits
-      setTimeout(()=>suggestActivitiesForStop(s.name,s.lat,s.lon),idx*1500);
+      setTimeout(()=>suggestActivitiesForStop(s.name,s.lat,s.lon),(idx+1)*1500);
     });
-  },800);
+  },600);
   // Auto-fetch activities for all overnight stops
   setTimeout(()=>{
     const cur=T();if(!cur)return;
@@ -2358,6 +2383,30 @@ function renderAccom(t){
         ${!accs.filter(a=>!a.placeholder).length?`<div style="font-size:.8rem;color:var(--text3);font-style:italic;padding:.5rem">No accommodation added for this stop yet.</div>`:''}
       </div>
     </div>`).join('');
+}
+function buildAccomSplitRows(t){
+  const sr=$('na-splitrows');if(!sr||!t)return;
+  if(!t.crew||!t.crew.length){sr.style.display='none';sr.innerHTML='';return;}
+  const eq=Math.round(100/t.crew.length);
+  sr.innerHTML=t.crew.map((m,i)=>{
+    const pct=i<t.crew.length-1?eq:(100-(eq*(t.crew.length-1)));
+    return`<div class="split-row">
+      <div style="flex:1;font-size:.82rem">${m.name}${m.id===ME.id?' (you)':''}</div>
+      <input class="split-pct" type="number" min="0" max="100" value="${pct}" id="nas-${m.id}" oninput="updateAccomSplitAmounts()">
+      <span style="font-size:.7rem;color:var(--text3)">%</span>
+      <div class="split-amt" id="nasa-${m.id}" style="min-width:55px;text-align:right;font-size:.78rem;font-weight:600;color:var(--sage)">R0</div>
+    </div>`;
+  }).join('');
+}
+function updateAccomSplitAmounts(){
+  const t=T();if(!t)return;
+  const amt=parseFloat($('na-cost').value)||0;
+  const sr=$('na-splitrows');
+  if(sr)sr.style.display=amt>0?'block':'none';
+  t.crew.forEach(m=>{
+    const pct=parseFloat($('nas-'+m.id)?.value)||0;
+    const el=$('nasa-'+m.id);if(el)el.textContent=fmtR(amt*pct/100);
+  });
 }
 function openAccomForStop(stopName){openAccomModal(stopName,null);}
 function openAccomModal(stopName,editId){
