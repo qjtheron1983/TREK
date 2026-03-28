@@ -538,6 +538,7 @@ input[type=file]{display:none;}
       <label>Current Trip</label>
       <select id="tripSel" onchange="switchTrip(this.value)"></select>
       <button class="btn-newtrip" onclick="openNewTripModal()">＋ New Expedition</button>
+      <button onclick="deleteCurrentTrip()" style="width:100%;margin-top:.25rem;background:none;border:1px solid rgba(139,50,34,.25);color:var(--rust);padding:.35rem;font-size:.6rem;font-weight:600;letter-spacing:.04em;cursor:pointer;border-radius:6px;transition:all .2s" onmouseover="this.style.background='var(--rust-bg)'" onmouseout="this.style.background='none'">🗑 Delete Current Trip</button>
     </div>
     <nav class="sb-nav">
       <div class="ni active" data-panel="dashboard"><span class="ni-ic">🗺️</span>Dashboard</div>
@@ -875,15 +876,21 @@ function ld(){try{const d=JSON.parse(localStorage.getItem(SK)||'{}');if(d.users)
 async function loadFromFirebase(uid){
   if(!FB_READY)return;
   try{
-    const snap=await fbDb.collection('trips').where('_crewIds','array-contains',uid).get();
-    snap.forEach(doc=>{
-      const data=doc.data();
-      // Merge with local — Firebase is source of truth
-      DB.trips[doc.id]={...data,id:doc.id};
-    });
-    // Also own trips
-    const own=await fbDb.collection('trips').where('_owner','==',uid).get();
-    own.forEach(doc=>{DB.trips[doc.id]={...doc.data(),id:doc.id};});
+    // Firebase is the source of truth — wipe all local trips first
+    DB.trips={};
+
+    const [crewSnap,ownSnap]=await Promise.all([
+      fbDb.collection('trips').where('_crewIds','array-contains',uid).get(),
+      fbDb.collection('trips').where('_owner','==',uid).get()
+    ]);
+    crewSnap.forEach(doc=>{DB.trips[doc.id]={...doc.data(),id:doc.id};});
+    ownSnap.forEach(doc=>{DB.trips[doc.id]={...doc.data(),id:doc.id};});
+
+    // Set cur to first available if missing or stale
+    if(!DB.cur||!DB.trips[DB.cur]){
+      const ids=Object.keys(DB.trips);
+      DB.cur=ids.length?ids[0]:null;
+    }
     localStorage.setItem(SK,JSON.stringify(DB));
   }catch(e){console.warn('Firestore read:',e);}
 }
@@ -1052,15 +1059,46 @@ function createTrip(){
 }
 function rebuildSel(){
   const sel=$('tripSel'); sel.innerHTML='';
-  // Only show trips where ME is in crew
+  // Only show trips where ME is in crew, deduped by name+startDate
   const myTrips=Object.values(DB.trips).filter(t=>t.crew&&t.crew.some(c=>c.id===ME.id||c.email===ME.email));
-  myTrips.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.name;if(t.id===DB.cur)o.selected=true;sel.appendChild(o);});
-  if(!myTrips.length)sel.innerHTML='<option value="">— No trips yet —</option>';
+  // Deduplicate: if same name+startDate appear twice, keep the Firebase one (has _owner)
+  const seen=new Map();
+  myTrips.forEach(t=>{
+    const key=(t.name||'')+'|'+(t.startDate||'');
+    if(!seen.has(key)){seen.set(key,t);}
+    else{
+      // prefer Firebase version (has _owner field) or whichever is newer
+      const existing=seen.get(key);
+      if(t._owner&&!existing._owner)seen.set(key,t);
+    }
+  });
+  const deduped=[...seen.values()];
+  // Update DB.trips to remove duplicates
+  const keepIds=new Set(deduped.map(t=>t.id));
+  Object.keys(DB.trips).forEach(id=>{if(!keepIds.has(id))delete DB.trips[id];});
+  // If current trip was removed, switch to first available
+  if(DB.cur&&!DB.trips[DB.cur])DB.cur=deduped[0]?.id||null;
+
+  deduped.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.name;if(t.id===DB.cur)o.selected=true;sel.appendChild(o);});
+  if(!deduped.length)sel.innerHTML='<option value="">— No trips yet —</option>';
 }
 function switchTrip(id){
   if(!id||!DB.trips[id])return;
   DB.cur=id; sv(); renderAll(); startCD();
   if(currentPanel==='route')setTimeout(()=>{initLeaflet();refreshMap(T());if(leafMap)leafMap.invalidateSize();},100);
+}
+function deleteCurrentTrip(){
+  const t=T();if(!t){toast('No trip selected','err');return;}
+  if(!confirm('Delete "'+t.name+'"? This cannot be undone.'))return;
+  // Delete from Firebase if available
+  if(FB_READY&&fbDb){
+    fbDb.collection('trips').doc(DB.cur).delete().catch(e=>console.warn('Firebase delete:',e));
+  }
+  delete DB.trips[DB.cur];
+  const remaining=Object.keys(DB.trips);
+  DB.cur=remaining.length?remaining[0]:null;
+  sv(); rebuildSel(); renderAll(); startCD();
+  toast('Trip deleted','ok');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1167,7 +1205,10 @@ function renderAll(){
   const t=T();
   if(!t){$('tbTitle').textContent='TREK — No trip';$('dashContent').innerHTML=`<div class="empty"><div class="ei">🗺️</div><div class="et">No expedition yet</div><div class="es">Click "+ New Expedition" to start planning</div></div>`;return;}
   $('tbTitle').textContent=t.name+' — '+(panelLabels[currentPanel]||'');
-  renderDash(t); renderItinerary(t); renderStops(t); renderAccom(t); renderFuel(t); renderCosts(t); renderFood(t); renderPacking(t); renderCrew(t); renderDocs(t); renderGallery(t); updatePackBadge(t);
+  // Ensure OSRM km is synced before rendering fuel
+  renderDash(t); renderItinerary(t); renderStops(t); renderAccom(t);
+  updateFuelKm(t); // sync km from route to fuel panel
+  renderFuel(t); renderCosts(t); renderFood(t); renderPacking(t); renderCrew(t); renderDocs(t); renderGallery(t); updatePackBadge(t);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1241,11 +1282,12 @@ function calcMyCost(t){
   return expCost+fuelShare;
 }
 function calcTotalFuel(t){
+  // Best km source: OSRM auto-calculated > sum of manual stop km > 0
   const manualKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
   const km=t._routeKm||manualKm||0;
   const price=t.fuelPrice||24.5;
-  if(!km||!t.vehicles.length)return 0;
-  return t.vehicles.reduce((a,v)=>{const L=(km/100)*v.consumption;return a+L*price;},0);
+  if(!km||!t.vehicles||!t.vehicles.length)return 0;
+  return t.vehicles.reduce((a,v)=>a+(km/100)*(Number(v.consumption)||12.5)*price,0);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1636,14 +1678,27 @@ function renderStops(t){
   const n=t.stops.length;
 
   // Build km-per-day summary
+  // Priority: 1) manual s.km per stop  2) OSRM per-leg (if stored)  3) OSRM total distributed evenly
+  const manualLegKms=t.stops.slice(1).map(s=>Number(s.km)||0);
+  const manualTotal=manualLegKms.reduce((a,b)=>a+b,0);
+  const osrmTotal=t._routeKm||0;
+  const numLegs=t.stops.length-1;
+
   let totalKmAllLegs=0;
   const legSummary=t.stops.slice(1).map((s,i)=>{
-    const legKm=Number(s.km)||0;
+    let legKm=Number(s.km)||0;
+    // If no manual km for this leg but we have OSRM total, distribute evenly
+    if(!legKm&&osrmTotal>0){
+      legKm=Math.round(osrmTotal/numLegs);
+      // Store back so future renders are consistent
+      s._estKm=legKm;
+    }
+    // Use stored estimate if no manual
+    if(!legKm&&s._estKm)legKm=s._estKm;
     totalKmAllLegs+=legKm;
-    const fromName=t.stops[i].name;
-    const avgPerDay=s.nights>0?Math.round(legKm/1*10)/10:legKm; // km for this travel day
-    return{from:fromName,to:s.name,km:legKm,nights:s.nights,isEnd:s.isEnd};
-  }).filter(l=>l.km>0||l.nights>0);
+    return{from:t.stops[i].name,to:s.name,km:legKm,nights:s.nights,isEnd:s.isEnd,isEst:!Number(s.km)&&legKm>0};
+  });
+  if(!totalKmAllLegs&&osrmTotal)totalKmAllLegs=osrmTotal;
 
   const summaryHtml=legSummary.length?`
     <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:1rem;margin-bottom:1.25rem;">
@@ -1658,7 +1713,7 @@ function renderStops(t){
         <tbody>
           ${legSummary.map((l,i)=>`<tr style="border-bottom:1px solid var(--border2)">
             <td style="padding:.4rem .5rem;color:var(--text2)">${l.from} → ${l.to}</td>
-            <td style="padding:.4rem .5rem;text-align:right;font-weight:600;color:var(--amber)">${l.km?l.km+' km':'—'}</td>
+            <td style="padding:.4rem .5rem;text-align:right;font-weight:600;color:var(--amber)">${l.km?(l.isEst?'~':'')+l.km+' km':'<span style="color:var(--text3);font-size:.75rem">—</span>'}</td>
             <td style="padding:.4rem .5rem;text-align:right;color:var(--text3)">${l.km?Math.round(l.km/80*10)/10+'h':'—'}</td>
             <td style="padding:.4rem .5rem;text-align:right;color:var(--text3)">${l.isEnd?'—':l.nights+'n'}</td>
           </tr>`).join('')}
@@ -1670,7 +1725,10 @@ function renderStops(t){
           </tr>
         </tbody>
       </table>
-    </div>`:'';
+    <div style="font-size:.7rem;color:var(--text3);font-style:italic;margin-top:.5rem">
+      ~ = estimated from OSRM total ÷ legs. Enter km per stop for exact per-leg distances.
+    </div>
+    </div>`:''  ;
 
   el.innerHTML=summaryHtml+t.stops.map((s,i)=>`
     <div class="stop-row ${i===0?'is-start':i===n-1?'is-end':''}">
