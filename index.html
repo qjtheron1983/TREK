@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#f7f2eb">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -362,6 +362,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .bb-inp:focus{border-color:var(--amber);}
 .veh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.9rem;margin-bottom:1.25rem;}
 .fv-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:1rem;box-shadow:0 1px 4px var(--sh);}
+.fv-card.fv-mine{border-color:var(--amber-bd);background:var(--amber-bg);}
 .fv-name{font-size:.86rem;font-weight:700;color:var(--text);}
 .fv-meta{font-size:.72rem;color:var(--text3);margin-top:.15rem;}
 .fv-cost{font-family:'Playfair Display';font-size:1.25rem;font-weight:700;color:var(--amber);margin-top:.45rem;}
@@ -1693,17 +1694,15 @@ function renderDash(t){
       `:`<div class="empty" style="padding:.85rem 0"><div class="ei" style="font-size:1.6rem">📅</div><div class="es">Add stops to your route</div></div>`}
     </div>
     <div class="card dc" onclick="navTo('budget')" style="cursor:pointer">
-      <div class="dc-title">💰 My Total</div>
-      <div style="font-family:'Playfair Display';font-size:1.85rem;font-weight:700;color:var(--amber)">${myCost>0?fmtR(myCost):'R 0'}</div>
-      <div style="margin-top:.55rem;display:flex;flex-direction:column;gap:.18rem">
-        ${(t.expenses||[]).slice(0,3).map(e=>`
-          <div style="display:flex;justify-content:space-between;font-size:.76rem">
-            <span style="color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">${e.desc}</span>
-            <span style="font-weight:600;color:var(--text2);flex-shrink:0">${fmtR(e.amount)}</span>
-          </div>`).join('')}
-        ${(t.expenses||[]).length===0?`<div style="font-size:.78rem;color:var(--text3)">No expenses yet</div><div style="font-size:.7rem;color:var(--sky);margin-top:.15rem">Tap to add →</div>`:''}
-        ${(t.expenses||[]).length>3?`<div style="font-size:.72rem;color:var(--text3);margin-top:.1rem">+${(t.expenses||[]).length-3} more</div>`:''}
-      </div>
+      <div class="dc-title">💰 My Cost</div>
+      <div style="font-family:'Playfair Display';font-size:1.85rem;font-weight:700;color:var(--amber)">${myCost>0?fmtR(myCost):(hasVehicle&&!km?'⏳':fmtR(0))}</div>
+      ${hasVehicle&&!km?`<div style="font-size:.72rem;color:var(--text3);margin-top:.18rem;display:flex;align-items:center;gap:.35rem"><div style="width:10px;height:10px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--amber);animation:spin 1s linear infinite;flex-shrink:0"></div>Calculating fuel…</div>`:`
+      <div style="margin-top:.45rem;display:flex;flex-direction:column;gap:.16rem">
+        ${calcMyVehicleFuel(t)>0?`<div style="display:flex;justify-content:space-between;font-size:.76rem"><span style="color:var(--text3)">⛽ My fuel</span><span style="font-weight:600;color:var(--text2)">${fmtR(calcMyVehicleFuel(t))}</span></div>`:''}
+        ${calcMyExpenseShare(t)>0?`<div style="display:flex;justify-content:space-between;font-size:.76rem"><span style="color:var(--text3)">💳 Shared</span><span style="font-weight:600;color:var(--text2)">${fmtR(calcMyExpenseShare(t))}</span></div>`:''}
+        ${!hasVehicle?`<div style="font-size:.7rem;color:var(--rust);margin-top:.1rem">⚠ Add vehicle for fuel</div>`:''}
+        ${myCost===0&&hasVehicle?`<div style="font-size:.72rem;color:var(--sky)">Tap to add expenses →</div>`:''}
+      </div>`}
     </div>
     <div class="card dc" onclick="navTo('pack')" style="cursor:pointer">
       <div class="dc-title">🎒 Packing ${total>0?`<span style="font-size:.65rem;font-weight:400;color:var(--text3)">${packed}/${total}</span>`:''}</div>
@@ -1725,25 +1724,42 @@ function renderDash(t){
   renderInsights(t);
 }
 
+// ── Cost model ──
+// Each vehicle owner pays their OWN fuel. Shared expenses (accommodation,
+// activities, permits etc) are split by % across crew.
+// calcMyCost = MY vehicle fuel + MY share of shared expenses.
+
+function calcMyVehicleFuel(t){
+  // Find vehicles owned by me and sum their fuel cost
+  const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
+  const km=t._routeKm||manKm||0;
+  const price=Number(t.fuelPrice)||24.5;
+  if(!km)return 0;
+  return (t.vehicles||[])
+    .filter(v=>v.uid===ME.id)
+    .reduce((a,v)=>a+(km/100)*(Number(v.consumption)||12.5)*price, 0);
+}
 function calcMyExpenseShare(t){
-  return (t.expenses||[]).reduce((a,e)=>{
-    const split=e.splits&&e.splits[ME.id];
-    if(split!==undefined)return a+(Number(e.amount)*split/100);
-    return a+Number(e.amount)/(t.crew.length||1);
-  },0);
+  // Only shared expenses (NOT fuel-category — fuel is handled per-vehicle)
+  return (t.expenses||[])
+    .filter(e=>e.category!=='fuel')
+    .reduce((a,e)=>{
+      const split=e.splits&&e.splits[ME.id];
+      if(split!==undefined)return a+(Number(e.amount)*split/100);
+      return a+Number(e.amount)/(t.crew.length||1);
+    },0);
 }
 function calcMyCost(t){
-  // Fuel is now just a normal expense — no special treatment
-  return calcMyExpenseShare(t);
+  return calcMyVehicleFuel(t) + calcMyExpenseShare(t);
 }
 function calcFuelEstimate(t){
-  // Returns estimated total fuel cost based on vehicles+km+price
   const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
   const km=t._routeKm||manKm||0;
   const price=Number(t.fuelPrice)||24.5;
   if(!km||!t.vehicles||!t.vehicles.length)return 0;
   return t.vehicles.reduce((a,v)=>a+(km/100)*(Number(v.consumption)||12.5)*price,0);
 }
+function calcTotalFuel(t){return calcFuelEstimate(t);}
 function calcTotalFuel(t){return calcFuelEstimate(t);}
 
 // ══════════════════════════════════════════════════════════════
@@ -1865,7 +1881,7 @@ function destroyChart(id){const c=biCharts[id.replace('Chart','')];if(c){c.destr
 function renderInsightsList(t,km,nights,totalCost,fuelTotal,packDone,packTotal){
   const items=[];
   if(km&&nights)items.push({ic:'🚗',title:`${Math.round(km/nights*10)/10} km per night average`,sub:'Based on '+km.toLocaleString()+' km across '+nights+' nights'});
-  if(fuelTotal>0&&t.crew.length>1)items.push({ic:'⛽',title:`Fuel split: ${fmtR(fuelTotal/t.crew.length)} per person`,sub:'Total fuel estimate '+fmtR(fuelTotal)+' across '+t.vehicles.length+' vehicle'+(t.vehicles.length!==1?'s':'')});
+  if(fuelTotal>0)items.push({ic:'⛽',title:`Total fuel: ${fmtR(fuelTotal)} across ${t.vehicles.length} vehicle${t.vehicles.length!==1?'s':''}`,sub:`Each owner pays their own — your fuel: ${fmtR(calcMyVehicleFuel(t))}`});
   const packPct=packTotal?Math.round(packDone/packTotal*100):0;
   if(packTotal>0)items.push({ic:'🎒',title:`${packPct}% packed — ${packTotal-packDone} item${packTotal-packDone!==1?'s':''} remaining`,sub:'Keep going! Everything packed before departure day.'});
   const pending=t.crew.filter(c=>c.status==='pending').length;
@@ -2659,148 +2675,172 @@ function renderBudget(t){
   const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
   const km=t._routeKm||manKm||0;
   const price=Number(t.fuelPrice)||24.5;
-  const hasVeh=t.vehicles&&t.vehicles.length>0;
-  const fuelEst=calcFuelEstimate(t);
-  const fuelL=km>0&&hasVeh?t.vehicles.reduce((a,v)=>a+(km/100)*(Number(v.consumption)||12.5),0):0;
-  const expenses=t.expenses||[];
-  const expTotal=expenses.reduce((a,e)=>a+Number(e.amount),0);
-  const myCost=calcMyCost(t); // pure expense share now
   const crew=t.crew.length||1;
+  const myFuel=calcMyVehicleFuel(t);
+  const myExpShare=calcMyExpenseShare(t);
+  const myCost=myFuel+myExpShare;
+  const sharedExps=(t.expenses||[]).filter(e=>e.category!=='fuel');
+  const sharedTotal=sharedExps.reduce((a,e)=>a+Number(e.amount),0);
 
   // ── Settings bar ──
   const bb=$('budgetBar');
   if(bb)bb.innerHTML=`
-    <span class="bb-lbl">⛽ R/L</span>
-    <input class="bb-inp" type="number" value="${price.toFixed(2)}" step="0.10" min="0"
-      oninput="if(T()){T().fuelPrice=parseFloat(this.value)||24.5;sv();renderBudget(T());renderDash(T());}">
-    <span class="bb-lbl" style="margin-left:.4rem">📍 km</span>
-    <input class="bb-inp" id="fuelKm" type="number" value="${km||''}" placeholder="Auto"
-      oninput="if(T()){T()._routeKm=parseInt(this.value)||0;sv();updateFuelKm(T());renderBudget(T());renderDash(T());}">
-    ${km?`<span style="font-size:.7rem;color:var(--text3)">${km.toLocaleString()} km route</span>`:''}`;
+    <span class="bb-lbl">⛽ Fuel price</span>
+    <div style="display:flex;align-items:center;gap:.28rem">
+      <span style="font-size:.78rem;color:var(--text3);font-weight:600">R</span>
+      <input class="bb-inp" type="number" value="${price.toFixed(2)}" step="0.10" min="0"
+        oninput="if(T()){T().fuelPrice=parseFloat(this.value)||24.5;sv();renderBudget(T());renderDash(T());}">
+      <span style="font-size:.72rem;color:var(--text3)">/L</span>
+    </div>
+    <span class="bb-lbl" style="margin-left:.5rem">📍 Route</span>
+    <div style="display:flex;align-items:center;gap:.28rem">
+      <input class="bb-inp" id="fuelKm" type="number" value="${km||''}" placeholder="auto"
+        oninput="if(T()){T()._routeKm=parseInt(this.value)||0;sv();updateFuelKm(T());renderBudget(T());renderDash(T());}">
+      <span style="font-size:.72rem;color:var(--text3)">km</span>
+    </div>
+    ${km?`<span style="font-size:.72rem;color:var(--sage);font-weight:600">✓ ${km.toLocaleString()} km</span>`:'<span style="font-size:.7rem;color:var(--text3)">km auto-fills from map</span>'}`;
 
-  // ── Summary hero ──
+  // ── Hero ──
   const bh=$('budgetHero');
   if(bh)bh.innerHTML=`
     <div class="budget-hero">
       <div>
-        <div class="bh-label">My Total (what I owe)</div>
+        <div class="bh-label">My Estimated Total</div>
         <div class="bh-amount">${fmtR(myCost)}</div>
-        <div class="bh-sub">${expenses.length} expense${expenses.length!==1?'s':''} · R${price.toFixed(2)}/L fuel</div>
+        <div class="bh-sub" style="margin-top:.3rem;display:flex;flex-direction:column;gap:.18rem">
+          <span>⛽ My vehicle fuel: <strong>${fmtR(myFuel)}</strong></span>
+          <span>💳 Shared expense share: <strong>${fmtR(myExpShare)}</strong></span>
+        </div>
       </div>
       <div class="bh-details">
         <div class="bh-di">
-          <div class="bh-label">All expenses</div>
-          <div style="font-family:'Playfair Display';font-size:1.2rem;font-weight:700;color:#f0c060">${fmtR(expTotal)}</div>
+          <div class="bh-label">Shared costs</div>
+          <div style="font-family:'Playfair Display';font-size:1.15rem;font-weight:700;color:#f0c060">${fmtR(sharedTotal)}</div>
         </div>
         <div class="bh-di">
-          <div class="bh-label">Crew</div>
-          <div style="font-family:'Playfair Display';font-size:1.2rem;font-weight:700;color:#f0c060">${crew} member${crew!==1?'s':''}</div>
+          <div class="bh-label">Vehicles</div>
+          <div style="font-family:'Playfair Display';font-size:1.15rem;font-weight:700;color:#f0c060">${(t.vehicles||[]).length}</div>
         </div>
       </div>
     </div>`;
 
-  // ── Fuel calculator card ──
+  // ── Vehicles (fuel per owner) ──
   const fc=$('fuelContent');
-  if(fc)fc.innerHTML=`
-    <div class="card card-pad" style="margin-bottom:1rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem">
-        <div>
-          <div style="font-size:.82rem;font-weight:700;color:var(--text2)">⛽ Fuel Calculator</div>
-          <div style="font-size:.72rem;color:var(--text3);margin-top:.1rem">Estimate your fuel cost then add it as an expense</div>
-        </div>
-        <button class="btn-secondary" style="font-size:.7rem" onclick="openAddVehicle()">＋ Vehicle</button>
-      </div>
-      ${hasVeh?`<div class="veh-grid" style="margin-bottom:.85rem">
-        ${t.vehicles.map((v,i)=>{
-          const L=km>0?(km/100)*(Number(v.consumption)||12.5):0;
-          const cost=L*price;
-          const fills=v.tank?Math.ceil(L/v.tank):0;
-          return`<div class="fv-card">
+  if(fc){
+    const vhtml=(t.vehicles||[]).map((v,i)=>{
+      const L=km>0?(km/100)*(Number(v.consumption)||12.5):0;
+      const cost=L*price;
+      const fills=v.tank?Math.ceil(L/v.tank):0;
+      const owner=t.crew.find(m=>m.id===v.uid);
+      const isMe=v.uid===ME.id;
+      return`<div class="fv-card ${isMe?'fv-mine':''}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem">
+          <div>
             <div class="fv-name">🚗 ${v.name||'Vehicle'}</div>
-            <div class="fv-meta">${v.driver?v.driver+' · ':''}${v.fuelType||'Diesel'} · ${v.consumption}L/100km</div>
-            <div class="fv-cost">${km>0?fmtR(cost):'—'}</div>
-            <div style="font-size:.7rem;color:var(--text3);margin-top:.1rem">${km>0?L.toFixed(1)+'L · ~'+fills+' fill'+(fills!==1?'s':''):'Add km to calculate'}</div>
-            <div style="display:flex;gap:.35rem;margin-top:.5rem">
-              ${km>0&&cost>0?`<button class="btn-primary" style="font-size:.62rem;padding:.22rem .55rem" onclick="addFuelAsExpense(${i})">Add to expenses</button>`:''}
-              <button class="btn-danger" style="font-size:.62rem" onclick="removeVeh(${i})">Remove</button>
+            <div class="fv-meta">${v.fuelType||'Diesel'} · ${v.consumption}L/100km · ${v.tank}L tank</div>
+            <div style="font-size:.72rem;margin-top:.2rem;color:${isMe?'var(--amber)':'var(--text3)'}">
+              ${isMe?'👤 Your vehicle':'👤 '+(owner?.name||'Crew')}
             </div>
-          </div>`;
-        }).join('')}
-      </div>`:''}
-      ${!hasVeh?`<div class="empty" style="padding:.85rem 0"><div class="ei" style="font-size:1.8rem">🚗</div><div class="es">Add a vehicle to estimate fuel cost</div></div>`:''}
-      ${fuelEst>0?`<div style="background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:.65rem .85rem;font-size:.82rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
-        <span style="color:var(--text2)">Estimated total fuel: <strong style="color:var(--amber)">${fmtR(fuelEst)}</strong> · ${fuelL.toFixed(0)}L</span>
-        <button class="btn-primary" style="font-size:.68rem;padding:.28rem .7rem" onclick="addAllFuelAsExpense()">Add all to expenses →</button>
-      </div>`:''}
-    </div>`;
+          </div>
+          <div style="text-align:right">
+            <div class="fv-cost">${km>0?fmtR(cost):'—'}</div>
+            <div style="font-size:.68rem;color:var(--text3);margin-top:.08rem">${km>0?L.toFixed(0)+'L · ~'+fills+' fills':km===0?'awaiting km':''}</div>
+          </div>
+        </div>
+        <button class="btn-danger" style="margin-top:.55rem;font-size:.62rem" onclick="removeVeh(${i})">Remove</button>
+      </div>`;
+    }).join('');
 
-  // ── Expenses list ──
+    fc.innerHTML=`
+      <div class="section-hd" style="margin-bottom:.75rem">
+        <div style="font-size:.82rem;font-weight:700;color:var(--text2)">⛽ Fuel — per vehicle</div>
+        <button class="btn-secondary" style="font-size:.68rem;padding:.28rem .65rem" onclick="openAddVehicle()">＋ Add Vehicle</button>
+      </div>
+      ${(t.vehicles||[]).length?`
+      <div style="background:var(--sky-bg);border:1px solid var(--sky-bd);border-radius:8px;padding:.6rem .85rem;margin-bottom:.85rem;font-size:.8rem;color:var(--sky)">
+        💡 Each vehicle owner pays their own fuel. Add a vehicle per crew member to track everyone's cost.
+      </div>
+      <div class="veh-grid">${vhtml}</div>`:`
+      <div class="empty" style="padding:1.25rem 0">
+        <div class="ei">🚗</div>
+        <div class="et">No vehicles yet</div>
+        <div class="es">Add your vehicle — each crew member adds their own when they join</div>
+      </div>`}`;
+  }
+
+  // ── Shared expenses ──
   const cc=$('costsContent');
   if(!cc)return;
 
-  // Group by category for summary
+  // Category totals for summary pills
   const catTotals={};
-  expenses.forEach(e=>{catTotals[e.category]=(catTotals[e.category]||0)+Number(e.amount);});
+  sharedExps.forEach(e=>{catTotals[e.category]=(catTotals[e.category]||0)+Number(e.amount);});
 
   cc.innerHTML=`
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem">
-      <div style="font-size:.82rem;font-weight:700;color:var(--text2)">💰 All Expenses</div>
-      <button class="btn-primary" style="font-size:.7rem;padding:.32rem .75rem" onclick="openExpenseModal()">＋ Add Expense</button>
+    <div class="section-hd" style="margin-top:1.5rem;margin-bottom:.75rem">
+      <div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--text2)">💳 Shared Expenses</div>
+        <div style="font-size:.7rem;color:var(--text3);margin-top:.1rem">Accommodation, activities, permits — split across crew</div>
+      </div>
+      <button class="btn-primary" style="font-size:.68rem;padding:.3rem .72rem" onclick="openExpenseModal()">＋ Add</button>
     </div>
 
-    ${expTotal>0?`
-    <!-- My share summary -->
-    <div style="background:linear-gradient(135deg,var(--amber-bg),var(--sky-bg));border:1px solid var(--amber-bd);border-radius:12px;padding:1rem 1.1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+    ${sharedTotal>0?`
+    <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem">
+      ${Object.entries(catTotals).map(([cat,amt])=>`
+        <div style="background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:.25rem .65rem;font-size:.72rem;display:flex;align-items:center;gap:.3rem">
+          <span>${CAT_ICONS[cat]||'💳'}</span>
+          <span style="color:var(--text2)">${cat}</span>
+          <span style="font-weight:700;color:var(--amber)">${fmtR(amt)}</span>
+        </div>`).join('')}
+    </div>
+    <!-- My share banner -->
+    <div style="background:linear-gradient(135deg,var(--amber-bg),rgba(30,111,165,.07));border:1px solid var(--amber-bd);border-radius:12px;padding:.85rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
       <div>
-        <div style="font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">My Total</div>
-        <div style="font-family:'Playfair Display';font-size:1.65rem;font-weight:700;color:var(--amber)">${fmtR(myCost)}</div>
-        <div style="font-size:.75rem;color:var(--text3);margin-top:.1rem">of ${fmtR(expTotal)} total</div>
+        <div style="font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">My share of shared expenses</div>
+        <div style="font-family:'Playfair Display';font-size:1.55rem;font-weight:700;color:var(--amber);margin-top:.1rem">${fmtR(myExpShare)}</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:.35rem;min-width:120px">
-        ${Object.entries(catTotals).map(([cat,amt])=>`
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">
-            <span style="font-size:.72rem;color:var(--text3)">${CAT_ICONS[cat]||'💳'} ${cat}</span>
-            <span style="font-size:.78rem;font-weight:600;color:var(--text2)">${fmtR(amt)}</span>
-          </div>`).join('')}
+      <div style="text-align:right">
+        <div style="font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Total shared</div>
+        <div style="font-family:'Playfair Display';font-size:1.2rem;font-weight:700;color:var(--text2);margin-top:.1rem">${fmtR(sharedTotal)}</div>
       </div>
-    </div>`:''}
+    </div>
+    `:''}
 
-    ${expenses.length===0?`<div class="empty" style="padding:1.5rem 0">
+    ${sharedExps.length===0?`<div class="empty" style="padding:1.5rem 0">
       <div class="ei">💳</div>
-      <div class="et">No expenses yet</div>
-      <div class="es">Add accommodation costs, activities, fuel, park fees — anything with a Rand value</div>
+      <div class="et">No shared expenses yet</div>
+      <div class="es">Add accommodation, activities, park fees — anything split across the crew</div>
     </div>`:''}
 
-    ${expenses.map((e,i)=>{
+    ${sharedExps.map((e,i)=>{
+      const origIdx=(t.expenses||[]).indexOf(e);
       const myAmt=e.splits&&e.splits[ME.id]!==undefined?Number(e.amount)*e.splits[ME.id]/100:Number(e.amount)/crew;
-      const paidByName=t.crew.find(m=>m.id===e.paidBy)?.name||'Unknown';
-      const iOwePaid=e.paidBy===ME.id;
-      return`<div class="cost-card" style="margin-bottom:.75rem">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;margin-bottom:.6rem">
-          <div>
-            <div style="font-size:.88rem;font-weight:600;color:var(--text)">${CAT_ICONS[e.category]||'💳'} ${e.desc}</div>
-            <div style="display:flex;gap:.4rem;align-items:center;margin-top:.22rem;flex-wrap:wrap">
-              <span class="tag t-${e.category}">${e.category}</span>
-              <span style="font-size:.68rem;color:var(--text3)">${fmtDate(e.date)}</span>
-              <span style="font-size:.68rem;color:var(--text3)">paid by ${paidByName}${iOwePaid?' (you)':''}</span>
+      const paidBy=t.crew.find(m=>m.id===e.paidBy)?.name||'?';
+      return`<div class="cost-card" style="margin-bottom:.65rem">
+        <div style="display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.55rem">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.88rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${CAT_ICONS[e.category]||'💳'} ${e.desc}</div>
+            <div style="display:flex;gap:.35rem;align-items:center;margin-top:.18rem;flex-wrap:wrap">
+              <span class="tag t-${e.category}" style="font-size:.58rem">${e.category}</span>
+              <span style="font-size:.65rem;color:var(--text3)">${fmtDate(e.date)}</span>
+              <span style="font-size:.65rem;color:var(--text3)">paid: ${paidBy}</span>
             </div>
           </div>
           <div style="text-align:right;flex-shrink:0">
             <div class="cost-amount">${fmtR(e.amount)}</div>
-            <button class="btn-ghost" onclick="removeExpense(${i})" style="font-size:.7rem;color:var(--text3)">remove</button>
+            <button class="btn-ghost" onclick="removeExpense(${origIdx})" style="font-size:.65rem;color:var(--text3)">remove</button>
           </div>
         </div>
-        <!-- Split breakdown -->
-        <div style="background:var(--bg2);border-radius:8px;padding:.55rem .7rem">
-          <div style="font-size:.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem">Split</div>
+        <div style="background:var(--bg2);border-radius:8px;padding:.5rem .7rem">
           ${t.crew.map(m=>{
             const pct=e.splits&&e.splits[m.id]!==undefined?e.splits[m.id]:Math.round(100/crew);
             const ma=Number(e.amount)*pct/100;
             const isMe=m.id===ME.id;
-            return`<div style="display:flex;align-items:center;gap:.5rem;padding:.2rem 0;border-bottom:1px solid var(--border2)">
-              <div style="flex:1;font-size:.8rem;font-weight:${isMe?600:400};color:${isMe?'var(--text)':'var(--text2)'}">${m.name}${isMe?' (you)':''}</div>
-              <div style="font-size:.72rem;color:var(--text3)">${pct}%</div>
-              <div style="font-size:.82rem;font-weight:700;color:${isMe?'var(--amber)':'var(--text3)'};min-width:58px;text-align:right">${fmtR(ma)}</div>
+            return`<div style="display:flex;align-items:center;gap:.4rem;padding:.18rem 0;border-bottom:1px solid var(--border2)">
+              <div style="flex:1;font-size:.78rem;font-weight:${isMe?600:400};color:${isMe?'var(--text)':'var(--text2)'}">${m.name}${isMe?' (you)':''}</div>
+              <div style="font-size:.68rem;color:var(--text3);width:28px;text-align:right">${pct}%</div>
+              <div style="font-size:.8rem;font-weight:${isMe?700:400};color:${isMe?'var(--amber)':'var(--text3)'};width:62px;text-align:right">${fmtR(ma)}</div>
             </div>`;
           }).join('')}
         </div>
@@ -2808,47 +2848,6 @@ function renderBudget(t){
     }).join('')}`;
 }
 
-// Add a single vehicle's fuel as an expense
-function addFuelAsExpense(vIdx){
-  const t=T();if(!t)return;
-  const v=t.vehicles[vIdx];if(!v)return;
-  const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
-  const km=t._routeKm||manKm||0;
-  const price=Number(t.fuelPrice)||24.5;
-  const L=(km/100)*(Number(v.consumption)||12.5);
-  const cost=Math.round(L*price);
-  if(!cost){toast('Add route km first','err');return;}
-  // Pre-fill expense modal
-  $('nc-desc').value=`⛽ Fuel — ${v.name}`;
-  $('nc-amt').value=cost;
-  $('nc-cat').value='fuel';
-  openExpenseModal();
-  toast(`Fuel estimated at ${fmtR(cost)} — adjust splits then save`,'ok');
-}
-
-// Add all vehicles fuel as separate expenses
-function addAllFuelAsExpense(){
-  const t=T();if(!t)return;
-  const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
-  const km=t._routeKm||manKm||0;
-  if(!km){toast('Add route km first','err');return;}
-  const price=Number(t.fuelPrice)||24.5;
-  const crew=t.crew.length||1;
-  t.vehicles.forEach(v=>{
-    const L=(km/100)*(Number(v.consumption)||12.5);
-    const cost=Math.round(L*price);
-    if(cost>0){
-      const splits={};
-      t.crew.forEach(m=>splits[m.id]=Math.round(100/crew));
-      t.expenses.push({id:'e'+Date.now()+Math.random().toString(36).slice(2,5),
-        desc:`⛽ Fuel — ${v.name}`,category:'fuel',amount:cost,
-        paidBy:t.crew.find(c=>c.id===v.uid)?.id||ME.id,
-        splits,date:new Date().toISOString().slice(0,10)});
-    }
-  });
-  sv();renderBudget(t);renderDash(t);
-  toast('⛽ Fuel added to expenses — adjust splits as needed','ok');
-}
 
 function addVehicle(){
   const t=T();if(!t){toast('Create a trip first','err');return;}
