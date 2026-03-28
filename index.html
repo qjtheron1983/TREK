@@ -291,6 +291,11 @@ h1,h2,h3,.serif{font-family:'Playfair Display',Georgia,serif;}
 .stop-row:hover{box-shadow:0 3px 10px var(--shadow-md);}
 .stop-row.is-start{border-left:3px solid var(--sage);}
 .stop-row.is-end{border-left:3px solid var(--rust);}
+/* Route summary table */
+.route-day-table{width:100%;border-collapse:collapse;font-size:.82rem;}
+.route-day-table th{text-align:left;padding:.3rem .5rem;font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);}
+.route-day-table td{padding:.4rem .5rem;border-bottom:1px solid var(--border2);color:var(--text2);}
+.route-day-table tr:last-child td{font-weight:700;background:var(--amber-bg);}
 .sr-n{font-family:'Playfair Display';font-size:1.2rem;font-weight:700;color:var(--amber);min-width:24px;}
 .sr-nm{font-size:.9rem;font-weight:600;color:var(--text);}
 .sr-mt{font-size:.72rem;color:var(--text3);margin-top:.08rem;}
@@ -1062,36 +1067,93 @@ function switchTrip(id){
 function syncFromStops(t){
   if(!t.stops||!t.stops.length)return;
   let date=t.startDate?new Date(t.startDate+'T00:00:00'):null;
-  const existLocs=new Set(t.itinerary.map(d=>d.location));
-  const existFoodLocs=new Set(t.food.map(f=>f.loc));
+
+  // Build a key-set of already-existing items to avoid duplicates
+  const existItinKeys=new Set(t.itinerary.map(d=>d._syncKey||d.location+'_'+d.date));
+  const existFoodKeys=new Set(t.food.map(f=>f._syncKey||f.loc+'_'+f.day));
   const existAccomLocs=new Set(t.accommodation.map(a=>a.stopName));
 
   t.stops.forEach((stop,idx)=>{
     const nights=parseInt(stop.nights)||0;
-    // Skip start/end (0 nights) for accommodation slots — but still add to itinerary as drive day
-    if(stop.isStart||stop.isEnd||nights===0){
-      if(date&&idx>0){}; // just advance date
+    const prevStop=idx>0?t.stops[idx-1]:null;
+    const isTravel=idx>0; // every non-start stop has a travel day arriving
+
+    if(stop.isStart){
+      // Start: just set the anchor date
       return;
     }
-    for(let n=0;n<nights;n++){
-      const dayNum=t.itinerary.length+1;
-      const ds=date?date.toISOString().slice(0,10):'';
-      if(!existLocs.has(stop.name)){
-        t.itinerary.push({date:ds,day:dayNum,location:stop.name,accom:'',type:'camp',morning:'',afternoon:'',km:'',driveTime:'',notes:'',fromRoute:true});
-        existLocs.add(stop.name);
-      }
-      if(!existFoodLocs.has(stop.name)){
-        t.food.push({day:'Day '+dayNum+(ds?' — '+fmtDate(ds):''),loc:stop.name,breakfast:[],lunch:[],dinner:[],fromRoute:true});
-        existFoodLocs.add(stop.name);
+
+    // ── TRAVEL DAY: one day arriving at this stop (skip for end-only stops with 0 nights if they're the last)
+    if(isTravel&&!stop.isEnd||(isTravel&&stop.isEnd&&idx>1)){
+      const travelDs=date?date.toISOString().slice(0,10):'';
+      const travelKey=stop.name+'_travel_'+travelDs;
+      if(!existItinKeys.has(travelKey)){
+        const dayNum=t.itinerary.length+1;
+        t.itinerary.push({
+          date:travelDs,day:dayNum,
+          location:'Travel → '+stop.name,
+          accom:stop.isEnd?'':stop.name,
+          type:'drive',morning:'',afternoon:'',
+          km:stop.km?String(stop.km):'',driveTime:'',notes:'',
+          fromRoute:true,_syncKey:travelKey,isTravel:true,destStop:stop.name
+        });
+        existItinKeys.add(travelKey);
+        // Travel food day with padkos
+        const travelFoodKey=stop.name+'_travel_food_'+travelDs;
+        if(!existFoodKeys.has(travelFoodKey)){
+          t.food.push({
+            day:'Travel Day — to '+stop.name+(travelDs?' ('+fmtDate(travelDs)+')':''),
+            loc:'En route → '+stop.name,
+            breakfast:[],lunch:[],dinner:[],padkos:[],
+            fromRoute:true,isTravel:true,_syncKey:travelFoodKey
+          });
+          existFoodKeys.add(travelFoodKey);
+        }
       }
       if(date)date.setDate(date.getDate()+1);
     }
-    // Auto-create accommodation slot per stop
+
+    if(stop.isEnd||nights===0)return;
+
+    // ── OVERNIGHT NIGHTS at this stop: one food day per night
+    for(let n=0;n<nights;n++){
+      const ds=date?date.toISOString().slice(0,10):'';
+      const dayNum=t.itinerary.length+1;
+      const itinKey=stop.name+'_night_'+(n+1)+'_'+ds;
+      if(!existItinKeys.has(itinKey)){
+        t.itinerary.push({
+          date:ds,day:dayNum,
+          location:stop.name,
+          accom:'',type:'camp',morning:'',afternoon:'',
+          km:'',driveTime:'',notes:'',
+          fromRoute:true,_syncKey:itinKey,nightNum:n+1,totalNights:nights
+        });
+        existItinKeys.add(itinKey);
+      }
+      const foodKey=stop.name+'_night_'+(n+1)+'_'+ds;
+      if(!existFoodKeys.has(foodKey)){
+        t.food.push({
+          day:'Night '+(n+1)+' of '+nights+' — '+stop.name+(ds?' ('+fmtDate(ds)+')':''),
+          loc:stop.name,
+          breakfast:[],lunch:[],dinner:[],padkos:[],
+          fromRoute:true,isTravel:false,_syncKey:foodKey
+        });
+        existFoodKeys.add(foodKey);
+      }
+      if(date)date.setDate(date.getDate()+1);
+    }
+
+    // Auto-create accommodation placeholder per stop
     if(!existAccomLocs.has(stop.name)){
-      t.accommodation.push({id:'a'+Date.now()+idx,name:'',type:'camp',stopName:stop.name,nights,checkin:'',ref:'',notes:'',placeholder:true});
+      t.accommodation.push({
+        id:'a'+Date.now()+Math.random().toString(36).slice(2,6),
+        name:'',type:'camp',stopName:stop.name,nights,
+        checkin:'',ref:'',notes:'',placeholder:true
+      });
       existAccomLocs.add(stop.name);
     }
   });
+
   t.itinerary.sort((a,b)=>new Date(a.date)-new Date(b.date));
   t.itinerary.forEach((d,i)=>d.day=i+1);
 }
@@ -1110,7 +1172,8 @@ function renderAll(){
 //  DASHBOARD
 // ══════════════════════════════════════════════════════════════
 function renderDash(t){
-  const km=t._routeKm||t.stops.filter(s=>s.km).reduce((a,s)=>a+Number(s.km||0),0)||0;
+  const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
+  const km=t._routeKm||manKm||0;
   const nights=t.stops.reduce((a,s)=>a+(parseInt(s.nights)||0),0);
   const packed=t.packing.filter(c=>c.type==='communal'||c.uid===ME.id).reduce((a,c)=>a+c.items.filter(i=>i.checked).length,0);
   const total=t.packing.filter(c=>c.type==='communal'||c.uid===ME.id).reduce((a,c)=>a+c.items.length,0);
@@ -1176,8 +1239,10 @@ function calcMyCost(t){
   return expCost+fuelShare;
 }
 function calcTotalFuel(t){
-  const km=t._routeKm||t.stops.reduce((a,s)=>a+Number(s.km||0),0)||0;
+  const manualKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
+  const km=t._routeKm||manualKm||0;
   const price=t.fuelPrice||24.5;
+  if(!km||!t.vehicles.length)return 0;
   return t.vehicles.reduce((a,v)=>{const L=(km/100)*v.consumption;return a+L*price;},0);
 }
 
@@ -1185,7 +1250,8 @@ function calcTotalFuel(t){
 //  INSIGHTS / BI DASHBOARD
 // ══════════════════════════════════════════════════════════════
 function renderInsights(t){
-  const km=t._routeKm||t.stops.filter(s=>s.km).reduce((a,s)=>a+Number(s.km||0),0)||0;
+  const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
+  const km=t._routeKm||manKm||0;
   const nights=t.stops.reduce((a,s)=>a+(parseInt(s.nights)||0),0);
   const totalCost=(t.expenses||[]).reduce((a,e)=>a+Number(e.amount),0);
   const fuelTotal=calcTotalFuel(t);
@@ -1465,18 +1531,56 @@ function renderStops(t){
     <div class="rs"><div class="rs-n">${km?Math.round(km/80*10)/10:'—'}</div><div class="rs-l">Est. Drive Hrs</div></div>`;
   if(!t.stops.length){el.innerHTML=`<div style="font-size:.83rem;color:var(--text3);font-style:italic;padding:.5rem">No stops yet — add your starting point first, then each overnight destination, then your end point.</div>`;return;}
   const n=t.stops.length;
-  el.innerHTML=t.stops.map((s,i)=>`
+
+  // Build km-per-day summary
+  let totalKmAllLegs=0;
+  const legSummary=t.stops.slice(1).map((s,i)=>{
+    const legKm=Number(s.km)||0;
+    totalKmAllLegs+=legKm;
+    const fromName=t.stops[i].name;
+    const avgPerDay=s.nights>0?Math.round(legKm/1*10)/10:legKm; // km for this travel day
+    return{from:fromName,to:s.name,km:legKm,nights:s.nights,isEnd:s.isEnd};
+  }).filter(l=>l.km>0||l.nights>0);
+
+  const summaryHtml=legSummary.length?`
+    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:1rem;margin-bottom:1.25rem;">
+      <div style="font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem">🚗 Day-by-Day Drive Summary</div>
+      <table style="width:100%;border-collapse:collapse;font-size:.82rem;">
+        <thead><tr>
+          <th style="text-align:left;padding:.3rem .5rem;font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Leg</th>
+          <th style="text-align:right;padding:.3rem .5rem;font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">km</th>
+          <th style="text-align:right;padding:.3rem .5rem;font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Est. hrs</th>
+          <th style="text-align:right;padding:.3rem .5rem;font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)">Nights</th>
+        </tr></thead>
+        <tbody>
+          ${legSummary.map((l,i)=>`<tr style="border-bottom:1px solid var(--border2)">
+            <td style="padding:.4rem .5rem;color:var(--text2)">${l.from} → ${l.to}</td>
+            <td style="padding:.4rem .5rem;text-align:right;font-weight:600;color:var(--amber)">${l.km?l.km+' km':'—'}</td>
+            <td style="padding:.4rem .5rem;text-align:right;color:var(--text3)">${l.km?Math.round(l.km/80*10)/10+'h':'—'}</td>
+            <td style="padding:.4rem .5rem;text-align:right;color:var(--text3)">${l.isEnd?'—':l.nights+'n'}</td>
+          </tr>`).join('')}
+          <tr style="font-weight:700;background:var(--amber-bg)">
+            <td style="padding:.4rem .5rem;color:var(--text)">Total</td>
+            <td style="padding:.4rem .5rem;text-align:right;color:var(--amber)">${totalKmAllLegs?totalKmAllLegs+' km':'—'}</td>
+            <td style="padding:.4rem .5rem;text-align:right;color:var(--text3)">${totalKmAllLegs?Math.round(totalKmAllLegs/80*10)/10+'h':'—'}</td>
+            <td style="padding:.4rem .5rem;text-align:right;color:var(--text3)">${t.stops.reduce((a,s)=>a+(parseInt(s.nights)||0),0)}n</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>`:'';
+
+  el.innerHTML=summaryHtml+t.stops.map((s,i)=>`
     <div class="stop-row ${i===0?'is-start':i===n-1?'is-end':''}">
       <div class="sr-n">${i+1}</div>
       <div style="font-size:1.25rem">${i===0?'🚩':i===n-1?'🏁':'📍'}</div>
       <div style="flex:1">
         <div class="sr-nm">${s.name}</div>
         <div class="sr-mt">
-          ${i===0?'<span style="color:var(--sage);font-weight:600">Starting point</span>':i===n-1?'<span style="color:var(--rust);font-weight:600">End point</span>':s.nights+' night'+(s.nights!==1?'s':'')}
-          ${s.km?' · '+s.km+' km':''}${s.notes?' · '+s.notes:''}
+          ${i===0?'<span style="color:var(--sage);font-weight:600">Starting point — no nights</span>':i===n-1?'<span style="color:var(--rust);font-weight:600">End point — no nights</span>':s.nights+' night'+(s.nights!==1?'s':'')}
+          ${s.km?' · <strong>'+s.km+' km</strong> drive':''}${s.notes?' · '+s.notes:''}
         </div>
       </div>
-      ${i!==0&&i!==n-1?`<span class="tag t-camp" style="margin-right:.3rem">${s.nights}n</span>`:''}
+      ${i!==0&&i!==n-1?`<span class="tag t-camp" style="margin-right:.3rem">${s.nights}n${s.km?' · '+s.km+'km':''}</span>`:''}
       <button class="sr-del" onclick="removeStop(${i})">✕</button>
     </div>`).join('');
 }
@@ -1673,7 +1777,15 @@ function addAccom(){
     if(pIdx>-1)t.accommodation.splice(pIdx,1);
     toast('🏕️ Accommodation added','ok');
   }
-  sv();renderAccom(t);renderDash(t);closeModal('addAccomMod');
+  // Pull accommodation name into matching itinerary days
+  const acName=name;
+  const sName=stopName;
+  t.itinerary.forEach(d=>{
+    if(d.location===sName&&!d.isTravel){d.accom=acName;d.type=$('na-tp').value;}
+    // Also update travel day arriving at this stop
+    if(d.destStop===sName&&d.isTravel){d.accom=acName;}
+  });
+  sv();renderAccom(t);renderItinerary(t);renderDash(t);closeModal('addAccomMod');
   ['na-nm','na-ni','na-ci','na-rf','na-nt'].forEach(id2=>$(id2).value='');
 }
 function removeAccom(id){if(!confirm('Remove?'))return;const t=T();t.accommodation=t.accommodation.filter(a=>a.id!==id);sv();renderAccom(t);renderDash(t);}
@@ -1682,16 +1794,19 @@ function removeAccom(id){if(!confirm('Remove?'))return;const t=T();t.accommodati
 //  FUEL
 // ══════════════════════════════════════════════════════════════
 function updateFuelKm(t){
-  const km=t._routeKm||t.stops.reduce((a,s)=>a+Number(s.km||0),0)||0;
+  const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
+  const km=t._routeKm||manKm||0;
   $('fuelKm')&&($('fuelKm').value=km||'');
   renderFuel(t);
 }
 function renderFuel(t){
   const el=$('fuelContent');
-  const km=t._routeKm||t.stops.reduce((a,s)=>a+Number(s.km||0),0)||0;
+  // Use OSRM km if available, else sum manual km entries from stops
+  const manualKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
+  const km=t._routeKm||manualKm||0;
   const price=t.fuelPrice||24.5;
-  const grand=t.vehicles.reduce((a,v)=>a+(km/100)*v.consumption*price,0);
-  const grandL=km>0?t.vehicles.reduce((a,v)=>a+(km/100)*v.consumption,0):0;
+  const grand=km>0&&t.vehicles.length?t.vehicles.reduce((a,v)=>a+(km/100)*v.consumption*price,0):0;
+  const grandL=km>0&&t.vehicles.length?t.vehicles.reduce((a,v)=>a+(km/100)*v.consumption,0):0;
   el.innerHTML=`
   <div class="total-fuel-banner">
     <div>
@@ -1813,18 +1928,18 @@ function renderFood(t){
       <div class="fdh" onclick="tog('fdb${di}')">
         <div class="fdt">${d.day}</div>
         <div class="fdl">📍 ${d.loc}</div>
-        ${d.fromRoute?'<span style="font-size:.62rem;background:var(--sage-bg);color:var(--sage);padding:1px 7px;border-radius:10px;font-weight:600;margin-right:.4rem">auto</span>':''}
+        ${d.isTravel?'<span style="font-size:.62rem;background:var(--sky-bg);color:var(--sky);padding:1px 7px;border-radius:10px;font-weight:600;margin-right:.4rem">🚗 travel</span>':d.fromRoute?'<span style="font-size:.62rem;background:var(--sage-bg);color:var(--sage);padding:1px 7px;border-radius:10px;font-weight:600;margin-right:.4rem">auto</span>':''}
         <span style="font-size:.7rem;color:var(--text3)">▼</span>
       </div>
       <div class="fdb" id="fdb${di}">
-        ${['breakfast','lunch','dinner','padkos'].map(meal=>`
+        ${(d.isTravel?['padkos','breakfast','lunch']:['breakfast','lunch','dinner']).map(meal=>`
           <div>
-            <div class="ml">${meal==='breakfast'?'🌅 Breakfast':meal==='lunch'?'☀️ Lunch':meal==='padkos'?'🚗 Padkos (on the road)':'🔥 Dinner'}</div>
+            <div class="ml">${meal==='breakfast'?'🌅 Breakfast':meal==='lunch'?'☀️ Lunch':meal==='padkos'?'🚗 Padkos (travel snacks)':'🔥 Dinner'}</div>
             <div id="mi-${di}-${meal}">
               ${(d[meal]||[]).map((item,ii)=>`<div class="mi-item"><span style="flex:1">${item}</span><button class="mi-del" onclick="remMealItem(${di},'${meal}',${ii})">✕</button></div>`).join('')}
             </div>
             <div class="madd">
-              <input type="text" id="mii-${di}-${meal}" placeholder="${meal==='breakfast'?'Rusks & coffee…':meal==='lunch'?'Braai rolls…':meal==='padkos'?'Biltong, chips, rusks…':'Potjie, boerewors…'}" onkeydown="if(event.key==='Enter')addMealItem(${di},'${meal}')">
+              <input type="text" id="mii-${di}-${meal}" placeholder="${meal==='padkos'?'Biltong, droëwors, rusks, chips…':meal==='breakfast'?'Rusks & coffee…':meal==='lunch'?'Braai at viewpoint…':'Potjie, boerewors, braai…'}" onkeydown="if(event.key==='Enter')addMealItem(${di},'${meal}')">
               <button onclick="addMealItem(${di},'${meal}')">＋</button>
             </div>
           </div>`).join('')}
