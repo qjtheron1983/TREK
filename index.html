@@ -625,7 +625,7 @@ input[type=file]{display:none;}
       <!-- Stays -->
       <div class="stpane" id="stp-stays">
         <div style="display:flex;justify-content:flex-end;margin-bottom:.85rem">
-          <button class="btn-primary" onclick="openModal('addAccomMod')">＋ Add Stay</button>
+          <button class="btn-primary" onclick="openAccomModal(T()&&T().stops.filter(s=>!s.isStart&&!s.isEnd)[0]?.name||'')">＋ Add Stay</button>
         </div>
         <div id="accomContent"></div>
       </div>
@@ -745,7 +745,11 @@ input[type=file]{display:none;}
   </div>
   <div class="wiz-pane on" id="wp1">
     <div class="form-row"><div class="fg"><label>Trip Name</label><input type="text" id="wn" placeholder="Namibia 2027"></div><div class="fg"><label>Destination</label><input type="text" id="wd" placeholder="Namibia"></div></div>
-    <div class="form-row"><div class="fg"><label>Departure</label><input type="date" id="ws"></div><div class="fg"><label>Return</label><input type="date" id="we"></div></div>
+    <div class="form-row">
+      <div class="fg"><label>Departure</label><input type="date" id="ws" onchange="syncReturnDate()"></div>
+      <div class="fg"><label>Return</label><input type="date" id="we"></div>
+    </div>
+    <div id="wiz-nights-warning" style="display:none;background:var(--rust-bg);border:1px solid rgba(139,50,34,.2);border-radius:7px;padding:.55rem .85rem;font-size:.8rem;color:var(--rust);margin-top:-.4rem;margin-bottom:.6rem"></div>
     <div class="form-row"><div class="fg"><label>Type</label><select id="wt"><option>4x4 Overland</option><option>Game Reserve</option><option>Desert Expedition</option><option>Coastal</option><option>Mountain</option><option>Mixed</option></select></div><div class="fg"><label>Style</label><select id="wa"><option>Mix of camping & chalets</option><option>Camping only</option><option>Chalets/lodges only</option><option>Wild camping</option></select></div></div>
     <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('newTripMod')">Cancel</button><button class="btn-primary" onclick="wizGo(2)">Route →</button></div>
   </div>
@@ -860,7 +864,31 @@ input[type=file]{display:none;}
   <div class="form-row"><div class="fg"><label>Category Name</label><input type="text" id="nc-nm" placeholder="Medical"></div><div class="fg"><label>Icon</label><input type="text" id="nc-ic" placeholder="🩺" maxlength="4" style="width:64px"></div></div>
   <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.85rem">
     <span style="font-size:.62rem;font-weight:600;color:var(--text3);align-self:center;margin-right:.15rem">Pick:</span>
-    ${['🏕️','🚗','🔧','🍖','🔥','💊','🩺','👕','🥾','🧭','📡','🛠️','🎒','🧴','🏹','🐾','📷','💧','🔦','⛺','🪓','🧤','🛡️','🎯'].map(e=>`<button type="button" onclick="document.getElementById('nc-ic').value='${e}'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem">${e}</button>`).join('')}
+
+    <button type="button" onclick="$('nc-ic').value='🏕️'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🏕️</button>
+    <button type="button" onclick="$('nc-ic').value='🚗'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🚗</button>
+    <button type="button" onclick="$('nc-ic').value='🔧'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🔧</button>
+    <button type="button" onclick="$('nc-ic').value='🍖'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🍖</button>
+    <button type="button" onclick="$('nc-ic').value='🔥'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🔥</button>
+    <button type="button" onclick="$('nc-ic').value='💊'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">💊</button>
+    <button type="button" onclick="$('nc-ic').value='🩺'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🩺</button>
+    <button type="button" onclick="$('nc-ic').value='👕'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">👕</button>
+    <button type="button" onclick="$('nc-ic').value='🥾'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🥾</button>
+    <button type="button" onclick="$('nc-ic').value='🧭'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🧭</button>
+    <button type="button" onclick="$('nc-ic').value='📡'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">📡</button>
+    <button type="button" onclick="$('nc-ic').value='🛠️'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🛠️</button>
+    <button type="button" onclick="$('nc-ic').value='🎒'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🎒</button>
+    <button type="button" onclick="$('nc-ic').value='🧴'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🧴</button>
+    <button type="button" onclick="$('nc-ic').value='🏹'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🏹</button>
+    <button type="button" onclick="$('nc-ic').value='🐾'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🐾</button>
+    <button type="button" onclick="$('nc-ic').value='📷'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">📷</button>
+    <button type="button" onclick="$('nc-ic').value='💧'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">💧</button>
+    <button type="button" onclick="$('nc-ic').value='🔦'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🔦</button>
+    <button type="button" onclick="$('nc-ic').value='⛺'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">⛺</button>
+    <button type="button" onclick="$('nc-ic').value='🪓'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🪓</button>
+    <button type="button" onclick="$('nc-ic').value='🧤'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🧤</button>
+    <button type="button" onclick="$('nc-ic').value='🛡️'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🛡️</button>
+    <button type="button" onclick="$('nc-ic').value='🎯'" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:.28rem .35rem;cursor:pointer;font-size:1rem;transition:border-color .15s">🎯</button>
   </div>
   <div class="form-row"><div class="fg"><label>Type</label><select id="nc-tp"><option value="communal">🌍 Communal (everyone sees)</option><option value="personal">👤 Personal (only me)</option></select></div><div class="fg"><label>First Item</label><input type="text" id="nc-it" placeholder="First aid kit"></div></div>
   <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addCatMod')">Cancel</button><button class="btn-primary" onclick="addCategory()">＋ Add</button></div>
@@ -1158,9 +1186,58 @@ function openNewTripModal(){
   $('wn').value='';$('wd').value='';$('ws').value='';$('we').value='';
   openModal('newTripMod');
 }
+function syncReturnDate(){
+  const ws=$('ws').value;const we=$('we').value;
+  if(!ws)return;
+  const dep=new Date(ws+'T00:00:00');
+  // Set the return date's min to departure date
+  $('we').min=ws;
+  // If return date is before departure or empty, set it to departure + 7 days as hint
+  if(!we||new Date(we+'T00:00:00')<=dep){
+    const ret=new Date(dep);ret.setDate(ret.getDate()+7);
+    $('we').value=ret.toISOString().slice(0,10);
+  }
+  checkNightsDuration();
+}
+function checkNightsDuration(){
+  const ws=$('ws').value;const we=$('we').value;
+  const warn=$('wiz-nights-warning');if(!warn)return;
+  if(!ws||!we){warn.style.display='none';return;}
+  const dep=new Date(ws+'T00:00:00');
+  const ret=new Date(we+'T00:00:00');
+  const tripDays=Math.round((ret-dep)/86400000);
+  const nightsAdded=wizStops.reduce((a,s,i)=>{
+    if(i===0||i===wizStops.length-1)return a;
+    return a+(parseInt(s.nights)||0);
+  },0);
+  if(tripDays<=0){
+    warn.style.display='block';
+    warn.textContent='⚠ Return date must be after departure date.';
+    return;
+  }
+  if(nightsAdded>0&&nightsAdded>tripDays-1){
+    warn.style.display='block';
+    warn.textContent=`⚠ You have ${nightsAdded} night${nightsAdded>1?'s':''} at stops but your trip is only ${tripDays} day${tripDays>1?'s':''} (${tripDays-1} overnight${tripDays>2?'s':''}). Add more days or reduce nights.`;
+  } else if(tripDays>0&&nightsAdded>0&&nightsAdded<tripDays-1){
+    warn.style.display='block';
+    warn.textContent=`ℹ ${tripDays-1-nightsAdded} night${tripDays-1-nightsAdded>1?'s':''} unaccounted for — you have ${nightsAdded}n planned in ${tripDays} day trip.`;
+    warn.style.background='var(--amber-bg)';warn.style.borderColor='var(--amber-bd)';warn.style.color='var(--amber)';
+  } else {
+    warn.style.display='none';
+  }
+}
 function wizGo(n){
-  if(n===2){const name=$('wn').value.trim();if(!name){toast('Enter a trip name','err');return;}wizStops=[];renderWizPills();renderNights();}
-  if(n===3&&wizStops.length<1){toast('Add at least a starting point','err');return;}
+  if(n===2){
+    const name=$('wn').value.trim();if(!name){toast('Enter a trip name','err');return;}
+    // Validate dates
+    const ws=$('ws').value;const we=$('we').value;
+    if(ws&&we&&new Date(we)<=new Date(ws)){toast('Return date must be after departure','err');return;}
+    wizStops=[];renderWizPills();renderNights();
+  }
+  if(n===3){
+    if(wizStops.length<1){toast('Add at least a starting point','err');return;}
+    checkNightsDuration();
+  }
   goWizPane(n);
 }
 function goWizPane(n){
@@ -1192,6 +1269,21 @@ function createTrip(){
 
   DB.trips[id]=t; DB.cur=id;
   syncFromStops(t); sv(); closeModal('newTripMod'); rebuildSel(); renderAll(); startCD(); renderBudget(t);
+  // Auto-fetch activities for all overnight stops after a short delay
+  setTimeout(()=>{
+    const cur=T();if(!cur)return;
+    cur.stops.filter(s=>!s.isStart&&!s.isEnd&&parseInt(s.nights)>0).forEach((s,idx)=>{
+      // Stagger requests to avoid rate limits
+      setTimeout(()=>suggestActivitiesForStop(s.name,s.lat,s.lon),idx*1500);
+    });
+  },800);
+  // Auto-fetch activities for all overnight stops
+  setTimeout(()=>{
+    const cur=T();if(!cur)return;
+    cur.stops.filter(s=>!s.isStart&&!s.isEnd&&parseInt(s.nights)>0).forEach(s=>{
+      suggestActivitiesForStop(s.name,s.lat,s.lon);
+    });
+  },1000);
   toast('🗺️ '+name+' created!','ok'); wizStops=[];
   ['wn','wd','ws','we','wnotes','wfuel','wcons','wvname','wvtank'].forEach(id2=>{if($(id2))$(id2).value='';});
 }
@@ -1420,7 +1512,7 @@ function renderDash(t){
   <div class="stats-row">
     <div class="stat" onclick="navTo('days')" style="cursor:pointer"><div class="stat-n">${t.itinerary.filter(d=>!d.isTravel).length||0}</div><div class="stat-l">Nights</div></div>
     <div class="stat" onclick="navTo('plan')" style="cursor:pointer"><div class="stat-n">${km?km.toLocaleString():'—'}</div><div class="stat-l">Total km</div></div>
-    <div class="stat" onclick="navTo('budget')" style="cursor:pointer"><div class="stat-n">${fmtR(myCost)}</div><div class="stat-l">My Cost</div></div>
+    <div class="stat" onclick="navTo('budget')" style="cursor:pointer"><div class="stat-n" style="font-size:${myCost>0?'1.7rem':'.9rem'}">${myCost>0?fmtR(myCost):(hasVehicle&&!km?'⏳':'—')}</div><div class="stat-l">My Cost</div></div>
     <div class="stat" onclick="navTo('budget')" style="cursor:pointer"><div class="stat-n">${fmtR(myFuelShare)}</div><div class="stat-l">Fuel Share</div></div>
     <div class="stat" onclick="navTo('budget')" style="cursor:pointer"><div class="stat-n">${fmtR(myExpShare)}</div><div class="stat-l">Expenses</div></div>
     <div class="stat" onclick="navTo('pack')" style="cursor:pointer"><div class="stat-n">${pct}%</div><div class="stat-l">Packed</div></div>
@@ -1438,18 +1530,26 @@ function renderDash(t){
     </div>
     <div class="card dc" onclick="navTo('budget')" style="cursor:pointer">
       <div class="dc-title">💰 My Budget</div>
-      <div style="font-family:'Playfair Display';font-size:1.85rem;font-weight:700;color:var(--amber)">${fmtR(myCost)}</div>
-      <div style="margin-top:.55rem;display:flex;flex-direction:column;gap:.22rem">
-        <div style="display:flex;justify-content:space-between;font-size:.78rem">
-          <span style="color:var(--text3)">⛽ Fuel (my share)</span>
-          <span style="font-weight:600;color:var(--text2)">${fmtR(myFuelShare)}</span>
+      ${hasVehicle&&!km&&!manKm?`
+        <div style="display:flex;align-items:center;gap:.55rem;margin:.4rem 0 .35rem">
+          <div style="width:18px;height:18px;border-radius:50%;border:2.5px solid var(--border2);border-top-color:var(--amber);animation:spin 1s linear infinite;flex-shrink:0"></div>
+          <span style="font-size:.82rem;color:var(--text3)">Calculating route…</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:.78rem">
-          <span style="color:var(--text3)">💳 Expenses</span>
-          <span style="font-weight:600;color:var(--text2)">${fmtR(myExpShare)}</span>
+        <div style="font-size:.75rem;color:var(--text3)">Fuel cost available once map loads</div>
+      `:`
+        <div style="font-family:'Playfair Display';font-size:1.85rem;font-weight:700;color:var(--amber)">${myCost>0?fmtR(myCost):'—'}</div>
+        <div style="margin-top:.55rem;display:flex;flex-direction:column;gap:.22rem">
+          <div style="display:flex;justify-content:space-between;font-size:.78rem">
+            <span style="color:var(--text3)">⛽ Fuel share</span>
+            <span style="font-weight:600;color:var(--text2)">${myFuelShare>0?fmtR(myFuelShare):'—'}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.78rem">
+            <span style="color:var(--text3)">💳 Expenses</span>
+            <span style="font-weight:600;color:var(--text2)">${fmtR(myExpShare)}</span>
+          </div>
+          ${!hasVehicle?`<div style="font-size:.7rem;color:var(--rust);margin-top:.12rem">⚠ Add vehicle for fuel cost</div>`:''}
         </div>
-        ${!hasVehicle?`<div style="font-size:.7rem;color:var(--rust);margin-top:.18rem">⚠ Add a vehicle to calculate fuel</div>`:''}
-      </div>
+      `}
     </div>
     <div class="card dc" onclick="navTo('pack')" style="cursor:pointer">
       <div class="dc-title">🎒 Packing ${total>0?`<span style="font-size:.65rem;font-weight:400;color:var(--text3)">${packed}/${total}</span>`:''}</div>
@@ -1726,7 +1826,7 @@ function renderNights(){
     <div style="display:flex;align-items:center;gap:.65rem;font-size:.82rem;color:var(--text2);padding:.3rem 0">
       <span style="color:var(--amber);font-weight:700;min-width:18px">${i+1}</span>
       <span style="flex:1">${s.name}</span>
-      <input class="nights-inp" type="number" min="0" value="${s.nights}" onchange="wizStops[${i}].nights=parseInt(this.value)||0" placeholder="0">
+      <input class="nights-inp" type="number" min="0" value="${s.nights}" onchange="wizStops[${i}].nights=parseInt(this.value)||0;checkNightsDuration()" placeholder="0">
       <span style="font-size:.7rem;color:var(--text3)">nights</span>
     </div>`).join('');
 }
@@ -1888,7 +1988,16 @@ async function suggestActivitiesForStop(stopName,lat,lon){
       changed=true;
     }
   });
-  if(changed){sv();renderItinerary(t);toast('💡 Activities suggested for '+stopName,'ok');}
+  if(changed){
+    sv();
+    renderItinerary(t);
+    // Also refresh activities tab if it's currently shown
+    if(currentPanel==='plan'){
+      const actPane=$('stp-activities');
+      if(actPane&&actPane.style.display!=='none')renderActivitiesTab(t);
+    }
+    toast('💡 '+stopName+' — activities ready','ok');
+  }
 }
 function renderActivitiesTab(t){
   const el=$('activitiesContent');if(!el||!t)return;
@@ -2096,14 +2205,19 @@ function removeStop(i){
 function moveStop(i,dir){
   const t=T();const j=i+dir;
   if(j<0||j>=t.stops.length)return;
+  // Swap the stops
   [t.stops[i],t.stops[j]]=[t.stops[j],t.stops[i]];
   t.stops.forEach((s,k)=>{s.isStart=k===0;s.isEnd=k===t.stops.length-1;});
-  // Clear leg km estimates — route order changed so OSRM km no longer valid per leg
-  t.stops.forEach(s=>{delete s._estKm;delete s._osrmKm;});
-  // Trigger fresh OSRM route calculation
+  // IMPORTANT: km is "distance to reach this stop from previous stop"
+  // After reordering, ALL leg distances are invalid — clear them all
+  // and let OSRM recalculate from scratch on map refresh
+  t.stops.forEach(s=>{s.km=0;delete s._estKm;delete s._osrmKm;});
   t._routeKm=0;
-  sv();updateFuelKm(t);renderStops(t);refreshMap(t);renderDash(t);renderBudget(t);
-  toast('↕ Stop moved — recalculating route…','ok');
+  sv();updateFuelKm(t);renderStops(t);renderDash(t);renderBudget(t);
+  // Refresh map which triggers OSRM recalculation with new order
+  if(leafReady&&leafMap)refreshMap(t);
+  else{initLeaflet();refreshMap(t);}
+  toast('↕ Reordered — fetching new distances…','ok');
 }
 function editStop(i){
   const t=T();const s=t.stops[i];if(!s)return;
@@ -2245,38 +2359,49 @@ function renderAccom(t){
       </div>
     </div>`).join('');
 }
-function openAccomForStop(stopName){
-  const sel=$('na-stop');
+function openAccomForStop(stopName){openAccomModal(stopName,null);}
+function openAccomModal(stopName,editId){
   const t=T();if(!t)return;
-  sel.innerHTML=t.stops.filter(s=>!s.isStart&&!s.isEnd).map(s=>`<option value="${esc(s.name)}" ${s.name===stopName?'selected':''}>${s.name}</option>`).join('');
-  // Default check-in date from trip start + nights before this stop
-  if(t.startDate){
-    let d=new Date(t.startDate+'T00:00:00');
-    for(const s of t.stops){
-      if(s.name===stopName)break;
-      if(!s.isStart&&!s.isEnd)d.setDate(d.getDate()+(parseInt(s.nights)||0));
+  // Populate stop selector
+  const sel=$('na-stop');
+  if(sel)sel.innerHTML=t.stops.filter(s=>!s.isStart&&!s.isEnd).map(s=>`<option value="${esc(s.name)}" ${s.name===(stopName||'')?'selected':''}>${s.name}</option>`).join('');
+  // Always populate paid-by from current crew
+  const paid=$('na-costpaid');
+  if(paid)paid.innerHTML=t.crew.map(m=>`<option value="${m.id}" ${m.id===ME.id?'selected':''}>${m.name}${m.id===ME.id?' (you)':''}</option>`).join('');
+  buildAccomSplitRows(t);
+  if(editId){
+    const a=t.accommodation.find(x=>x.id===editId);
+    if(a){
+      $('na-nm').value=a.name||'';
+      $('na-tp').value=a.type||'camp';
+      if(sel)sel.value=a.stopName||'';
+      $('na-ni').value=a.nights||1;
+      $('na-ci').value=a.checkin||'';
+      $('na-rf').value=a.ref||'';
+      $('na-nt').value=a.notes||'';
     }
-    $('na-ci').value=d.toISOString().slice(0,10);
+    $('na-nm').dataset.editId=editId;
+    $('na-cost').value='';
+    $('accomModalTitle').textContent='Edit Stay';
+  } else {
+    $('na-nm').value=''; $('na-rf').value=''; $('na-nt').value='';
+    delete $('na-nm').dataset.editId;
+    $('na-cost').value='';
+    // Default check-in date
+    if(stopName&&t.startDate){
+      let d=new Date(t.startDate+'T00:00:00');
+      for(const s of t.stops){if(s.name===stopName)break;if(!s.isStart&&!s.isEnd)d.setDate(d.getDate()+(parseInt(s.nights)||0));}
+      $('na-ci').value=d.toISOString().slice(0,10);
+    } else {$('na-ci').value='';}
+    const stop=t.stops.find(s=>s.name===stopName);
+    $('na-ni').value=stop?stop.nights||1:1;
+    $('accomModalTitle').textContent='Add Stay';
   }
-  // Default nights from stop
-  const stop=t.stops.find(s=>s.name===stopName);
-  if(stop)$('na-ni').value=stop.nights||1;
-  $('accomModalTitle').textContent='Add Stay';openModal('addAccomMod');
+  openModal('addAccomMod');
 }
 function editAccom(id){
   const t=T();const a=t.accommodation.find(x=>x.id===id);if(!a)return;
-  // Pre-fill modal with existing data
-  const sel=$('na-stop');
-  sel.innerHTML=t.stops.filter(s=>!s.isStart&&!s.isEnd).map(s=>`<option value="${esc(s.name)}" ${s.name===a.stopName?'selected':''}>${s.name}</option>`).join('');
-  $('na-nm').value=a.name||'';
-  $('na-tp').value=a.type||'camp';
-  $('na-ni').value=a.nights||1;
-  $('na-ci').value=a.checkin||'';
-  $('na-rf').value=a.ref||'';
-  $('na-nt').value=a.notes||'';
-  // Remove old entry when saved — mark with edit id
-  $('na-nm').dataset.editId=id;$('accomModalTitle').textContent='Edit Stay';
-  $('accomModalTitle').textContent='Add Stay';openModal('addAccomMod');
+  openAccomModal(a.stopName,id);
 }
 function addAccomCost(name,stopName){
   const t=T();if(!t)return;
@@ -2736,8 +2861,11 @@ function startCD(){
 function exportTrip(){const t=T();if(!t)return;const b=new Blob([JSON.stringify({...t,photos:[]},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=(t.name||'trek').replace(/\s+/g,'-')+'.trek.json';a.click();URL.revokeObjectURL(a.href);toast('Exported 📥','ok');}
 function shareTrip(){if(navigator.share)navigator.share({title:(T()?.name||'TREK')+' — A Forgebit Expedition',url:location.href});else{navigator.clipboard?.writeText(location.href);toast('Link copied 🔗','ok');}}
 function toast(msg,type=''){const c=$('toasts'),t=document.createElement('div');t.className='toast '+(type||'');t.textContent=msg;c.appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';},2700);setTimeout(()=>t.remove(),3100);}
+// Unregister any old service workers that may be causing 404s on iOS
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(e=>console.warn('SW:',e));
+  navigator.serviceWorker.getRegistrations().then(regs=>{
+    regs.forEach(r=>r.unregister());
+  });
 }
 
 function navTo(panel){
