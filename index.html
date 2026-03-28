@@ -681,6 +681,7 @@ if('serviceWorker' in navigator){
       <div onclick="openNewTripModal();hideMobMenu()" style="padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;border-bottom:1px solid var(--border2);color:var(--amber)">＋ New Expedition</div>
       <div onclick="openJoinTrip();hideMobMenu()" style="padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;border-bottom:1px solid var(--border2);color:var(--sky)">🔗 Join a Trip</div>
       <div onclick="exportTrip();hideMobMenu()" style="padding:.7rem 1rem;font-size:.85rem;cursor:pointer;border-bottom:1px solid var(--border2);color:var(--text2)">⬇ Export</div>
+      <div onclick="if(T())deleteCurrentTrip();hideMobMenu();" style="padding:.7rem 1rem;font-size:.85rem;font-weight:600;cursor:pointer;border-bottom:1px solid var(--border2);color:var(--rust)">🗑 Delete Trip</div>
       <div onclick="doLogout();hideMobMenu()" style="padding:.7rem 1rem;font-size:.85rem;font-weight:700;cursor:pointer;color:var(--rust)">⎋ Sign Out</div>
     </div>
     <!-- OVERVIEW -->
@@ -3029,9 +3030,32 @@ function resetPacking(){if(!confirm('Reset?'))return;T().packing.forEach(c=>c.it
 // ══════════════════════════════════════════════════════════════
 //  CREW + INVITE CODE
 // ══════════════════════════════════════════════════════════════
+function renderInviteCodeBox(t){
+  const el=$('inviteCodeBox');if(!el)return;
+  const ic=t.inviteCode||'—';
+  const tname=esc(t.name||'');
+  const box=document.createElement('div');
+  box.className='invite-code-box';
+  box.innerHTML='<div class="icb-label">Trip Invite Code</div><div class="icb-code">'+ic+'</div><div style="font-size:.72rem;color:var(--text3);margin:.3rem 0 .6rem;line-height:1.5">Share with your crew — they open TREK, tap <strong>Join a Trip</strong> and enter this code</div>';
+  const btns=document.createElement('div');btns.style.cssText='display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap';
+  const b1=document.createElement('button');b1.className='icb-copy';b1.textContent='📋 Copy';b1.onclick=()=>copyInviteCode(ic,t.name||'');
+  const b2=document.createElement('button');b2.className='icb-copy';b2.style.background='var(--sky)';b2.textContent='⬆ Share';b2.onclick=()=>shareInviteCode(ic,t.name||'');
+  btns.appendChild(b1);btns.appendChild(b2);box.appendChild(btns);
+  el.innerHTML='';el.appendChild(box);
+}
+function copyInviteCode(code,tripName){
+  const msg='Join my TREK expedition "'+tripName+'"!\n\nInvite code: '+code+'\n\nOpen TREK → tap "Join a Trip" → enter code';
+  if(navigator.clipboard){navigator.clipboard.writeText(msg).then(()=>toast('📋 Invite copied!','ok')).catch(()=>{navigator.clipboard.writeText(code).then(()=>toast('Code copied: '+code,'ok'));});}
+  else toast('Code: '+code,'ok');
+}
+function shareInviteCode(code,tripName){
+  const msg='Join my TREK expedition "'+tripName+'"! Code: '+code+' — open qjtheron1983.github.io/TREK, tap Join a Trip.';
+  if(navigator.share)navigator.share({title:'Join '+tripName+' on TREK',text:msg,url:'https://qjtheron1983.github.io/TREK/'}).catch(()=>{});
+  else copyInviteCode(code,tripName);
+}
 function renderCrew(t){
   const grid=$('crewGrid');
-  $('inviteCodeBox').innerHTML=`<div class="invite-code-box"><div class="icb-label">Trip Invite Code — share with your crew</div><div class="icb-code">${t.inviteCode||'—'}</div><button class="icb-copy" onclick="navigator.clipboard?.writeText('${t.inviteCode}');toast('Invite code copied 📋','ok')">Copy Code</button></div>`;
+  renderInviteCodeBox(t);
   if(!t.crew.length){grid.innerHTML='';return;}
   grid.innerHTML=t.crew.map((m,i)=>{
     const isMe=m.id===ME.id;
@@ -3068,7 +3092,7 @@ async function spHandleCallback(){
       sessionStorage.setItem('sp_token_expiry',String(Date.now()+(d.expires_in||3600)*1000));
       sessionStorage.removeItem('sp_verifier');
       const pid=sessionStorage.getItem('sp_party');if(pid&&DB.trips[pid])DB.cur=pid;
-      toast('Spotify connected!','ok');navTo('crew');setTimeout(()=>renderSpotify(T()),300);
+      toast('Spotify connected!','ok');navTo('plan');setTimeout(()=>setPlanTab('playlist',document.querySelector('[data-stab=playlist]')),200);
     }else{toast('Spotify: '+(d.error_description||d.error||'failed'),'err');}
   }catch(e){toast('Spotify connect failed','err');}
 }
@@ -3380,13 +3404,17 @@ document.querySelectorAll('.ni,.bt').forEach(item=>{
 });
 function setPlanTab(tab,el){
   document.querySelectorAll('.stab').forEach(s=>s.classList.remove('active'));
-  el.classList.add('active');
-  ['route','stays','food','activities'].forEach(t2=>{
+  if(el)el.classList.add('active');
+  ['route','stays','food','activities','itinerary','playlist'].forEach(t2=>{
     const p=$('stp-'+t2);if(p)p.style.display=t2===tab?'block':'none';
   });
-  if(tab==='activities')renderActivitiesTab(T());
-  // Map always visible in plan panel, refresh when route tab shown
-  if(tab==='route')setTimeout(()=>{initLeaflet();if(T())refreshMap(T());if(leafMap)leafMap.invalidateSize();},80);
+  const t=T();
+  if(tab==='route')setTimeout(()=>{initLeaflet();if(t)refreshMap(t);if(leafMap)leafMap.invalidateSize();},80);
+  if(tab==='stays'&&t)renderAccom(t);
+  if(tab==='food'&&t)renderFood(t);
+  if(tab==='activities'&&t)renderActivitiesTab(t);
+  if(tab==='itinerary'&&t)renderItinerary(t);
+  if(tab==='playlist')renderSpotify(t);
 }
 function toggleMap(){
   const mc=$('mapContainer');if(!mc)return;
