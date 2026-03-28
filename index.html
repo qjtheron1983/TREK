@@ -1001,12 +1001,24 @@ async function joinTrip(){
   let foundTrip=Object.values(DB.trips).find(t=>t.inviteCode===code);
   // 2. Firebase search — two strategies
   if(!foundTrip&&FB_READY){
-    // Strategy A: invite_codes lookup doc (no Firestore index needed)
+    // Strategy A: invite_codes lookup doc — contains full trip snapshot, no second read needed
     try{
       const ld=await fbDb.collection('invite_codes').doc(code).get();
       if(ld.exists){
-        const tripDoc=await fbDb.collection('trips').doc(ld.data().tripId).get();
-        if(tripDoc.exists)foundTrip={...tripDoc.data(),id:tripDoc.id};
+        const data=ld.data();
+        if(data.tripSnapshot){
+          // Full trip stored in invite_codes — no permission issue
+          const t=JSON.parse(data.tripSnapshot);
+          t.id=data.tripId;
+          foundTrip=t;
+          console.log('Strategy A: found trip via snapshot',data.tripId);
+        } else if(data.tripId){
+          // Fallback: try reading trip directly
+          try{
+            const tripDoc=await fbDb.collection('trips').doc(data.tripId).get();
+            if(tripDoc.exists)foundTrip={...tripDoc.data(),id:tripDoc.id};
+          }catch(e2){console.warn('Strategy A trip read failed (permission?):', e2.message);}
+        }
       }
     }catch(e){console.warn('Strategy A (invite_codes lookup) failed:',e.code, e.message);}
     // Strategy B: where query (needs Firestore index — may throw)
@@ -1109,7 +1121,7 @@ function sv(){
       // Always write invite_codes lookup — needed for join to work
       if(_t.inviteCode){
         fbDb.collection('invite_codes').doc(_t.inviteCode).set(
-          {tripId:DB.cur,tripName:_t.name||'',_owner:ME.id},
+          {tripId:DB.cur,tripName:_t.name||'',_owner:ME.id,tripSnapshot:JSON.stringify(_t)},
           {merge:true}
         ).catch(e=>console.warn('invite_codes write:',e));
       }
@@ -1221,6 +1233,16 @@ function doLogout(){
 //  LAUNCH
 // ══════════════════════════════════════════════════════════════
 window.addEventListener('load',()=>{
+  // Handle Spotify callback immediately — before Firebase auth clears sessionStorage
+  if(new URLSearchParams(location.search).get('state')==='trek_spotify'){
+    ld(); initFirebase();
+    // Wait for auth then handle callback
+    const _spInterval=setInterval(()=>{
+      if(ME){clearInterval(_spInterval);spHandleCallback();}
+    },200);
+    setTimeout(()=>clearInterval(_spInterval),8000);
+    return;
+  }
   ld();
   initFirebase();
 
@@ -3023,8 +3045,9 @@ function renderCrew(t){
   const grid=$('crewGrid');
   // Write invite_codes lookup doc every time Crew tab opens so joining always works
   if(FB_READY&&t.inviteCode&&t.id){
+    // Store full trip snapshot so joiner can read it without trip permission
     fbDb.collection('invite_codes').doc(t.inviteCode).set(
-      {tripId:t.id,tripName:t.name||'',_owner:ME.id},
+      {tripId:t.id,tripName:t.name||'',_owner:ME.id,tripSnapshot:JSON.stringify(t)},
       {merge:true}
     ).then(()=>console.log('invite_codes written:',t.inviteCode))
      .catch(e=>console.error('invite_codes write failed:',e));
@@ -3251,7 +3274,7 @@ const SP_TRACKS={};
 let spSearchTimer=null;
 
 function spToken(){
-  const t=sessionStorage.getItem('sp_token'),e=sessionStorage.getItem('sp_token_expiry');
+  const t=localStorage.getItem('sp_token'),e=localStorage.getItem('sp_token_expiry');
   return(t&&e&&Date.now()<parseInt(e))?t:null;
 }
 
@@ -3262,8 +3285,8 @@ async function spInit(){
   const challenge=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))
     .then(buf=>btoa(String.fromCharCode(...new Uint8Array(buf)))
       .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''));
-  sessionStorage.setItem('sp_verifier',verifier);
-  sessionStorage.setItem('sp_trip',DB.cur||'');
+  localStorage.setItem('sp_verifier',verifier);
+  localStorage.setItem('sp_trip',DB.cur||'');
   window.location.href='https://accounts.spotify.com/authorize?'+new URLSearchParams({
     client_id:SP_CLIENT_ID,response_type:'code',
     redirect_uri:SP_REDIRECT,scope:SP_SCOPES,
@@ -3276,7 +3299,7 @@ async function spHandleCallback(){
   if(p.get('state')!=='trek_spotify'||!p.get('code'))return false;
   // Clean URL immediately
   history.replaceState({},'',location.pathname);
-  const verifier=sessionStorage.getItem('sp_verifier');
+  const verifier=localStorage.getItem('sp_verifier');
   if(!verifier){toast('Spotify auth error — please try again','err');return false;}
   try{
     const res=await fetch('https://accounts.spotify.com/api/token',{
@@ -3289,12 +3312,12 @@ async function spHandleCallback(){
     });
     const d=await res.json();
     if(d.access_token){
-      sessionStorage.setItem('sp_token',d.access_token);
-      sessionStorage.setItem('sp_token_expiry',String(Date.now()+(d.expires_in||3600)*1000));
-      sessionStorage.removeItem('sp_verifier');
+      localStorage.setItem('sp_token',d.access_token);
+      localStorage.setItem('sp_token_expiry',String(Date.now()+(d.expires_in||3600)*1000));
+      localStorage.removeItem('sp_verifier');
       toast('Spotify connected!','ok');
       // Restore trip and navigate to playlist tab
-      const savedTrip=sessionStorage.getItem('sp_trip');
+      const savedTrip=localStorage.getItem('sp_trip');
       if(savedTrip&&DB.trips[savedTrip])DB.cur=savedTrip;
       navTo('crew');
       setTimeout(()=>{const t=T();if(t)renderSpotify(t);},300);
@@ -3307,8 +3330,8 @@ async function spHandleCallback(){
 }
 
 function spDisconnect(){
-  sessionStorage.removeItem('sp_token');
-  sessionStorage.removeItem('sp_token_expiry');
+  localStorage.removeItem('sp_token');
+  localStorage.removeItem('sp_token_expiry');
   renderSpotify(T());
   toast('Spotify disconnected','ok');
 }
@@ -3323,7 +3346,7 @@ async function spSearch(q){
   try{
     const res=await fetch('https://api.spotify.com/v1/search?q='+encodeURIComponent(q)+'&type=track&limit=6&market=ZA',
       {headers:{Authorization:'Bearer '+tok}});
-    if(res.status===401){sessionStorage.removeItem('sp_token');renderSpotify(T());toast('Spotify session expired','err');return;}
+    if(res.status===401){localStorage.removeItem('sp_token');renderSpotify(T());toast('Spotify session expired','err');return;}
     const d=await res.json();
     const tracks=d.tracks?.items||[];
     const playlist=(T()?.playlist||[]);
