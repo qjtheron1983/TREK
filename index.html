@@ -465,6 +465,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .ga:hover{border-color:var(--amber);color:var(--amber);}
 .ga small{font-size:.72rem;font-weight:500;}
 
+/* FAB — floating action button for mobile new trip */
+#fab{display:none;position:fixed;bottom:calc(80px + env(safe-area-inset-bottom));right:1.1rem;z-index:250;width:52px;height:52px;border-radius:50%;background:var(--amber);color:#fff;border:none;font-size:1.5rem;box-shadow:0 4px 18px rgba(184,114,15,.45);cursor:pointer;align-items:center;justify-content:center;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+#fab:active{transform:scale(.92);}
+#fab.has-trip{border-radius:28px;width:auto;padding:0 1.1rem;font-size:.82rem;font-weight:700;letter-spacing:.04em;gap:.35rem;}
+
 /* BOTTOM TAB BAR */
 #bottomTabs{display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--surface);border-top:1px solid var(--border2);box-shadow:0 -2px 16px var(--sh);padding-bottom:env(safe-area-inset-bottom);}
 .bt{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.52rem .25rem .42rem;cursor:pointer;gap:.14rem;border:none;background:none;transition:all .16s;position:relative;}
@@ -480,18 +485,40 @@ input[type=file]{display:none;}
 .ph-sub{font-size:.8rem;color:var(--text3);margin-top:.15rem;}
 
 /* RESPONSIVE */
+/* ══ MOBILE ══ */
 @media(max-width:768px){
   #sidebar{display:none !important;}
-  #main{margin-left:0 !important;padding-bottom:calc(65px + env(safe-area-inset-bottom));}
+  #main{margin-left:0 !important;padding-bottom:calc(72px + env(safe-area-inset-bottom));min-height:100dvh;}
   #bottomTabs{display:flex;}
-  #toasts{bottom:calc(75px + env(safe-area-inset-bottom));}
-  .panel{padding:1rem;}
-  .dash-hero{padding:1.3rem 1.2rem;}
-  .dh-name{font-size:1.65rem;}
-  .dash-grid{grid-template-columns:1fr;}
+  #toasts{bottom:calc(80px + env(safe-area-inset-bottom));right:.75rem;left:.75rem;}
+  .toast{max-width:100%;}
+
+  /* Topbar */
+  .topbar{padding:.6rem .9rem;gap:.5rem;}
+  .tb-title{font-size:.88rem;}
+  .menu-btn{display:none;} /* no sidebar on mobile */
+
+  /* Panels */
+  .panel{padding:.85rem;}
+
+  /* Hero */
+  .dash-hero{padding:1.1rem 1rem;border-radius:12px;}
+  .dh-name{font-size:1.45rem;line-height:1.2;}
+  .dh-meta{gap:.5rem .85rem;margin-top:.4rem;}
+  .dh-mi{font-size:.75rem;}
+
+  /* Stats — 3 col on mobile */
+  .stats-row{grid-template-columns:repeat(3,1fr);gap:.55rem;}
+  .stat{padding:.65rem .5rem;}
+  .stat-n{font-size:1.1rem;}
+  .stat-l{font-size:.52rem;}
+
+  /* Cards 1 col */
+  .dash-grid{grid-template-columns:1fr;gap:.75rem;}
+  .dc{padding:.9rem;}
   .bi-grid{grid-template-columns:1fr;}
+  .bi-card.full{grid-column:1;}
   .bi-kpi-row{grid-template-columns:repeat(2,1fr);}
-  .stats-row{grid-template-columns:repeat(3,1fr);}
   .accom-grid{grid-template-columns:1fr;}
   .crew-grid{grid-template-columns:repeat(2,1fr);}
   .rsr{grid-template-columns:repeat(2,1fr);}
@@ -499,14 +526,49 @@ input[type=file]{display:none;}
   .dbd.open{grid-template-columns:1fr;}
   .pack-grid{grid-template-columns:1fr;}
   .veh-grid{grid-template-columns:1fr;}
-  .modal{border-radius:var(--rl) var(--rl) 0 0;}
-  #mapContainer{height:260px;}
-  .bi-card.full{grid-column:1;}
+
+  /* Map */
+  #mapContainer{height:240px;border-radius:10px;}
+
+  /* Subtabs scrollable */
+  .subtabs{gap:.22rem;padding:.22rem;}
+  .stab{font-size:.68rem;padding:.38rem .5rem;}
+
+  /* Stop rows */
+  .stop-row{padding:.6rem .7rem;gap:.5rem;}
+  .sr-n{font-size:.95rem;min-width:18px;}
+
+  /* Bottom tabs — larger touch targets */
+  .bt{padding:.6rem .15rem .45rem;}
+  .bt-ic{font-size:1.35rem;}
+  .bt-lb{font-size:.48rem;}
+
+  /* Forms */
+  .form-row{flex-direction:column;gap:.65rem;}
+  .fg{min-width:100%;}
+  .modal{border-radius:16px 16px 0 0;padding:1.25rem 1.1rem calc(1.25rem + env(safe-area-inset-bottom));}
+  .modal-title{font-size:1.15rem;}
+
+  /* FAB — always visible on mobile */
+  #fab{display:flex;}
+
+  /* Budget bar wraps nicely */
+  .budget-bar{gap:.5rem;}
+  .bb-inp{width:76px;}
+
+  /* Insights charts shorter */
+  .chart-container{height:160px;}
+
+  /* Todo checklist touch friendly */
+  .todo-item{padding:.55rem 0;min-height:44px;}
 }
+
+/* ══ DESKTOP ══ */
 @media(min-width:769px){
   #sidebar{display:flex !important;}
   #main{margin-left:232px;}
   #bottomTabs{display:none !important;}
+  #fab{display:none !important;}
   .overlay{align-items:center;}
   .modal{border-radius:var(--rl);max-width:560px;}
 }
@@ -608,10 +670,12 @@ if('serviceWorker' in navigator){
   <!-- MAIN -->
   <main id="main">
     <div class="topbar">
-      <button class="menu-btn" onclick="toggleSB()">☰</button>
-      <div class="tb-title" id="tbTitle">TREK</div>
-      <button class="btn-sm" onclick="shareTrip()">⬆ Share</button>
-      <button class="btn-sm" onclick="exportTrip()">⬇</button>
+      <div class="tb-title" id="tbTitle">✦ TREK</div>
+      <div style="margin-left:auto;display:flex;gap:.4rem;align-items:center">
+        <select id="tripSelMob" class="sb-sel" style="max-width:120px;font-size:.72rem;padding:.28rem .5rem;display:none" onchange="switchTrip(this.value)"></select>
+        <button class="btn-sm" onclick="shareTrip()">⬆</button>
+        <button class="btn-sm" onclick="exportTrip()">⬇</button>
+      </div>
     </div>
     <!-- OVERVIEW -->
     <section class="panel active" id="panel-overview">
@@ -745,6 +809,8 @@ if('serviceWorker' in navigator){
   <button class="bt" data-panel="pack" style="position:relative"><div class="bt-ic">🎒</div><div class="bt-lb">Pack</div><div class="bt-badge" id="packBadgeMob" style="display:none">!</div></button>
   <button class="bt" data-panel="crew"><div class="bt-ic">👥</div><div class="bt-lb">Crew</div></button>
 </nav>
+<!-- FAB: mobile floating action button -->
+<button id="fab" onclick="fabAction()" aria-label="New Expedition">＋</button>
 <!-- MODALS -->
 <!-- NEW TRIP WIZARD -->
 <div class="overlay" id="newTripMod">
@@ -857,7 +923,17 @@ if('serviceWorker' in navigator){
 <div class="modal" style="position:relative">
   <button class="modal-close" onclick="closeModal('addCostMod')">✕</button>
   <div class="modal-title">Add Expense</div>
-  <div class="form-row"><div class="fg"><label>Description</label><input type="text" id="nc-desc" placeholder="Tiger Reef — 4 nights"></div><div class="fg"><label>Category</label><select id="nc-cat"><option value="accommodation">Accommodation</option><option value="activity">Activity</option><option value="food">Food</option><option value="fuel">Fuel</option><option value="other">Other</option></select></div></div>
+  <div class="form-row"><div class="fg"><label>Description</label><input type="text" id="nc-desc" placeholder="Tiger Reef — 4 nights"></div><div class="fg"><label>Category</label><select id="nc-cat">
+  <option value="accommodation">🏕️ Accommodation</option>
+  <option value="fuel">⛽ Fuel</option>
+  <option value="activity">🏃 Activity / Entry Fee</option>
+  <option value="food">🔥 Food & Supplies</option>
+  <option value="permits">📋 Permits / Fees</option>
+  <option value="gear">🎒 Gear & Equipment</option>
+  <option value="medical">💊 Medical</option>
+  <option value="transport">✈️ Transport</option>
+  <option value="other">💳 Other</option>
+</select></div></div>
   <div class="form-row"><div class="fg"><label>Amount (R)</label><input type="number" id="nc-amt" placeholder="2400" step="0.01" oninput="updateSplitAmounts()"></div><div class="fg"><label>Paid by</label><select id="nc-paid"></select></div></div>
   <div style="font-size:.68rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem">Split %</div>
   <div id="splitRows"></div>
@@ -1003,7 +1079,7 @@ let wizStops=[],rStopSelected=null,psTimer=null;
 let biCharts={};
 
 const COLORS=['linear-gradient(135deg,#b8720f,#8b3222)','linear-gradient(135deg,#3d6435,#1e6fa5)','linear-gradient(135deg,#7a6e5f,#b8720f)','linear-gradient(135deg,#8b3222,#c94b1a)','linear-gradient(135deg,#1e6fa5,#3d6435)','linear-gradient(135deg,#b8720f,#3d6435)'];
-const CAT_ICONS={accommodation:'🏕️',activity:'🏃',food:'🔥',fuel:'⛽',other:'💳'};
+const CAT_ICONS={accommodation:'🏕️',activity:'🏃',food:'🔥',fuel:'⛽',permits:'📋',gear:'🎒',medical:'💊',transport:'✈️',other:'💳'};
 const panelLabels={dashboard:'Overview',itinerary:'Itinerary',route:'Route & Map',accommodation:'Accommodation',fuel:'Fuel & Costs',costs:'Trip Costs',food:'Food & Meals',packing:'Packing List',crew:'Crew',docs:'Documents',gallery:'Gallery'};
 
 function $(id){return document.getElementById(id);}
@@ -1336,6 +1412,13 @@ function rebuildSel(){
 
   deduped.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.name;if(t.id===DB.cur)o.selected=true;sel.appendChild(o);});
   if(!deduped.length)sel.innerHTML='<option value="">— No trips yet —</option>';
+  // Sync mobile topbar selector
+  const mobSel=$('tripSelMob');
+  if(mobSel){
+    mobSel.innerHTML=deduped.map(t=>`<option value="${t.id}" ${t.id===DB.cur?'selected':''}>${t.name}</option>`).join('');
+    if(!deduped.length)mobSel.innerHTML='<option>No trips</option>';
+    mobSel.style.display=deduped.length>0?'':'none';
+  }
 }
 function switchTrip(id){
   if(!id||!DB.trips[id])return;
@@ -1359,6 +1442,26 @@ function deleteCurrentTrip(){
 // ══════════════════════════════════════════════════════════════
 //  SYNC FROM STOPS → itinerary + food + accommodation slots
 // ══════════════════════════════════════════════════════════════
+function getDefaultPackingList(uid){
+  const c=(cat,icon,type,items)=>({cat,icon,type,uid:type==='personal'?uid:null,items:items.map(text=>({text,checked:false}))});
+  return [
+    // ── COMMUNAL ──
+    c('Navigation & Maps','🧭','communal',['Laminated maps of route','GPS device + power bank','Offline maps downloaded (Maps.me / OsmAnd)','Paper backup maps','Compass','Pen & notebook for notes']),
+    c('Vehicle & Recovery','🚗','communal',['Hi-lift jack + base plate','Tow rope / snatch strap','Bow shackles (x4)','Shovel (folding)','Tire repair kit + plugs','Portable air compressor','Spare tyre (full size)','Jumper cables / jump starter','Spare engine oil (2L)','Spare coolant','Spare fan belt','WD-40 / CRC','Basic tool kit','Tyre pressure gauge','Fuel jerry cans (full)']),
+    c('Camping & Shelter','⛺','communal',['Rooftop tent / ground tent','Sleeping bags','Camping chairs (x per person)','Folding table','Headlamps + spare batteries','Lantern (gas or solar)','Tarpaulin / shade cloth','Tent pegs + mallet','Ground sheet','Camp broom']),
+    c('Kitchen & Cooking','🍖','communal',['Braai grid','Firestarter + matches + lighter','Cast iron pot (potjie)','Camp stove + gas canisters','Pots & pans','Plates, cups, cutlery (per person)','Washing basin','Biodegradable soap','Cutting board + sharp knife','Tin opener','Cooler box + ice','Water containers (20L)','Braai tongs + gloves','Aluminum foil','Cooking oil, salt, pepper, spices','Coffee maker / plunger']),
+    c('Water & Hygiene','💧','communal',['Water purification tablets','Water filter (Sawyer / LifeStraw)','Hand sanitizer','Toilet paper (stock up)','Portable bush toilet','Biodegradable shampoo/soap','Wet wipes (bulk)','Small mirror']),
+    c('Medical & Safety','💊','communal',['First aid kit (comprehensive)','Pain killers (Panado/Myprodol)','Antihistamines','Diarrhea meds (Imodium)','Rehydration sachets (Rehidrat)','Antiseptic cream + plasters','Burn shield','Tweezers','Snake bite kit','Malaria prophylaxis if needed','Insect repellent','Sunscreen SPF50+','Prescription meds (extra supply)','Medical emergency contacts card']),
+    c('Electronics & Power','📡','communal',['Solar panel + battery bank','12V car charger / inverter','Satellite communicator (Garmin inReach)','Walkie talkies','Camera + memory cards','Laptop / tablet if needed','Cables & adapters','Spare batteries (AA/AAA)','USB hub']),
+    c('Documents & Admin','📋','communal',['Passports (all crew)','Visas if required','Vehicle registration','Insurance documents','National park permits','Emergency contact list (printed)','Cash in local currency','Credit/debit cards','Roadside assistance number']),
+    c('Food & Provisions','🔥','communal',['Pasta / rice / maize meal','Canned goods (beans, tuna, tomatoes)','Biltong & droëwors','Rusks','Peanut butter & jam','Bread or wraps','Long life milk','Breakfast cereals / oats','Condiments (ketchup, mustard)','Snack bars / nuts','Braai meat (in cooler box)','Fresh veg (hardy: onion, potato, butternut)','Eggs','Coffee, tea, sugar','Drinking water (minimum 3L per person/day)']),
+    // ── PERSONAL ──
+    c('Clothing','👕','personal',['Underwear (enough for trip)','Socks (wool + cotton)','T-shirts / shirts','Long pants (1-2 pairs)','Shorts','Fleece jacket / hoodie','Waterproof rain jacket','Sun hat / cap','Beanie & gloves (nights get cold)','Swimwear','Sleepwear','Smart casual outfit','Buff / neck gaiter']),
+    c('Footwear','🥾','personal',['Hiking boots (broken in)','Camp sandals / slops','Socks (separate bag)']),
+    c('Toiletries','🧴','personal',['Toothbrush & paste','Deodorant','Razor & shaving cream','Moisturizer','Lip balm (SPF)','Feminine hygiene products','Contact lenses & solution','Glasses + case','Personal prescription meds']),
+    c('Personal Extras','🎯','personal',['Book / Kindle','Earphones','Travel pillow','Eye mask','Day pack / backpack','Binoculars','Personal camera','Playing cards / games','Notebook & pen']),
+  ];
+}
 function syncFromStops(t){
   if(!t.stops||!t.stops.length)return;
   let date=t.startDate?new Date(t.startDate+'T00:00:00'):null;
@@ -1456,11 +1559,46 @@ function syncFromStops(t){
 // ══════════════════════════════════════════════════════════════
 //  RENDER ALL
 // ══════════════════════════════════════════════════════════════
+function fabAction(){
+  const t=T();
+  if(!t){openNewTripModal();return;}
+  // On overview: show options; on other panels: context action
+  if(currentPanel==='overview'){openNewTripModal();}
+  else if(currentPanel==='plan'){openModal('addStopMod');}
+  else if(currentPanel==='days'){openModal('addDayMod');}
+  else if(currentPanel==='budget'){openExpenseModal();}
+  else if(currentPanel==='pack'){openModal('addCatMod');}
+  else if(currentPanel==='crew'){openNewTripModal();}
+  else{openNewTripModal();}
+}
+function updateFab(){
+  const fab=$('fab');if(!fab)return;
+  const t=T();
+  if(!t){
+    fab.innerHTML='＋';fab.title='New Expedition';
+    fab.classList.remove('has-trip');
+  } else {
+    const icons={overview:'＋',plan:'＋ Stop',days:'＋ Day',budget:'＋ Expense',pack:'＋ Category',crew:'＋'};
+    const lbl=icons[currentPanel]||'＋';
+    fab.innerHTML=lbl;
+    fab.classList.toggle('has-trip',lbl!=='＋');
+  }
+}
 function renderAll(){
   const t=T();
   if(!t){
-    $('tbTitle').textContent='TREK';
-    $('dashContent').innerHTML=`<div class="empty"><div class="ei">🗺️</div><div class="et">No expedition yet</div><div class="es">Tap "+ New Expedition" to start</div></div>`;
+    $('tbTitle').textContent='✦ TREK';
+    $('dashContent').innerHTML=`
+      <div style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;text-align:center">
+        <div style="font-size:3.5rem;margin-bottom:1rem;opacity:.7">🗺️</div>
+        <div style="font-family:'Playfair Display';font-size:1.65rem;font-weight:700;color:var(--text);margin-bottom:.5rem">Ready to explore?</div>
+        <div style="font-size:.9rem;color:var(--text3);margin-bottom:2rem;max-width:280px;line-height:1.6">Plan your route, stops, accommodation, food, budget and crew — all in one place.</div>
+        <button onclick="openNewTripModal()" style="background:var(--amber);color:#fff;border:none;padding:.85rem 2rem;border-radius:28px;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(184,114,15,.4);letter-spacing:.03em;transition:all .2s">＋ New Expedition</button>
+        <div style="margin-top:1rem">
+          <button onclick="openJoinTrip()" style="background:none;border:none;color:var(--text3);font-size:.85rem;cursor:pointer;text-decoration:underline">or join an existing trip →</button>
+        </div>
+      </div>`;
+    updateFab();
     return;
   }
   $('tbTitle').textContent=t.name;
@@ -1476,6 +1614,7 @@ function renderAll(){
   renderDocs(t);
   renderGallery(t);
   updatePackBadge(t);
+  updateFab();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1554,27 +1693,17 @@ function renderDash(t){
       `:`<div class="empty" style="padding:.85rem 0"><div class="ei" style="font-size:1.6rem">📅</div><div class="es">Add stops to your route</div></div>`}
     </div>
     <div class="card dc" onclick="navTo('budget')" style="cursor:pointer">
-      <div class="dc-title">💰 My Budget</div>
-      ${hasVehicle&&!km&&!manKm?`
-        <div style="display:flex;align-items:center;gap:.55rem;margin:.4rem 0 .35rem">
-          <div style="width:18px;height:18px;border-radius:50%;border:2.5px solid var(--border2);border-top-color:var(--amber);animation:spin 1s linear infinite;flex-shrink:0"></div>
-          <span style="font-size:.82rem;color:var(--text3)">Calculating route…</span>
-        </div>
-        <div style="font-size:.75rem;color:var(--text3)">Fuel cost available once map loads</div>
-      `:`
-        <div style="font-family:'Playfair Display';font-size:1.85rem;font-weight:700;color:var(--amber)">${myCost>0?fmtR(myCost):'—'}</div>
-        <div style="margin-top:.55rem;display:flex;flex-direction:column;gap:.22rem">
-          <div style="display:flex;justify-content:space-between;font-size:.78rem">
-            <span style="color:var(--text3)">⛽ Fuel share</span>
-            <span style="font-weight:600;color:var(--text2)">${myFuelShare>0?fmtR(myFuelShare):'—'}</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;font-size:.78rem">
-            <span style="color:var(--text3)">💳 Expenses</span>
-            <span style="font-weight:600;color:var(--text2)">${fmtR(myExpShare)}</span>
-          </div>
-          ${!hasVehicle?`<div style="font-size:.7rem;color:var(--rust);margin-top:.12rem">⚠ Add vehicle for fuel cost</div>`:''}
-        </div>
-      `}
+      <div class="dc-title">💰 My Total</div>
+      <div style="font-family:'Playfair Display';font-size:1.85rem;font-weight:700;color:var(--amber)">${myCost>0?fmtR(myCost):'R 0'}</div>
+      <div style="margin-top:.55rem;display:flex;flex-direction:column;gap:.18rem">
+        ${(t.expenses||[]).slice(0,3).map(e=>`
+          <div style="display:flex;justify-content:space-between;font-size:.76rem">
+            <span style="color:var(--text3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px">${e.desc}</span>
+            <span style="font-weight:600;color:var(--text2);flex-shrink:0">${fmtR(e.amount)}</span>
+          </div>`).join('')}
+        ${(t.expenses||[]).length===0?`<div style="font-size:.78rem;color:var(--text3)">No expenses yet</div><div style="font-size:.7rem;color:var(--sky);margin-top:.15rem">Tap to add →</div>`:''}
+        ${(t.expenses||[]).length>3?`<div style="font-size:.72rem;color:var(--text3);margin-top:.1rem">+${(t.expenses||[]).length-3} more</div>`:''}
+      </div>
     </div>
     <div class="card dc" onclick="navTo('pack')" style="cursor:pointer">
       <div class="dc-title">🎒 Packing ${total>0?`<span style="font-size:.65rem;font-weight:400;color:var(--text3)">${packed}/${total}</span>`:''}</div>
@@ -1604,16 +1733,18 @@ function calcMyExpenseShare(t){
   },0);
 }
 function calcMyCost(t){
-  return calcMyExpenseShare(t) + calcTotalFuel(t)/(t.crew.length||1);
+  // Fuel is now just a normal expense — no special treatment
+  return calcMyExpenseShare(t);
 }
-function calcTotalFuel(t){
-  // Best km source: OSRM auto-calculated > sum of manual stop km > 0
-  const manualKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
-  const km=t._routeKm||manualKm||0;
-  const price=t.fuelPrice||24.5;
+function calcFuelEstimate(t){
+  // Returns estimated total fuel cost based on vehicles+km+price
+  const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
+  const km=t._routeKm||manKm||0;
+  const price=Number(t.fuelPrice)||24.5;
   if(!km||!t.vehicles||!t.vehicles.length)return 0;
   return t.vehicles.reduce((a,v)=>a+(km/100)*(Number(v.consumption)||12.5)*price,0);
 }
+function calcTotalFuel(t){return calcFuelEstimate(t);}
 
 // ══════════════════════════════════════════════════════════════
 //  INSIGHTS / BI DASHBOARD
@@ -1940,21 +2071,29 @@ async function fetchSuggestedActivities(stopName,lat,lon){
   if(activityCache[cacheKey])return activityCache[cacheKey];
 
   try{
-    const prompt=`You are an expert South African and Namibian travel guide with deep, specific local knowledge. For "${stopName}"${lat&&lon?' (coordinates: '+lat.toFixed(3)+','+lon.toFixed(3)+')':''}, list 6-8 REAL, SPECIFIC activities for a 4x4 overland traveller. Be hyper-specific: use actual business names, real place names, real operators.
+    const tripCtx=T()?`Trip context: ${T().name||'SA/Namibia overland'}, destination: ${T().dest||'Southern Africa'}.`:'';
+    const prompt=`You are a Southern African adventure travel expert. Search the web NOW for real, current activities near "${stopName}"${lat&&lon?` (GPS: ${lat.toFixed(4)},${lon.toFixed(4)})`:''}. 
 
-GOOD examples (specific, real, named):
-- "Quad biking with Alter-Action Swakopmund (+264 64 402 096)"
-- "Fishing at Mile 108 with Skeleton Coast Safaris"
-- "Dune 45 sunrise walk — 5km south of Sesriem on C27"
-- "Orange River canoe with Felix Unite (+27 21 670 1300)"
-- "Rostock Ritz Desert Lodge stargazing, Namibia"
+${tripCtx}
 
-BAD examples (generic, vague, avoid):
-- "Game viewing from vehicle"
-- "Sunrise exploration"
-- "Local nature walk"
+Find and return 6-8 SPECIFIC, REAL activities. You MUST:
+- Search for actual operators, camps, and attractions near ${stopName}
+- Include real business names, phone numbers or websites when found
+- Mention specific distances or landmarks (e.g. "3km north", "at the lagoon")
+- Activities must be reachable as a day trip from ${stopName}
 
-Return ONLY a JSON array of strings. Each string max 10 words but very specific. Include operator names or landmarks where known. No markdown, no explanation.`;
+GOOD format (copy this style exactly):
+"Quad biking — Alter-Action Adventures Swakopmund (+264 64 402 096)"
+"Dune 45 sunrise walk, 45km south of Sesriem on C27 road"
+"Sandwich Harbour 4x4 with Levo Expeditions (levotouring.com)"
+"Mondesa township tour with Tommy's Tours (+264 64 403 123)"
+
+BAD format (never do this):
+"Game viewing from vehicle" — too generic
+"Sunrise exploration" — meaningless
+"Local nature walk" — useless
+
+Return ONLY a valid JSON array of strings. No markdown, no explanation, no extra text.`;
 
     const resp=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
@@ -2521,81 +2660,194 @@ function renderBudget(t){
   const km=t._routeKm||manKm||0;
   const price=Number(t.fuelPrice)||24.5;
   const hasVeh=t.vehicles&&t.vehicles.length>0;
-  const fuelTotal=km>0&&hasVeh?t.vehicles.reduce((a,v)=>a+(km/100)*(Number(v.consumption)||12.5)*price,0):0;
+  const fuelEst=calcFuelEstimate(t);
   const fuelL=km>0&&hasVeh?t.vehicles.reduce((a,v)=>a+(km/100)*(Number(v.consumption)||12.5),0):0;
-  const expTotal=(t.expenses||[]).reduce((a,e)=>a+Number(e.amount),0);
-  const myCost=calcMyCost(t);
+  const expenses=t.expenses||[];
+  const expTotal=expenses.reduce((a,e)=>a+Number(e.amount),0);
+  const myCost=calcMyCost(t); // pure expense share now
   const crew=t.crew.length||1;
-  // Settings bar — live updates
+
+  // ── Settings bar ──
   const bb=$('budgetBar');
   if(bb)bb.innerHTML=`
-    <span class="bb-lbl">⛽ Fuel (R/L)</span>
+    <span class="bb-lbl">⛽ R/L</span>
     <input class="bb-inp" type="number" value="${price.toFixed(2)}" step="0.10" min="0"
       oninput="if(T()){T().fuelPrice=parseFloat(this.value)||24.5;sv();renderBudget(T());renderDash(T());}">
-    <span class="bb-lbl" style="margin-left:.5rem">📍 Route (km)</span>
-    <input class="bb-inp" id="fuelKm" type="number" value="${km||''}" placeholder="Auto from map"
-      oninput="if(T()){T()._routeKm=parseInt(this.value)||0;sv();renderBudget(T());renderDash(T());}">
-    ${km?`<span style="font-size:.7rem;color:var(--text3)">${km.toLocaleString()} km</span>`:''}`;
-  // Hero
+    <span class="bb-lbl" style="margin-left:.4rem">📍 km</span>
+    <input class="bb-inp" id="fuelKm" type="number" value="${km||''}" placeholder="Auto"
+      oninput="if(T()){T()._routeKm=parseInt(this.value)||0;sv();updateFuelKm(T());renderBudget(T());renderDash(T());}">
+    ${km?`<span style="font-size:.7rem;color:var(--text3)">${km.toLocaleString()} km route</span>`:''}`;
+
+  // ── Summary hero ──
   const bh=$('budgetHero');
   if(bh)bh.innerHTML=`
     <div class="budget-hero">
       <div>
-        <div class="bh-label">My Estimated Total</div>
+        <div class="bh-label">My Total (what I owe)</div>
         <div class="bh-amount">${fmtR(myCost)}</div>
-        <div class="bh-sub">My fuel share ${fmtR(fuelTotal/crew)} + my expense share ${fmtR(calcMyExpenseShare(t))}</div>
+        <div class="bh-sub">${expenses.length} expense${expenses.length!==1?'s':''} · R${price.toFixed(2)}/L fuel</div>
       </div>
       <div class="bh-details">
-        <div class="bh-di"><div class="bh-label">Total Fuel</div><div style="font-family:'Playfair Display';font-size:1.2rem;font-weight:700;color:#f0c060">${fuelTotal>0?fmtR(fuelTotal):km===0?'Add km':'Add vehicle'}</div>${fuelL>0?`<div style="font-size:.68rem;opacity:.6;margin-top:.1rem">${fuelL.toFixed(0)}L total</div>`:''}</div>
-        <div class="bh-di"><div class="bh-label">Expenses</div><div style="font-family:'Playfair Display';font-size:1.2rem;font-weight:700;color:#f0c060">${fmtR(expTotal)}</div></div>
+        <div class="bh-di">
+          <div class="bh-label">All expenses</div>
+          <div style="font-family:'Playfair Display';font-size:1.2rem;font-weight:700;color:#f0c060">${fmtR(expTotal)}</div>
+        </div>
+        <div class="bh-di">
+          <div class="bh-label">Crew</div>
+          <div style="font-family:'Playfair Display';font-size:1.2rem;font-weight:700;color:#f0c060">${crew} member${crew!==1?'s':''}</div>
+        </div>
       </div>
     </div>`;
-  // Vehicles
+
+  // ── Fuel calculator card ──
   const fc=$('fuelContent');
   if(fc)fc.innerHTML=`
-    <div class="section-hd">
-      <div class="section-hd-title">🚗 Vehicles</div>
-      <button class="btn-primary" style="font-size:.68rem;padding:.3rem .72rem" onclick="openAddVehicle()">＋ Add Vehicle</button>
-    </div>
-    <div class="veh-grid">
-      ${hasVeh?t.vehicles.map((v,i)=>{
-        const L=km>0?(km/100)*(Number(v.consumption)||12.5):0;
-        const cost=L*price;
-        const fills=v.tank?Math.ceil(L/v.tank):0;
-        return`<div class="fv-card">
-          <div class="fv-name">🚗 ${v.name||'Vehicle'}</div>
-          <div class="fv-meta">${v.driver?v.driver+' · ':''}${v.fuelType||'Diesel'} · ${v.consumption}L/100km · ${v.tank}L tank</div>
-          <div class="fv-cost">${fmtR(cost)}</div>
-          <div style="font-size:.7rem;color:var(--text3);margin-top:.1rem">${L.toFixed(1)}L · ~${fills} fill${fills!==1?'s':''}</div>
-          <button class="btn-danger" style="margin-top:.5rem;font-size:.65rem" onclick="removeVeh(${i})">Remove</button>
-        </div>`;
-      }).join(''):`<div class="empty" style="grid-column:1/-1;padding:1.25rem 0"><div class="ei">🚗</div><div class="es">No vehicles added yet</div></div>`}
+    <div class="card card-pad" style="margin-bottom:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem">
+        <div>
+          <div style="font-size:.82rem;font-weight:700;color:var(--text2)">⛽ Fuel Calculator</div>
+          <div style="font-size:.72rem;color:var(--text3);margin-top:.1rem">Estimate your fuel cost then add it as an expense</div>
+        </div>
+        <button class="btn-secondary" style="font-size:.7rem" onclick="openAddVehicle()">＋ Vehicle</button>
+      </div>
+      ${hasVeh?`<div class="veh-grid" style="margin-bottom:.85rem">
+        ${t.vehicles.map((v,i)=>{
+          const L=km>0?(km/100)*(Number(v.consumption)||12.5):0;
+          const cost=L*price;
+          const fills=v.tank?Math.ceil(L/v.tank):0;
+          return`<div class="fv-card">
+            <div class="fv-name">🚗 ${v.name||'Vehicle'}</div>
+            <div class="fv-meta">${v.driver?v.driver+' · ':''}${v.fuelType||'Diesel'} · ${v.consumption}L/100km</div>
+            <div class="fv-cost">${km>0?fmtR(cost):'—'}</div>
+            <div style="font-size:.7rem;color:var(--text3);margin-top:.1rem">${km>0?L.toFixed(1)+'L · ~'+fills+' fill'+(fills!==1?'s':''):'Add km to calculate'}</div>
+            <div style="display:flex;gap:.35rem;margin-top:.5rem">
+              ${km>0&&cost>0?`<button class="btn-primary" style="font-size:.62rem;padding:.22rem .55rem" onclick="addFuelAsExpense(${i})">Add to expenses</button>`:''}
+              <button class="btn-danger" style="font-size:.62rem" onclick="removeVeh(${i})">Remove</button>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`:''}
+      ${!hasVeh?`<div class="empty" style="padding:.85rem 0"><div class="ei" style="font-size:1.8rem">🚗</div><div class="es">Add a vehicle to estimate fuel cost</div></div>`:''}
+      ${fuelEst>0?`<div style="background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:.65rem .85rem;font-size:.82rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <span style="color:var(--text2)">Estimated total fuel: <strong style="color:var(--amber)">${fmtR(fuelEst)}</strong> · ${fuelL.toFixed(0)}L</span>
+        <button class="btn-primary" style="font-size:.68rem;padding:.28rem .7rem" onclick="addAllFuelAsExpense()">Add all to expenses →</button>
+      </div>`:''}
     </div>`;
-  // Expenses
+
+  // ── Expenses list ──
   const cc=$('costsContent');
   if(!cc)return;
-  const myExpShare=myCost-(fuelTotal/crew);
+
+  // Group by category for summary
+  const catTotals={};
+  expenses.forEach(e=>{catTotals[e.category]=(catTotals[e.category]||0)+Number(e.amount);});
+
   cc.innerHTML=`
-    <div class="section-hd" style="margin-top:1.25rem">
-      <div class="section-hd-title">💰 Expenses</div>
-      <button class="btn-primary" style="font-size:.68rem;padding:.3rem .72rem" onclick="openExpenseModal()">＋ Add</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem">
+      <div style="font-size:.82rem;font-weight:700;color:var(--text2)">💰 All Expenses</div>
+      <button class="btn-primary" style="font-size:.7rem;padding:.32rem .75rem" onclick="openExpenseModal()">＋ Add Expense</button>
     </div>
-    <div class="my-cost-banner">
-      <div><div class="mcb-label">My Expense Share</div><div class="mcb-amount">${fmtR(calcMyExpenseShare(t))}</div></div>
-      <div><div class="mcb-label">Total Expenses</div><div class="mcb-amount" style="font-size:1.15rem">${fmtR(expTotal)}</div></div>
-    </div>
-    ${(t.expenses||[]).length===0?`<div class="empty" style="padding:1.1rem 0"><div class="ei">💰</div><div class="es">No expenses yet — add accommodation, activities, food costs</div></div>`:''}
-    ${(t.expenses||[]).map((e,i)=>{
+
+    ${expTotal>0?`
+    <!-- My share summary -->
+    <div style="background:linear-gradient(135deg,var(--amber-bg),var(--sky-bg));border:1px solid var(--amber-bd);border-radius:12px;padding:1rem 1.1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+      <div>
+        <div style="font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">My Total</div>
+        <div style="font-family:'Playfair Display';font-size:1.65rem;font-weight:700;color:var(--amber)">${fmtR(myCost)}</div>
+        <div style="font-size:.75rem;color:var(--text3);margin-top:.1rem">of ${fmtR(expTotal)} total</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.35rem;min-width:120px">
+        ${Object.entries(catTotals).map(([cat,amt])=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+            <span style="font-size:.72rem;color:var(--text3)">${CAT_ICONS[cat]||'💳'} ${cat}</span>
+            <span style="font-size:.78rem;font-weight:600;color:var(--text2)">${fmtR(amt)}</span>
+          </div>`).join('')}
+      </div>
+    </div>`:''}
+
+    ${expenses.length===0?`<div class="empty" style="padding:1.5rem 0">
+      <div class="ei">💳</div>
+      <div class="et">No expenses yet</div>
+      <div class="es">Add accommodation costs, activities, fuel, park fees — anything with a Rand value</div>
+    </div>`:''}
+
+    ${expenses.map((e,i)=>{
       const myAmt=e.splits&&e.splits[ME.id]!==undefined?Number(e.amount)*e.splits[ME.id]/100:Number(e.amount)/crew;
-      return`<div class="cost-card">
-        <div class="cost-card-title"><span>${CAT_ICONS[e.category]||'💳'} ${e.desc}</span><button class="btn-ghost" onclick="removeExpense(${i})">✕</button></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem">
-          <div class="cost-amount">${fmtR(e.amount)}</div>
-          <div style="font-size:.7rem;color:var(--text3)"><span class="tag t-${e.category}">${e.category}</span> · ${fmtDate(e.date)}</div>
+      const paidByName=t.crew.find(m=>m.id===e.paidBy)?.name||'Unknown';
+      const iOwePaid=e.paidBy===ME.id;
+      return`<div class="cost-card" style="margin-bottom:.75rem">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;margin-bottom:.6rem">
+          <div>
+            <div style="font-size:.88rem;font-weight:600;color:var(--text)">${CAT_ICONS[e.category]||'💳'} ${e.desc}</div>
+            <div style="display:flex;gap:.4rem;align-items:center;margin-top:.22rem;flex-wrap:wrap">
+              <span class="tag t-${e.category}">${e.category}</span>
+              <span style="font-size:.68rem;color:var(--text3)">${fmtDate(e.date)}</span>
+              <span style="font-size:.68rem;color:var(--text3)">paid by ${paidByName}${iOwePaid?' (you)':''}</span>
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div class="cost-amount">${fmtR(e.amount)}</div>
+            <button class="btn-ghost" onclick="removeExpense(${i})" style="font-size:.7rem;color:var(--text3)">remove</button>
+          </div>
         </div>
-        ${t.crew.map(m=>{const pct=e.splits&&e.splits[m.id]!==undefined?e.splits[m.id]:Math.round(100/crew);const ma=Number(e.amount)*pct/100;const isMe=m.id===ME.id;return`<div class="split-row"><div style="flex:1;font-size:.8rem;font-weight:${isMe?600:400};color:${isMe?'var(--text)':'var(--text2)'}">${m.name}${isMe?' (you)':''}</div><span style="font-size:.72rem;color:var(--text3)">${pct}%</span><div style="font-size:.8rem;font-weight:600;color:${isMe?'var(--amber)':'var(--text3)'}">${fmtR(ma)}</div></div>`;}).join('')}
+        <!-- Split breakdown -->
+        <div style="background:var(--bg2);border-radius:8px;padding:.55rem .7rem">
+          <div style="font-size:.6rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.35rem">Split</div>
+          ${t.crew.map(m=>{
+            const pct=e.splits&&e.splits[m.id]!==undefined?e.splits[m.id]:Math.round(100/crew);
+            const ma=Number(e.amount)*pct/100;
+            const isMe=m.id===ME.id;
+            return`<div style="display:flex;align-items:center;gap:.5rem;padding:.2rem 0;border-bottom:1px solid var(--border2)">
+              <div style="flex:1;font-size:.8rem;font-weight:${isMe?600:400};color:${isMe?'var(--text)':'var(--text2)'}">${m.name}${isMe?' (you)':''}</div>
+              <div style="font-size:.72rem;color:var(--text3)">${pct}%</div>
+              <div style="font-size:.82rem;font-weight:700;color:${isMe?'var(--amber)':'var(--text3)'};min-width:58px;text-align:right">${fmtR(ma)}</div>
+            </div>`;
+          }).join('')}
+        </div>
       </div>`;
     }).join('')}`;
+}
+
+// Add a single vehicle's fuel as an expense
+function addFuelAsExpense(vIdx){
+  const t=T();if(!t)return;
+  const v=t.vehicles[vIdx];if(!v)return;
+  const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
+  const km=t._routeKm||manKm||0;
+  const price=Number(t.fuelPrice)||24.5;
+  const L=(km/100)*(Number(v.consumption)||12.5);
+  const cost=Math.round(L*price);
+  if(!cost){toast('Add route km first','err');return;}
+  // Pre-fill expense modal
+  $('nc-desc').value=`⛽ Fuel — ${v.name}`;
+  $('nc-amt').value=cost;
+  $('nc-cat').value='fuel';
+  openExpenseModal();
+  toast(`Fuel estimated at ${fmtR(cost)} — adjust splits then save`,'ok');
+}
+
+// Add all vehicles fuel as separate expenses
+function addAllFuelAsExpense(){
+  const t=T();if(!t)return;
+  const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
+  const km=t._routeKm||manKm||0;
+  if(!km){toast('Add route km first','err');return;}
+  const price=Number(t.fuelPrice)||24.5;
+  const crew=t.crew.length||1;
+  t.vehicles.forEach(v=>{
+    const L=(km/100)*(Number(v.consumption)||12.5);
+    const cost=Math.round(L*price);
+    if(cost>0){
+      const splits={};
+      t.crew.forEach(m=>splits[m.id]=Math.round(100/crew));
+      t.expenses.push({id:'e'+Date.now()+Math.random().toString(36).slice(2,5),
+        desc:`⛽ Fuel — ${v.name}`,category:'fuel',amount:cost,
+        paidBy:t.crew.find(c=>c.id===v.uid)?.id||ME.id,
+        splits,date:new Date().toISOString().slice(0,10)});
+    }
+  });
+  sv();renderBudget(t);renderDash(t);
+  toast('⛽ Fuel added to expenses — adjust splits as needed','ok');
 }
 
 function addVehicle(){
@@ -2930,6 +3182,7 @@ function navTo(panel){
   if(panel==='budget'&&t)renderBudget(t);
   if(panel==='crew'&&t)renderSummarySheet(t);
   if(window.innerWidth<769)$('sidebar').classList.add('off');
+  updateFab();
 }
 document.querySelectorAll('.ni,.bt').forEach(item=>{
   item.addEventListener('click',()=>navTo(item.dataset.panel));
