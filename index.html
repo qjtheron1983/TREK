@@ -8,517 +8,546 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TREK">
 <link rel="manifest" href="manifest.json">
-<title>TREK — Expedition Planner</title>
+<title>TREK — Expedition Planner by Forgebit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 :root{
-  --ink:#0f0c07;--night:#1a1510;--parchment:#f2e8d9;--parchment-mid:#d9cbb8;--parchment-dark:#c4b49a;
-  --amber:#c17f24;--amber-light:#e09a35;--amber-dim:rgba(193,127,36,.15);
-  --rust:#8b3a2a;--sage:#4a6741;--sage-light:#6a8f62;
-  --dust:#9c8b72;--dust-light:#b8a88e;--sky:#4a7fa5;--campfire:#d4541a;
-  --border:rgba(193,127,36,.18);--border-hover:rgba(193,127,36,.4);
-  --card:rgba(255,255,255,.025);--card-hover:rgba(193,127,36,.06);
+  --ink:#0f0c07;--night:#1a1510;--parchment:#f2e8d9;--pm:#d9cbb8;--pd:#c4b49a;
+  --amber:#c17f24;--al:#e09a35;--adim:rgba(193,127,36,.14);
+  --rust:#8b3a2a;--sage:#4a6741;--sgl:#6a8f62;
+  --dust:#9c8b72;--dl:#b8a88e;--sky:#4a7fa5;--fire:#d4541a;
+  --bd:rgba(193,127,36,.18);--bdh:rgba(193,127,36,.4);
+  --card:rgba(255,255,255,.025);--cardh:rgba(193,127,36,.06);
+  --forge:#c17f24; /* Forgebit brand = same amber */
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;}
-body{
-  background:var(--ink);color:var(--parchment);
-  font-family:'Crimson Pro',Georgia,serif;
-  background-image:
-    radial-gradient(ellipse 60% 80% at 15% 40%,rgba(139,58,42,.07) 0%,transparent 60%),
-    radial-gradient(ellipse 50% 70% at 85% 20%,rgba(74,103,65,.07) 0%,transparent 60%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
-}
+body{background:var(--ink);color:var(--parchment);font-family:'Crimson Pro',Georgia,serif;min-height:100vh;overflow-x:hidden;
+  background-image:radial-gradient(ellipse 60% 80% at 15% 40%,rgba(139,58,42,.07) 0%,transparent 60%),radial-gradient(ellipse 50% 70% at 85% 20%,rgba(74,103,65,.07) 0%,transparent 60%);}
 
-/* ── LOADER ── */
-#loader{
-  position:fixed;inset:0;z-index:9999;background:var(--ink);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;
-  transition:opacity .7s ease,transform .7s ease;
-}
-#loader.out{opacity:0;pointer-events:none;transform:scale(1.03);}
-.ldr-ring{
-  width:72px;height:72px;border-radius:50%;
-  border:1.5px solid rgba(193,127,36,.3);
-  border-top-color:var(--amber);
-  animation:spin 1.4s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg)}}
-.ldr-logo{font-family:'Playfair Display';font-size:2.8rem;font-weight:900;letter-spacing:.3em;color:var(--parchment);}
-.ldr-sub{font-family:'Space Mono';font-size:.6rem;letter-spacing:.4em;color:var(--dust);text-transform:uppercase;}
+/* ══ LOADER ══ */
+#loader{position:fixed;inset:0;z-index:9999;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;transition:opacity .8s ease,transform .8s ease;}
+#loader.out{opacity:0;pointer-events:none;transform:scale(1.04);}
+.ldr-compass{width:80px;height:80px;position:relative;margin-bottom:2rem;}
+.ldr-compass-ring{width:80px;height:80px;border-radius:50%;border:1.5px solid rgba(193,127,36,.3);border-top-color:var(--amber);animation:cspin 1.6s linear infinite;position:absolute;}
+.ldr-compass-inner{position:absolute;inset:8px;border-radius:50%;border:1px solid rgba(193,127,36,.15);display:flex;align-items:center;justify-content:center;}
+.ldr-compass-needle{width:2px;height:22px;background:linear-gradient(to bottom,var(--amber),transparent);border-radius:2px;position:absolute;top:8px;left:50%;transform:translateX(-50%);}
+@keyframes cspin{to{transform:rotate(360deg)}}
+.ldr-brand{text-align:center;}
+.ldr-wordmark{font-family:'Playfair Display';font-size:3rem;font-weight:900;letter-spacing:.3em;color:var(--parchment);animation:lfi .5s .2s both;}
+.ldr-tagline{font-family:'Space Mono';font-size:.58rem;letter-spacing:.35em;color:var(--dust);text-transform:uppercase;margin-top:.3rem;animation:lfi .5s .4s both;}
+.ldr-divider{width:40px;height:1px;background:rgba(193,127,36,.3);margin:.9rem auto;animation:lfi .5s .5s both;}
+.ldr-forgebit{font-family:'Space Mono';font-size:.5rem;letter-spacing:.25em;color:rgba(193,127,36,.5);text-transform:uppercase;animation:lfi .5s .6s both;display:flex;align-items:center;gap:.4rem;}
+.ldr-forgebit::before,.ldr-forgebit::after{content:'';display:block;width:12px;height:1px;background:rgba(193,127,36,.3);}
+@keyframes lfi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-/* ── LAYOUT ── */
+/* ══ WELCOME / WIZARD ══ */
+#welcome{position:fixed;inset:0;z-index:8000;background:var(--ink);overflow-y:auto;transition:opacity .5s;}
+#welcome.out{opacity:0;pointer-events:none;}
+.wlc-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem;}
+.wlc-inner{max-width:520px;width:100%;text-align:center;}
+.wlc-logo{font-family:'Playfair Display';font-size:2.5rem;font-weight:900;letter-spacing:.2em;color:var(--parchment);margin-bottom:.3rem;}
+.wlc-sub{font-family:'Space Mono';font-size:.55rem;color:var(--dust);letter-spacing:.3em;text-transform:uppercase;margin-bottom:.3rem;}
+.wlc-by{font-family:'Space Mono';font-size:.45rem;color:rgba(193,127,36,.45);letter-spacing:.2em;text-transform:uppercase;margin-bottom:2rem;}
+.trip-list-box{background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:12px;padding:1.75rem;text-align:left;margin-bottom:1rem;}
+.trip-list-box h3{font-family:'Playfair Display';font-size:1.2rem;color:var(--parchment);margin-bottom:1rem;}
+.trip-list-item{display:flex;align-items:center;gap:.9rem;padding:.7rem .9rem;border:1px solid var(--bd);border-radius:8px;margin-bottom:.5rem;cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02);}
+.trip-list-item:hover{border-color:var(--amber);background:var(--adim);}
+.tli-icon{font-size:1.5rem;flex-shrink:0;}
+.tli-name{font-family:'Playfair Display';font-size:1rem;color:var(--parchment);}
+.tli-meta{font-family:'Crimson Pro';font-size:.82rem;color:var(--dust);font-style:italic;}
+/* wizard card */
+.wiz-card{background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:12px;padding:1.75rem;text-align:left;}
+.wiz-card h3{font-family:'Playfair Display';font-size:1.2rem;color:var(--parchment);margin-bottom:1.25rem;}
+.wiz-steps-bar{display:flex;align-items:center;gap:.3rem;margin-bottom:1.5rem;}
+.wsb-step{display:flex;align-items:center;gap:.3rem;font-family:'Space Mono';font-size:.55rem;color:var(--dust);text-transform:uppercase;letter-spacing:.12em;}
+.wsb-num{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--dust);display:flex;align-items:center;justify-content:center;font-size:.6rem;transition:all .3s;flex-shrink:0;}
+.wsb-step.active .wsb-num{background:var(--amber);border-color:var(--amber);color:var(--ink);}
+.wsb-step.done .wsb-num{background:var(--sage);border-color:var(--sage);color:#fff;}
+.wsb-step.active{color:var(--parchment);}
+.wsb-line{flex:1;height:1px;background:var(--bd);}
+.wiz-pane{display:none;animation:lfi .3s ease;}
+.wiz-pane.on{display:block;}
+/* place search */
+.place-search-wrap{position:relative;margin-bottom:.9rem;}
+.place-search-wrap input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--bd);color:var(--parchment);padding:.6rem .7rem .6rem 2.2rem;font-family:'Crimson Pro';font-size:.95rem;border-radius:6px;transition:border-color .2s;outline:none;}
+.place-search-wrap input:focus{border-color:var(--amber);}
+.place-search-wrap .ps-icon{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);color:var(--dust);font-size:.95rem;pointer-events:none;}
+.ps-results{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:500;background:#1a1510;border:1px solid var(--bd);border-radius:8px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.5);display:none;}
+.ps-results.open{display:block;}
+.ps-item{padding:.65rem .9rem;cursor:pointer;font-family:'Crimson Pro';font-size:.9rem;color:var(--pm);transition:background .15s;display:flex;align-items:center;gap:.6rem;border-bottom:1px solid rgba(255,255,255,.04);}
+.ps-item:last-child{border-bottom:none;}
+.ps-item:hover{background:var(--adim);color:var(--parchment);}
+.ps-item-icon{font-size:1rem;flex-shrink:0;}
+.ps-item-sub{font-size:.78rem;color:var(--dust);font-style:italic;}
+.ps-loading{padding:.65rem .9rem;color:var(--dust);font-family:'Crimson Pro';font-size:.85rem;font-style:italic;}
+
+/* stop pill */
+.stop-pills{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.75rem;min-height:28px;}
+.stop-pill{display:flex;align-items:center;gap:.4rem;background:var(--adim);border:1px solid var(--bd);border-radius:20px;padding:.25rem .55rem .25rem .7rem;font-family:'Crimson Pro';font-size:.85rem;color:var(--parchment);}
+.sp-del{background:none;border:none;color:var(--dust);cursor:pointer;font-size:.75rem;padding:0 .1rem;transition:color .15s;line-height:1;}
+.sp-del:hover{color:var(--rust);}
+.stop-pill.is-start{border-color:var(--amber);background:rgba(193,127,36,.18);}
+
+/* ══ APP LAYOUT ══ */
 #app{display:flex;min-height:100vh;}
-
-/* ── SIDEBAR ── */
-#sidebar{
-  width:256px;min-height:100vh;background:rgba(10,8,4,.95);
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;
-  position:fixed;left:0;top:0;bottom:0;z-index:200;
-  transition:transform .28s cubic-bezier(.4,0,.2,1);
-  overflow-y:auto;overflow-x:hidden;
-}
+#sidebar{width:256px;min-height:100vh;background:rgba(10,8,4,.95);border-right:1px solid var(--bd);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:200;transition:transform .28s cubic-bezier(.4,0,.2,1);overflow-y:auto;overflow-x:hidden;}
 #sidebar.off{transform:translateX(-256px);}
-
-.sb-logo{padding:1.75rem 1.5rem 1.25rem;border-bottom:1px solid var(--border);}
-.sb-wordmark{font-family:'Playfair Display';font-size:1.9rem;font-weight:900;letter-spacing:.18em;color:var(--parchment);display:flex;align-items:center;gap:.5rem;}
-.sb-sub{font-family:'Space Mono';font-size:.52rem;color:var(--dust);letter-spacing:.4em;text-transform:uppercase;margin-top:.2rem;}
-
-.sb-trip{padding:.9rem 1.25rem;border-bottom:1px solid var(--border);}
-.sb-trip label{display:block;font-family:'Space Mono';font-size:.55rem;color:var(--dust);letter-spacing:.3em;text-transform:uppercase;margin-bottom:.4rem;}
-.sb-trip select{
-  width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);
-  color:var(--parchment);padding:.45rem .65rem;font-family:'Crimson Pro';font-size:.95rem;
-  border-radius:4px;cursor:pointer;appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 5 5-5' stroke='%23c17f24' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 9px center;
-}
+.sb-logo{padding:1.5rem 1.25rem 1.1rem;border-bottom:1px solid var(--bd);}
+.sb-wordmark{font-family:'Playfair Display';font-size:1.8rem;font-weight:900;letter-spacing:.18em;color:var(--parchment);display:flex;align-items:center;gap:.4rem;}
+.sb-tagline{font-family:'Space Mono';font-size:.5rem;color:var(--dust);letter-spacing:.35em;text-transform:uppercase;margin-top:.18rem;}
+.sb-forgebit{font-family:'Space Mono';font-size:.42rem;color:rgba(193,127,36,.4);letter-spacing:.2em;text-transform:uppercase;margin-top:.1rem;}
+.sb-trip{padding:.85rem 1.25rem;border-bottom:1px solid var(--bd);}
+.sb-trip label{display:block;font-family:'Space Mono';font-size:.52rem;color:var(--dust);letter-spacing:.28em;text-transform:uppercase;margin-bottom:.35rem;}
+.sb-trip select{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bd);color:var(--parchment);padding:.42rem .62rem;font-family:'Crimson Pro';font-size:.92rem;border-radius:4px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 5 5-5' stroke='%23c17f24' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;}
 .sb-trip select:focus{outline:none;border-color:var(--amber);}
 .sb-trip select option{background:#1a1510;}
-.btn-new-trip{
-  width:100%;margin-top:.5rem;background:linear-gradient(135deg,var(--amber),var(--amber-light));
-  color:var(--ink);border:none;padding:.45rem;
-  font-family:'Space Mono';font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;
-  cursor:pointer;border-radius:4px;transition:all .2s;
-}
+.btn-new-trip{width:100%;margin-top:.45rem;background:linear-gradient(135deg,var(--amber),var(--al));color:var(--ink);border:none;padding:.42rem;font-family:'Space Mono';font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;border-radius:4px;transition:all .2s;}
 .btn-new-trip:hover{box-shadow:0 4px 14px rgba(193,127,36,.35);transform:translateY(-1px);}
-
-.sb-nav{flex:1;padding:.75rem 0;}
-.nav-item{
-  display:flex;align-items:center;gap:.7rem;
-  padding:.65rem 1.25rem;color:var(--dust);cursor:pointer;
-  transition:all .18s;border-left:2.5px solid transparent;font-size:.95rem;
-  user-select:none;
-}
-.nav-item:hover{color:var(--parchment);background:rgba(255,255,255,.025);}
-.nav-item.active{color:var(--amber);border-left-color:var(--amber);background:var(--amber-dim);}
+.sb-nav{flex:1;padding:.65rem 0;}
+.nav-item{display:flex;align-items:center;gap:.65rem;padding:.62rem 1.25rem;color:var(--dust);cursor:pointer;transition:all .18s;border-left:2.5px solid transparent;font-size:.92rem;user-select:none;}
+.nav-item:hover{color:var(--parchment);background:rgba(255,255,255,.022);}
+.nav-item.active{color:var(--amber);border-left-color:var(--amber);background:var(--adim);}
 .nav-icon{font-size:1rem;width:18px;text-align:center;flex-shrink:0;}
-.nav-label{font-family:'Crimson Pro';font-size:.9rem;}
-.nav-badge{
-  margin-left:auto;background:var(--rust);color:#fff;
-  font-size:.55rem;padding:1px 6px;border-radius:10px;font-family:'Space Mono';
-}
-
-.sb-countdown{margin:.75rem 1rem 1rem;background:linear-gradient(135deg,rgba(193,127,36,.08),rgba(139,58,42,.08));border:1px solid var(--border);border-radius:8px;padding:.9rem;}
-.cd-label{font-family:'Space Mono';font-size:.52rem;color:var(--dust);letter-spacing:.3em;text-transform:uppercase;margin-bottom:.6rem;display:block;}
-.cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.2rem;}
+.nav-badge{margin-left:auto;background:var(--rust);color:#fff;font-size:.52rem;padding:1px 6px;border-radius:10px;font-family:'Space Mono';}
+.sb-countdown{margin:.7rem 1rem .9rem;background:linear-gradient(135deg,rgba(193,127,36,.08),rgba(139,58,42,.08));border:1px solid var(--bd);border-radius:8px;padding:.85rem;}
+.cd-label{font-family:'Space Mono';font-size:.5rem;color:var(--dust);letter-spacing:.28em;text-transform:uppercase;margin-bottom:.55rem;display:block;}
+.cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.15rem;}
 .cd-unit{text-align:center;}
-.cd-num{font-family:'Playfair Display';font-size:1.35rem;font-weight:700;color:var(--amber-light);line-height:1;}
-.cd-lbl{font-family:'Space Mono';font-size:.42rem;color:var(--dust);text-transform:uppercase;letter-spacing:.15em;}
+.cd-num{font-family:'Playfair Display';font-size:1.3rem;font-weight:700;color:var(--al);line-height:1;}
+.cd-lbl{font-family:'Space Mono';font-size:.4rem;color:var(--dust);text-transform:uppercase;letter-spacing:.12em;}
+.sb-forge-footer{padding:.6rem 1.25rem .9rem;border-top:1px solid var(--bd);margin-top:auto;}
+.sbf-txt{font-family:'Space Mono';font-size:.42rem;color:rgba(193,127,36,.3);letter-spacing:.18em;text-transform:uppercase;text-align:center;}
 
-/* ── MAIN ── */
+/* ══ MAIN ══ */
 #main{margin-left:256px;flex:1;min-height:100vh;transition:margin-left .28s cubic-bezier(.4,0,.2,1);}
 #main.wide{margin-left:0;}
-
-/* ── TOPBAR ── */
-.topbar{
-  background:rgba(10,8,4,.88);backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--border);
-  padding:.85rem 1.75rem;
-  display:flex;align-items:center;gap:.9rem;
-  position:sticky;top:0;z-index:100;
-}
-.menu-btn{
-  background:none;border:1px solid var(--border);color:var(--amber);
-  padding:.35rem .55rem;cursor:pointer;border-radius:4px;font-size:.95rem;transition:all .18s;
-  flex-shrink:0;
-}
-.menu-btn:hover{background:var(--amber-dim);border-color:var(--border-hover);}
-.topbar-title{font-family:'Playfair Display';font-size:1.15rem;font-style:italic;color:var(--parchment-mid);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.topbar{background:rgba(10,8,4,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--bd);padding:.8rem 1.75rem;display:flex;align-items:center;gap:.85rem;position:sticky;top:0;z-index:100;}
+.menu-btn{background:none;border:1px solid var(--bd);color:var(--amber);padding:.32rem .52rem;cursor:pointer;border-radius:4px;font-size:.92rem;transition:all .18s;flex-shrink:0;}
+.menu-btn:hover{background:var(--adim);}
+.topbar-title{font-family:'Playfair Display';font-size:1.12rem;font-style:italic;color:var(--pm);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .topbar-actions{display:flex;gap:.4rem;flex-shrink:0;}
-.btn-sm{
-  background:none;border:1px solid var(--border);color:var(--dust);
-  padding:.35rem .7rem;cursor:pointer;border-radius:4px;font-size:.8rem;
-  font-family:'Crimson Pro';transition:all .18s;
-}
-.btn-sm:hover{color:var(--parchment);border-color:var(--border-hover);}
+.btn-sm{background:none;border:1px solid var(--bd);color:var(--dust);padding:.32rem .68rem;cursor:pointer;border-radius:4px;font-size:.78rem;font-family:'Crimson Pro';transition:all .18s;}
+.btn-sm:hover{color:var(--parchment);border-color:var(--bdh);}
 
-/* ── PANELS ── */
-.panel{display:none;padding:1.75rem;animation:pIn .32s ease;}
+/* ══ PANELS ══ */
+.panel{display:none;padding:1.75rem;animation:pIn .3s ease;}
 .panel.active{display:block;}
-@keyframes pIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-
+@keyframes pIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .ph{margin-bottom:1.75rem;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
-.ph-title{font-family:'Playfair Display';font-size:1.85rem;font-weight:700;color:var(--parchment);}
-.ph-sub{font-family:'Crimson Pro';font-size:.95rem;font-style:italic;color:var(--dust);margin-top:.2rem;}
+.ph-title{font-family:'Playfair Display';font-size:1.8rem;font-weight:700;color:var(--parchment);}
+.ph-sub{font-family:'Crimson Pro';font-size:.92rem;font-style:italic;color:var(--dust);margin-top:.18rem;}
 
-/* ── BUTTONS ── */
-.btn-primary{
-  background:linear-gradient(135deg,var(--amber),var(--amber-light));
-  color:var(--ink);border:none;padding:.6rem 1.35rem;
-  font-family:'Space Mono';font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;
-  cursor:pointer;border-radius:6px;transition:all .2s;white-space:nowrap;
-}
+/* ══ BUTTONS ══ */
+.btn-primary{background:linear-gradient(135deg,var(--amber),var(--al));color:var(--ink);border:none;padding:.58rem 1.3rem;font-family:'Space Mono';font-size:.62rem;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s;white-space:nowrap;}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(193,127,36,.35);}
-.btn-secondary{
-  background:none;border:1px solid var(--border);color:var(--dust);
-  padding:.55rem 1.1rem;font-family:'Space Mono';font-size:.6rem;letter-spacing:.15em;
-  cursor:pointer;border-radius:6px;transition:all .2s;
-}
-.btn-secondary:hover{border-color:var(--border-hover);color:var(--parchment);}
-.btn-danger{
-  background:none;border:1px solid rgba(139,58,42,.4);color:var(--rust);
-  padding:.4rem .8rem;font-family:'Space Mono';font-size:.58rem;letter-spacing:.12em;
-  cursor:pointer;border-radius:4px;transition:all .2s;
-}
+.btn-secondary{background:none;border:1px solid var(--bd);color:var(--dust);padding:.52rem 1.05rem;font-family:'Space Mono';font-size:.58rem;letter-spacing:.14em;cursor:pointer;border-radius:6px;transition:all .2s;}
+.btn-secondary:hover{border-color:var(--bdh);color:var(--parchment);}
+.btn-danger{background:none;border:1px solid rgba(139,58,42,.4);color:var(--rust);padding:.38rem .75rem;font-family:'Space Mono';font-size:.55rem;letter-spacing:.1em;cursor:pointer;border-radius:4px;transition:all .2s;}
 .btn-danger:hover{background:rgba(139,58,42,.15);}
 
-/* ── CARDS ── */
-.card{background:var(--card);border:1px solid var(--border);border-radius:10px;transition:border-color .2s;}
-.card:hover{border-color:var(--border-hover);}
+/* ══ CARDS ══ */
+.card{background:var(--card);border:1px solid var(--bd);border-radius:10px;transition:border-color .2s;}
+.card:hover{border-color:var(--bdh);}
 
-/* ── FORM ── */
-.form-row{display:flex;gap:.9rem;flex-wrap:wrap;margin-bottom:.9rem;}
-.fg{flex:1;min-width:160px;}
-.fg label{display:block;font-family:'Space Mono';font-size:.55rem;color:var(--dust);letter-spacing:.25em;text-transform:uppercase;margin-bottom:.35rem;}
-.fg input,.fg select,.fg textarea{
-  width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);
-  color:var(--parchment);padding:.55rem .7rem;font-family:'Crimson Pro';font-size:.95rem;
-  border-radius:6px;transition:border-color .18s;
-}
-.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--amber);}
+/* ══ FORM ══ */
+.form-row{display:flex;gap:.85rem;flex-wrap:wrap;margin-bottom:.85rem;}
+.fg{flex:1;min-width:150px;}
+.fg label{display:block;font-family:'Space Mono';font-size:.52rem;color:var(--dust);letter-spacing:.22em;text-transform:uppercase;margin-bottom:.32rem;}
+.fg input,.fg select,.fg textarea{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--bd);color:var(--parchment);padding:.52rem .68rem;font-family:'Crimson Pro';font-size:.92rem;border-radius:6px;transition:border-color .18s;outline:none;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--amber);}
 .fg select option{background:#1a1510;}
-.fg textarea{resize:vertical;min-height:80px;}
-.modal-footer{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid var(--border);}
+.fg textarea{resize:vertical;min-height:72px;}
+.modal-footer{display:flex;gap:.7rem;justify-content:flex-end;margin-top:1.4rem;padding-top:1.1rem;border-top:1px solid var(--bd);}
 
-/* ── MODAL ── */
-.overlay{
-  position:fixed;inset:0;z-index:500;
-  background:rgba(0,0,0,.75);backdrop-filter:blur(8px);
-  display:flex;align-items:center;justify-content:center;
-  opacity:0;pointer-events:none;transition:opacity .25s;
-  padding:1rem;
-}
+/* ══ MODAL ══ */
+.overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;padding:1rem;}
 .overlay.open{opacity:1;pointer-events:all;}
-.modal{
-  background:var(--night);border:1px solid var(--border);border-radius:14px;
-  padding:1.75rem;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;
-  transform:scale(.96) translateY(16px);transition:transform .25s;position:relative;
-}
+.modal{background:var(--night);border:1px solid var(--bd);border-radius:14px;padding:1.7rem;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;transform:scale(.96) translateY(14px);transition:transform .25s;position:relative;}
 .overlay.open .modal{transform:none;}
-.modal-title{font-family:'Playfair Display';font-size:1.5rem;font-weight:700;color:var(--parchment);margin-bottom:1.5rem;}
-.modal-close{
-  position:absolute;top:1rem;right:1rem;
-  background:none;border:none;color:var(--dust);font-size:1.2rem;cursor:pointer;
-  transition:color .18s;
-}
+.modal-title{font-family:'Playfair Display';font-size:1.45rem;font-weight:700;color:var(--parchment);margin-bottom:1.4rem;}
+.modal-close{position:absolute;top:.9rem;right:.9rem;background:none;border:none;color:var(--dust);font-size:1.15rem;cursor:pointer;transition:color .18s;}
 .modal-close:hover{color:var(--parchment);}
 
-/* ── TAGS ── */
-.tag{font-family:'Space Mono';font-size:.52rem;padding:2px 7px;border-radius:10px;letter-spacing:.08em;text-transform:uppercase;}
-.t-camp{background:rgba(74,103,65,.3);color:var(--sage-light);border:1px solid rgba(74,103,65,.4);}
-.t-chalet{background:rgba(193,127,36,.2);color:var(--amber-light);border:1px solid rgba(193,127,36,.3);}
+/* ══ TAGS ══ */
+.tag{font-family:'Space Mono';font-size:.5rem;padding:2px 7px;border-radius:10px;letter-spacing:.07em;text-transform:uppercase;}
+.t-camp{background:rgba(74,103,65,.3);color:var(--sgl);border:1px solid rgba(74,103,65,.4);}
+.t-chalet{background:rgba(193,127,36,.2);color:var(--al);border:1px solid rgba(193,127,36,.3);}
 .t-lodge{background:rgba(139,58,42,.25);color:#d4856a;border:1px solid rgba(139,58,42,.4);}
 .t-drive{background:rgba(74,127,165,.2);color:var(--sky);border:1px solid rgba(74,127,165,.3);}
-.t-activity{background:rgba(212,84,26,.2);color:var(--campfire);border:1px solid rgba(212,84,26,.3);}
+.t-activity{background:rgba(212,84,26,.2);color:var(--fire);border:1px solid rgba(212,84,26,.3);}
 
-/* ── PROGRESS ── */
+/* ══ PROGRESS ══ */
 .prog-wrap{background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden;height:5px;margin-top:.4rem;}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--amber));border-radius:4px;transition:width .5s ease;}
 
-/* ── TOAST ── */
+/* ══ TOAST ══ */
 #toasts{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9000;display:flex;flex-direction:column;gap:.4rem;}
-.toast{
-  background:var(--night);border:1px solid var(--border);color:var(--parchment);
-  padding:.65rem 1.1rem;border-radius:8px;font-family:'Crimson Pro';font-size:.9rem;
-  box-shadow:0 4px 20px rgba(0,0,0,.5);animation:tIn .28s ease;
-  display:flex;align-items:center;gap:.5rem;max-width:320px;
-}
-@keyframes tIn{from{opacity:0;transform:translateY(8px) scale(.96)}to{opacity:1;transform:none}}
-.toast.ok{border-color:rgba(74,103,65,.5);}
-.toast.ok::before{content:'✓';color:var(--sage-light);font-weight:700;}
+.toast{background:var(--night);border:1px solid var(--bd);color:var(--parchment);padding:.6rem 1rem;border-radius:8px;font-family:'Crimson Pro';font-size:.9rem;box-shadow:0 4px 18px rgba(0,0,0,.4);animation:tIn .25s ease;display:flex;align-items:center;gap:.45rem;}
+@keyframes tIn{from{opacity:0;transform:translateY(8px) scale(.95)}to{opacity:1;transform:none}}
+.toast.ok{border-color:rgba(74,103,65,.45);}
+.toast.ok::before{content:'✓';color:var(--sgl);font-weight:700;}
 .toast.err{border-color:rgba(139,58,42,.5);}
-.toast.err::before{content:'✕';color:var(--rust);}
+.toast.err::before{content:'⚠';color:var(--rust);}
 
-/* ── EMPTY STATE ── */
-.empty{text-align:center;padding:3.5rem 2rem;color:var(--dust);}
-.empty-icon{font-size:3rem;margin-bottom:1rem;opacity:.35;}
-.empty-text{font-family:'Playfair Display';font-size:1.15rem;color:var(--dust);font-style:italic;}
-.empty-sub{font-size:.9rem;margin-top:.5rem;color:var(--dust);opacity:.7;}
+/* ══ EMPTY ══ */
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--dust);}
+.empty-icon{font-size:2.5rem;opacity:.3;margin-bottom:.75rem;}
+.empty-text{font-family:'Playfair Display';font-size:1rem;color:var(--pm);margin-bottom:.25rem;}
+.empty-sub{font-family:'Crimson Pro';font-size:.88rem;font-style:italic;}
 
-/* ── DASHBOARD ── */
-.dash-hero{
-  background:linear-gradient(135deg,rgba(139,58,42,.18) 0%,rgba(15,12,7,.7) 50%,rgba(74,103,65,.15) 100%);
-  border:1px solid var(--border);border-radius:12px;padding:2rem;margin-bottom:1.75rem;
-  position:relative;overflow:hidden;
-}
-.dash-hero::before{
-  content:'';position:absolute;inset:0;opacity:.04;
-  background-image:repeating-linear-gradient(0deg,transparent,transparent 29px,rgba(193,127,36,1) 29px,rgba(193,127,36,1) 30px),
-    repeating-linear-gradient(90deg,transparent,transparent 29px,rgba(193,127,36,1) 29px,rgba(193,127,36,1) 30px);
-}
-.hero-name{font-family:'Playfair Display';font-size:2.6rem;font-weight:900;color:var(--parchment);position:relative;z-index:1;line-height:1.1;}
-.hero-meta{display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:.9rem;position:relative;z-index:1;}
-.hm{display:flex;align-items:center;gap:.4rem;font-family:'Crimson Pro';font-size:.95rem;color:var(--parchment-mid);}
-.hm-icon{color:var(--amber);}
-.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:1rem;margin-bottom:1.75rem;}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.1rem;transition:all .2s;cursor:default;}
-.stat:hover{border-color:var(--border-hover);background:var(--card-hover);}
-.stat-num{font-family:'Playfair Display';font-size:1.8rem;font-weight:700;color:var(--amber-light);}
-.stat-lbl{font-family:'Space Mono';font-size:.55rem;color:var(--dust);letter-spacing:.18em;text-transform:uppercase;margin-top:.15rem;}
-.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
-@media(max-width:700px){.dash-grid{grid-template-columns:1fr;}}
+/* ══ DASHBOARD ══ */
+.dash-hero{background:linear-gradient(135deg,rgba(139,58,42,.22),rgba(15,12,7,.7) 55%,rgba(74,103,65,.18));border:1px solid var(--bd);border-radius:12px;padding:2rem 2.25rem;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+.dash-hero::before{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='1' fill='rgba(193,127,36,.07)'/%3E%3C/svg%3E");background-size:20px 20px;}
+.hero-name{font-family:'Playfair Display';font-size:2.4rem;font-weight:900;color:var(--parchment);position:relative;z-index:1;text-shadow:0 2px 12px rgba(0,0,0,.4);}
+.hero-meta{position:relative;z-index:1;display:flex;gap:1.25rem;flex-wrap:wrap;margin-top:.65rem;}
+.hm{display:flex;align-items:center;gap:.35rem;font-family:'Crimson Pro';font-size:.9rem;color:var(--pm);}
+.hm-icon{color:var(--amber);font-size:1rem;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:1rem;margin-bottom:1.5rem;}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:.88rem;text-align:center;transition:all .2s;cursor:default;}
+.stat:hover{border-color:var(--bdh);background:var(--cardh);}
+.stat-num{font-family:'Playfair Display';font-size:1.7rem;font-weight:700;color:var(--al);}
+.stat-lbl{font-family:'Space Mono';font-size:.5rem;color:var(--dust);text-transform:uppercase;letter-spacing:.15em;margin-top:.18rem;}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+@media(max-width:800px){.dash-grid{grid-template-columns:1fr;}}
 .dc{padding:1.25rem;}
-.dc-title{font-family:'Playfair Display';font-size:1rem;font-weight:700;color:var(--parchment-mid);margin-bottom:.9rem;display:flex;align-items:center;gap:.4rem;}
+.dc-title{font-family:'Playfair Display';font-size:.98rem;font-weight:700;color:var(--pm);margin-bottom:.85rem;display:flex;align-items:center;gap:.4rem;}
 
-/* ── ITINERARY ── */
-.day-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:.9rem;transition:border-color .2s;}
-.day-card:hover{border-color:var(--border-hover);}
-.day-hd{display:flex;align-items:center;gap:.9rem;padding:.9rem 1.25rem;cursor:pointer;background:rgba(193,127,36,.04);border-bottom:1px solid var(--border);}
-.day-num{font-family:'Playfair Display';font-size:1.5rem;font-weight:700;color:var(--amber);min-width:44px;}
-.day-info{flex:1;min-width:0;}
-.day-date{font-family:'Space Mono';font-size:.58rem;color:var(--dust);letter-spacing:.18em;}
-.day-loc{font-family:'Playfair Display';font-size:1rem;color:var(--parchment);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.day-tags{display:flex;gap:.3rem;flex-wrap:wrap;margin-top:.3rem;}
-.day-bd{padding:1.25rem;display:none;}
+/* ══ ITINERARY ══ */
+.day-card{background:var(--card);border:1px solid var(--bd);border-radius:10px;margin-bottom:.85rem;overflow:hidden;transition:border-color .2s;}
+.day-card:hover{border-color:var(--bdh);}
+.day-hd{display:flex;align-items:center;gap:.85rem;padding:.9rem 1.2rem;cursor:pointer;background:rgba(193,127,36,.04);}
+.day-num{font-family:'Playfair Display';font-size:1.45rem;font-weight:700;color:var(--amber);min-width:42px;}
+.day-info{flex:1;}
+.day-date{font-family:'Space Mono';font-size:.56rem;color:var(--dust);letter-spacing:.16em;}
+.day-loc{font-family:'Playfair Display';font-size:1rem;color:var(--parchment);margin-top:.1rem;}
+.day-tags{display:flex;gap:.28rem;flex-wrap:wrap;margin-top:.28rem;}
+.day-bd{padding:1.2rem;display:none;border-top:1px solid var(--bd);}
 .day-bd.open{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
 @media(max-width:800px){.day-bd.open{grid-template-columns:1fr;}}
-.day-sec-title{font-family:'Space Mono';font-size:.56rem;color:var(--amber);letter-spacing:.25em;text-transform:uppercase;margin-bottom:.4rem;padding-bottom:.25rem;border-bottom:1px solid var(--border);}
-.day-sec-text{font-family:'Crimson Pro';font-size:.9rem;color:var(--parchment-mid);line-height:1.5;}
-.drive-badge{grid-column:1/-1;background:rgba(74,127,165,.08);border:1px solid rgba(74,127,165,.2);border-radius:6px;padding:.65rem 1rem;display:flex;gap:2rem;flex-wrap:wrap;}
-.drive-item span:first-child{font-family:'Space Mono';font-size:.52rem;color:var(--sky);text-transform:uppercase;letter-spacing:.18em;display:block;}
-.drive-item span:last-child{font-family:'Playfair Display';font-size:1.1rem;color:var(--parchment);}
-.day-note{grid-column:1/-1;font-family:'Crimson Pro';font-size:.85rem;color:var(--dust);font-style:italic;}
-.add-day-dashed{
-  width:100%;padding:.9rem;background:none;
-  border:2px dashed rgba(193,127,36,.22);color:var(--dust);
-  cursor:pointer;border-radius:10px;font-family:'Crimson Pro';font-size:.95rem;
-  transition:all .2s;margin-top:.5rem;
-}
-.add-day-dashed:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-dim);}
+.day-sec-title{font-family:'Space Mono';font-size:.54rem;color:var(--amber);letter-spacing:.22em;text-transform:uppercase;margin-bottom:.38rem;padding-bottom:.22rem;border-bottom:1px solid var(--bd);}
+.day-sec-text{font-family:'Crimson Pro';font-size:.88rem;color:var(--pm);line-height:1.5;}
+.day-sec-input{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--bd);color:var(--parchment);padding:.3rem .5rem;font-family:'Crimson Pro';font-size:.85rem;border-radius:4px;outline:none;margin-top:.3rem;}
+.day-sec-input:focus{border-color:var(--amber);}
+.drive-badge{grid-column:1/-1;background:rgba(74,127,165,.08);border:1px solid rgba(74,127,165,.2);border-radius:6px;padding:.62rem 1rem;display:flex;gap:2rem;flex-wrap:wrap;}
+.drive-item span:first-child{font-family:'Space Mono';font-size:.5rem;color:var(--sky);text-transform:uppercase;letter-spacing:.16em;display:block;}
+.drive-item span:last-child{font-family:'Playfair Display';font-size:1.05rem;color:var(--parchment);}
+.day-note{grid-column:1/-1;font-family:'Crimson Pro';font-size:.84rem;color:var(--dust);font-style:italic;}
+.add-day-dashed{width:100%;padding:.85rem;background:none;border:2px dashed rgba(193,127,36,.2);color:var(--dust);cursor:pointer;border-radius:10px;font-family:'Crimson Pro';font-size:.92rem;transition:all .2s;margin-top:.5rem;}
+.add-day-dashed:hover{border-color:var(--amber);color:var(--amber);background:var(--adim);}
+.day-from-route{border-left:3px solid var(--sage) !important;}
 
-/* ── ROUTE / LEAFLET MAP ── */
-#mapContainer{width:100%;height:440px;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:1.5rem;position:relative;background:#1a1510;}
+/* ══ MAP ══ */
+#mapContainer{width:100%;height:440px;border-radius:12px;overflow:hidden;border:1px solid var(--bd);margin-bottom:1.5rem;position:relative;background:#1a1510;}
 #leafletMap{width:100%;height:100%;}
-/* Leaflet dark overrides */
-.leaflet-tile-pane{filter:brightness(.85) saturate(.7) hue-rotate(10deg);}
+.leaflet-tile-pane{filter:brightness(.82) saturate(.65) hue-rotate(8deg);}
 .leaflet-popup-content-wrapper{background:#1a1510;border:1px solid var(--amber);color:var(--parchment);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.5);}
 .leaflet-popup-tip{background:#1a1510;}
-.leaflet-popup-content{font-family:'Crimson Pro',serif;font-size:.95rem;margin:.6rem .9rem;}
-.leaflet-control-zoom a{background:#1a1510;color:var(--amber);border-color:var(--border);}
+.leaflet-popup-content{font-family:'Crimson Pro',serif;font-size:.92rem;margin:.55rem .85rem;}
+.leaflet-control-zoom a{background:#1a1510;color:var(--amber);border-color:var(--bd);}
 .leaflet-control-zoom a:hover{background:var(--amber);color:var(--ink);}
-.leaflet-control-attribution{background:rgba(13,11,7,.7);color:var(--dust);font-size:.55rem;}
-.leaflet-control-attribution a{color:var(--dust-light);}
-.map-empty{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;color:var(--dust);padding:2rem;text-align:center;}
-.map-empty span:first-child{font-size:3rem;opacity:.3;}
-.map-empty span:nth-child(2){font-family:'Playfair Display';font-size:1.1rem;font-style:italic;color:var(--parchment-mid);}
-.map-empty span:last-child{font-size:.88rem;font-style:italic;opacity:.7;}
+.leaflet-control-attribution{background:rgba(13,11,7,.7);color:var(--dust);font-size:.52rem;}
 .route-stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:1rem;margin-bottom:1.5rem;}
-.rs{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.9rem;text-align:center;}
-.rs-num{font-family:'Playfair Display';font-size:1.5rem;font-weight:700;color:var(--sky);}
-.rs-lbl{font-family:'Space Mono';font-size:.5rem;color:var(--dust);text-transform:uppercase;letter-spacing:.18em;}
+.rs{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:.88rem;text-align:center;}
+.rs-num{font-family:'Playfair Display';font-size:1.45rem;font-weight:700;color:var(--sky);}
+.rs-lbl{font-family:'Space Mono';font-size:.48rem;color:var(--dust);text-transform:uppercase;letter-spacing:.16em;}
+/* stop list */
+.stop-list{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.5rem;}
+.stop-row{display:flex;align-items:center;gap:.85rem;padding:.72rem 1rem;background:var(--card);border:1px solid var(--bd);border-radius:8px;transition:border-color .2s;}
+.stop-row:hover{border-color:var(--bdh);}
+.stop-row.is-start{border-left:3px solid var(--amber);}
+.sr-num{font-family:'Playfair Display';font-size:1.25rem;font-weight:700;color:var(--amber);min-width:26px;}
+.sr-emoji{font-size:1.35rem;flex-shrink:0;}
+.sr-info{flex:1;}
+.sr-name{font-family:'Playfair Display';font-size:.95rem;color:var(--parchment);}
+.sr-meta{font-family:'Space Mono';font-size:.52rem;color:var(--dust);margin-top:.1rem;}
+.sr-del{background:none;border:none;color:var(--dust);cursor:pointer;font-size:.88rem;transition:color .18s;padding:.2rem;}
+.sr-del:hover{color:var(--rust);}
+.stops-hint{font-family:'Crimson Pro';font-size:.85rem;color:var(--dust);font-style:italic;padding:.5rem 0;}
 
-/* ── STOPS TABLE ── */
-.stops-table{width:100%;border-collapse:collapse;margin-top:1rem;}
-.stops-table th{font-family:'Space Mono';font-size:.55rem;color:var(--dust);letter-spacing:.2em;text-transform:uppercase;padding:.5rem .75rem;border-bottom:1px solid var(--border);text-align:left;}
-.stops-table td{padding:.6rem .75rem;font-family:'Crimson Pro';font-size:.9rem;color:var(--parchment-mid);border-bottom:1px solid rgba(255,255,255,.04);}
-.stops-table tr:hover td{background:var(--card-hover);}
-.stops-table td:last-child button{background:none;border:none;color:var(--dust);cursor:pointer;font-size:.85rem;transition:color .18s;}
-.stops-table td:last-child button:hover{color:var(--rust);}
-
-/* ── ACCOMMODATION ── */
-.accom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem;}
+/* ══ ACCOMMODATION ══ */
+.accom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:1.2rem;}
 .accom-card{border-radius:12px;overflow:hidden;cursor:pointer;transition:all .25s;}
 .accom-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.35);}
-.ac-img{height:100px;display:flex;align-items:center;justify-content:center;font-size:2.8rem;}
+.ac-img{height:96px;display:flex;align-items:center;justify-content:center;font-size:2.6rem;}
 .ac-img.camp{background:linear-gradient(135deg,rgba(74,103,65,.5),rgba(15,12,7,.7));}
 .ac-img.chalet{background:linear-gradient(135deg,rgba(193,127,36,.35),rgba(15,12,7,.7));}
 .ac-img.lodge{background:linear-gradient(135deg,rgba(139,58,42,.45),rgba(15,12,7,.7));}
 .ac-img.guesthouse{background:linear-gradient(135deg,rgba(74,127,165,.35),rgba(15,12,7,.7));}
-.ac-body{padding:1.1rem;}
-.ac-name{font-family:'Playfair Display';font-size:1rem;font-weight:700;color:var(--parchment);}
-.ac-meta{font-size:.85rem;color:var(--dust);margin-top:.2rem;}
-.ac-nights{font-family:'Space Mono';font-size:.56rem;color:var(--amber);letter-spacing:.15em;text-transform:uppercase;margin-top:.5rem;}
-.add-accom-dashed{
-  border:2px dashed rgba(193,127,36,.22);border-radius:12px;
-  min-height:180px;background:none;cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:.5rem;color:var(--dust);transition:all .2s;
-}
+.ac-body{padding:1.05rem;}
+.ac-name{font-family:'Playfair Display';font-size:.98rem;font-weight:700;color:var(--parchment);}
+.ac-meta{font-size:.83rem;color:var(--dust);margin-top:.18rem;}
+.ac-nights{font-family:'Space Mono';font-size:.54rem;color:var(--amber);letter-spacing:.14em;text-transform:uppercase;margin-top:.48rem;}
+.add-accom-dashed{border:2px dashed rgba(193,127,36,.22);border-radius:12px;min-height:170px;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.45rem;color:var(--dust);transition:all .2s;}
 .add-accom-dashed:hover{border-color:var(--amber);color:var(--amber);}
-.add-accom-dashed span:first-child{font-size:2rem;}
+.add-accom-dashed span:first-child{font-size:1.9rem;}
 
-/* ── PACKING ── */
-.pack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem;}
-.pack-cat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.1rem;}
-.pack-cat-hd{display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem;}
-.pci{font-size:1.2rem;}
-.pct{font-family:'Playfair Display';font-size:.95rem;font-weight:700;color:var(--parchment-mid);flex:1;}
-.pcn{font-family:'Space Mono';font-size:.58rem;color:var(--dust);}
-.pc-del{background:none;border:none;color:rgba(139,58,42,.5);cursor:pointer;font-size:.85rem;transition:color .18s;padding:0 .25rem;}
+/* ══ PACKING ══ */
+.pack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:1.2rem;}
+.pack-cat{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:1.05rem;}
+.pack-cat-hd{display:flex;align-items:center;gap:.45rem;margin-bottom:.85rem;}
+.pci{font-size:1.15rem;}
+.pct{font-family:'Playfair Display';font-size:.92rem;font-weight:700;color:var(--pm);flex:1;}
+.pcn{font-family:'Space Mono';font-size:.55rem;color:var(--dust);}
+.pc-del{background:none;border:none;color:rgba(139,58,42,.45);cursor:pointer;font-size:.82rem;transition:color .18s;padding:0 .22rem;}
 .pc-del:hover{color:var(--rust);}
-.pack-item{display:flex;align-items:flex-start;gap:.65rem;padding:.35rem 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;}
+.pack-item{display:flex;align-items:flex-start;gap:.62rem;padding:.32rem 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;}
 .pack-item:last-of-type{border:none;}
-.chk{
-  width:17px;height:17px;border-radius:3px;border:1.5px solid rgba(193,127,36,.45);
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;
-  background:transparent;margin-top:1px;
-}
+.chk{width:16px;height:16px;border-radius:3px;border:1.5px solid rgba(193,127,36,.42);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;background:transparent;margin-top:1px;}
 .pack-item.done .chk{background:var(--sage);border-color:var(--sage);}
 .pack-item.done .chk::after{content:'✓';font-size:10px;color:#fff;}
 .pack-item.done .pit{color:var(--dust);text-decoration:line-through;}
-.pit{font-family:'Crimson Pro';font-size:.88rem;color:var(--parchment-mid);flex:1;line-height:1.4;}
-.pit small{display:block;font-size:.78rem;color:var(--dust);font-style:italic;}
-.pi-del{background:none;border:none;color:transparent;cursor:pointer;font-size:.75rem;transition:color .18s;padding:0 .2rem;flex-shrink:0;}
-.pack-item:hover .pi-del{color:rgba(139,58,42,.6);}
+.pit{font-family:'Crimson Pro';font-size:.86rem;color:var(--pm);flex:1;line-height:1.38;}
+.pi-del{background:none;border:none;color:transparent;cursor:pointer;font-size:.72rem;transition:color .18s;padding:0 .18rem;flex-shrink:0;}
+.pack-item:hover .pi-del{color:rgba(139,58,42,.55);}
 .pi-del:hover{color:var(--rust) !important;}
-.pack-add{display:flex;gap:.4rem;margin-top:.65rem;}
-.pack-add input{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--parchment);padding:.32rem .55rem;font-family:'Crimson Pro';font-size:.85rem;border-radius:4px;}
-.pack-add input:focus{outline:none;border-color:var(--amber);}
+.pack-add{display:flex;gap:.38rem;margin-top:.6rem;}
+.pack-add input{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--bd);color:var(--parchment);padding:.3rem .52rem;font-family:'Crimson Pro';font-size:.83rem;border-radius:4px;outline:none;}
+.pack-add input:focus{border-color:var(--amber);}
 .pack-add input::placeholder{color:var(--dust);font-style:italic;}
-.pack-add button{background:rgba(193,127,36,.18);border:1px solid var(--border);color:var(--amber);padding:.32rem .6rem;cursor:pointer;border-radius:4px;font-size:.85rem;transition:all .18s;}
-.pack-add button:hover{background:rgba(193,127,36,.3);}
-.pack-progress-bar{margin-bottom:1.5rem;}
-.pp-top{display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap;margin-bottom:.5rem;}
-.pp-num{font-family:'Playfair Display';font-size:1.6rem;font-weight:700;color:var(--amber-light);}
-.pp-total{font-family:'Crimson Pro';font-size:.95rem;color:var(--dust);}
-.pp-pct{font-family:'Space Mono';font-size:.6rem;color:var(--dust);margin-left:auto;}
+.pack-add button{background:rgba(193,127,36,.17);border:1px solid var(--bd);color:var(--amber);padding:.3rem .58rem;cursor:pointer;border-radius:4px;font-size:.83rem;transition:all .18s;}
+.pack-add button:hover{background:rgba(193,127,36,.28);}
+.pack-progress-bar{margin-bottom:1.4rem;}
+.pp-top{display:flex;align-items:baseline;gap:.9rem;flex-wrap:wrap;margin-bottom:.45rem;}
+.pp-num{font-family:'Playfair Display';font-size:1.55rem;font-weight:700;color:var(--al);}
+.pp-total{font-family:'Crimson Pro';font-size:.92rem;color:var(--dust);}
+.pp-pct{font-family:'Space Mono';font-size:.58rem;color:var(--dust);margin-left:auto;}
 
-/* ── CREW ── */
-.crew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1.25rem;margin-bottom:1.75rem;}
-.crew-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center;transition:border-color .2s;}
-.crew-card:hover{border-color:var(--border-hover);}
-.cr-av{
-  width:56px;height:56px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Playfair Display';font-size:1.4rem;font-weight:700;color:#fff;
-  margin:0 auto .9rem;
-}
-.cr-name{font-family:'Playfair Display';font-size:1rem;font-weight:700;color:var(--parchment);}
-.cr-role{font-family:'Space Mono';font-size:.55rem;color:var(--dust);letter-spacing:.18em;text-transform:uppercase;margin-top:.2rem;}
-.cr-status{font-family:'Space Mono';font-size:.55rem;padding:2px 9px;border-radius:10px;margin-top:.6rem;display:inline-block;}
-.cr-confirmed{background:rgba(74,103,65,.3);color:var(--sage-light);}
-.cr-pending{background:rgba(193,127,36,.2);color:var(--amber-light);}
-.invite-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.5rem;}
-.invite-box h3{font-family:'Playfair Display';font-size:1.2rem;color:var(--parchment);margin-bottom:1.25rem;}
+/* ══ CREW ══ */
+.crew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:1.2rem;margin-bottom:1.7rem;}
+.crew-card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:1.2rem;text-align:center;transition:border-color .2s;}
+.crew-card:hover{border-color:var(--bdh);}
+.cr-av{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display';font-size:1.35rem;font-weight:700;color:#fff;margin:0 auto .85rem;}
+.cr-name{font-family:'Playfair Display';font-size:.98rem;font-weight:700;color:var(--parchment);}
+.cr-role{font-family:'Space Mono';font-size:.52rem;color:var(--dust);letter-spacing:.16em;text-transform:uppercase;margin-top:.18rem;}
+.cr-status{font-family:'Space Mono';font-size:.52rem;padding:2px 8px;border-radius:10px;margin-top:.55rem;display:inline-block;}
+.cr-confirmed{background:rgba(74,103,65,.3);color:var(--sgl);}
+.cr-pending{background:rgba(193,127,36,.2);color:var(--al);}
+.invite-box{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:1.45rem;}
+.invite-box h3{font-family:'Playfair Display';font-size:1.15rem;color:var(--parchment);margin-bottom:1.2rem;}
 
-/* ── FOOD ── */
-.food-day{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:.9rem;overflow:hidden;}
-.fd-hd{display:flex;align-items:center;padding:.75rem 1.25rem;cursor:pointer;background:rgba(212,84,26,.04);border-bottom:1px solid var(--border);}
-.fd-title{font-family:'Playfair Display';font-size:.95rem;color:var(--parchment);flex:1;}
-.fd-loc{font-family:'Crimson Pro';font-size:.82rem;color:var(--dust);font-style:italic;margin-right:.75rem;}
-.fd-bd{display:none;padding:1rem 1.25rem;}
-.fd-bd.open{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+/* ══ FOOD ══ */
+.food-day{background:var(--card);border:1px solid var(--bd);border-radius:10px;margin-bottom:.85rem;overflow:hidden;}
+.fd-hd{display:flex;align-items:center;padding:.72rem 1.2rem;cursor:pointer;background:rgba(212,84,26,.04);border-bottom:1px solid var(--bd);gap:.75rem;}
+.fd-title{font-family:'Playfair Display';font-size:.92rem;color:var(--parchment);flex:1;}
+.fd-loc{font-family:'Crimson Pro';font-size:.8rem;color:var(--dust);font-style:italic;}
+.fd-empty-hint{font-family:'Crimson Pro';font-size:.78rem;color:rgba(193,127,36,.5);font-style:italic;margin-left:.5rem;}
+.fd-bd{display:none;padding:.95rem 1.2rem;}
+.fd-bd.open{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.95rem;}
 @media(max-width:700px){.fd-bd.open{grid-template-columns:1fr;}}
-.meal-lbl{font-family:'Space Mono';font-size:.56rem;color:var(--amber);letter-spacing:.2em;text-transform:uppercase;margin-bottom:.35rem;}
-.meal-items{min-height:28px;}
-.meal-item{font-family:'Crimson Pro';font-size:.88rem;color:var(--parchment-mid);padding:.2rem 0;display:flex;align-items:center;gap:.5rem;}
-.meal-item .mi-del{background:none;border:none;color:transparent;cursor:pointer;font-size:.75rem;transition:color .18s;}
-.meal-item:hover .mi-del{color:rgba(139,58,42,.6);}
-.meal-add-row{display:flex;gap:.4rem;margin-top:.5rem;}
-.meal-add-row input{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);color:var(--parchment);padding:.28rem .5rem;font-family:'Crimson Pro';font-size:.85rem;border-radius:4px;}
-.meal-add-row input:focus{outline:none;border-color:var(--amber);}
+.meal-lbl{font-family:'Space Mono';font-size:.54rem;color:var(--amber);letter-spacing:.18em;text-transform:uppercase;margin-bottom:.32rem;}
+.meal-items{min-height:24px;}
+.meal-item{font-family:'Crimson Pro';font-size:.86rem;color:var(--pm);padding:.18rem 0;display:flex;align-items:center;gap:.45rem;}
+.meal-item .mi-del{background:none;border:none;color:transparent;cursor:pointer;font-size:.72rem;transition:color .18s;}
+.meal-item:hover .mi-del{color:rgba(139,58,42,.55);}
+.meal-add-row{display:flex;gap:.38rem;margin-top:.45rem;}
+.meal-add-row input{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--bd);color:var(--parchment);padding:.26rem .48rem;font-family:'Crimson Pro';font-size:.83rem;border-radius:4px;outline:none;}
+.meal-add-row input:focus{border-color:var(--amber);}
 .meal-add-row input::placeholder{color:var(--dust);font-style:italic;}
-.meal-add-row button{background:rgba(212,84,26,.18);border:1px solid rgba(212,84,26,.3);color:var(--campfire);padding:.28rem .55rem;cursor:pointer;border-radius:4px;font-size:.85rem;transition:all .18s;}
-.meal-add-row button:hover{background:rgba(212,84,26,.3);}
+.meal-add-row button{background:rgba(212,84,26,.17);border:1px solid rgba(212,84,26,.28);color:var(--fire);padding:.26rem .52rem;cursor:pointer;border-radius:4px;font-size:.83rem;transition:all .18s;}
+.meal-add-row button:hover{background:rgba(212,84,26,.28);}
 
-/* ── DOCS ── */
-.drop-zone{
-  border:2px dashed rgba(193,127,36,.28);border-radius:12px;
-  padding:2.5rem;text-align:center;cursor:pointer;
-  transition:all .2s;background:rgba(193,127,36,.015);margin-bottom:1.5rem;
-}
+/* ══ DOCS ══ */
+.drop-zone{border:2px dashed rgba(193,127,36,.26);border-radius:12px;padding:2.4rem;text-align:center;cursor:pointer;transition:all .2s;background:rgba(193,127,36,.012);margin-bottom:1.4rem;}
 .drop-zone:hover,.drop-zone.over{border-color:var(--amber);background:rgba(193,127,36,.05);}
-.dz-icon{font-size:2.5rem;opacity:.45;margin-bottom:.9rem;}
-.dz-text{font-family:'Playfair Display';font-size:1.1rem;color:var(--parchment-mid);}
-.dz-sub{font-size:.85rem;color:var(--dust);font-style:italic;margin-top:.3rem;}
-.docs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;}
-.doc-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.1rem;text-align:center;cursor:pointer;transition:all .2s;}
-.doc-card:hover{border-color:var(--border-hover);transform:translateY(-2px);}
-.doc-icon{font-size:2.2rem;margin-bottom:.6rem;}
-.doc-name{font-size:.82rem;color:var(--parchment-mid);word-break:break-all;font-family:'Crimson Pro';}
-.doc-meta{font-family:'Space Mono';font-size:.5rem;color:var(--dust);margin-top:.35rem;text-transform:uppercase;letter-spacing:.1em;}
+.dz-icon{font-size:2.4rem;opacity:.4;margin-bottom:.85rem;}
+.dz-text{font-family:'Playfair Display';font-size:1.05rem;color:var(--pm);}
+.dz-sub{font-size:.83rem;color:var(--dust);font-style:italic;margin-top:.28rem;}
+.docs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.95rem;}
+.doc-card{background:var(--card);border:1px solid var(--bd);border-radius:8px;padding:1.05rem;text-align:center;cursor:pointer;transition:all .2s;}
+.doc-card:hover{border-color:var(--bdh);transform:translateY(-2px);}
+.doc-icon{font-size:2.1rem;margin-bottom:.55rem;}
+.doc-name{font-size:.8rem;color:var(--pm);word-break:break-all;font-family:'Crimson Pro';}
+.doc-meta{font-family:'Space Mono';font-size:.48rem;color:var(--dust);margin-top:.32rem;text-transform:uppercase;letter-spacing:.08em;}
 
-/* ── GALLERY ── */
-.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem;}
-.gal-item{aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:all .2s;position:relative;}
-.gal-item:hover{border-color:var(--border-hover);transform:scale(1.02);}
+/* ══ GALLERY ══ */
+.gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.7rem;}
+.gal-item{aspect-ratio:1;border-radius:8px;overflow:hidden;border:1px solid var(--bd);cursor:pointer;transition:all .2s;position:relative;}
+.gal-item:hover{border-color:var(--bdh);transform:scale(1.02);}
 .gal-item img{width:100%;height:100%;object-fit:cover;}
-.gal-add{
-  aspect-ratio:1;border:2px dashed rgba(193,127,36,.22);border-radius:8px;
-  background:none;cursor:pointer;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:.4rem;color:var(--dust);transition:all .2s;
-  font-size:2rem;
-}
+.gal-add{aspect-ratio:1;border:2px dashed rgba(193,127,36,.22);border-radius:8px;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.38rem;color:var(--dust);transition:all .2s;font-size:1.9rem;}
 .gal-add:hover{border-color:var(--amber);color:var(--amber);}
-.gal-add small{font-family:'Crimson Pro';font-size:.8rem;}
+.gal-add small{font-family:'Crimson Pro';font-size:.78rem;}
 
-/* ── FUEL ── */
-.fuel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.25rem;margin-bottom:2rem;}
-.fuel-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.25rem;}
-.fuel-card-title{font-family:'Playfair Display';font-size:1rem;font-weight:700;color:var(--parchment-mid);margin-bottom:1rem;display:flex;align-items:center;gap:.4rem;}
-.fuel-result{background:rgba(193,127,36,.08);border:1px solid var(--border);border-radius:10px;padding:1.5rem;margin-top:1.5rem;}
-.fuel-result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;}
-.fr-item .fr-lbl{font-family:'Space Mono';font-size:.55rem;color:var(--dust);letter-spacing:.18em;text-transform:uppercase;margin-bottom:.3rem;}
-.fr-item .fr-val{font-family:'Playfair Display';font-size:1.6rem;font-weight:700;color:var(--amber-light);}
-.fr-item .fr-sub{font-family:'Crimson Pro';font-size:.82rem;color:var(--dust);margin-top:.15rem;}
-.veh-row{display:flex;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.04);}
-.veh-row:last-of-type{border:none;}
-.veh-name{font-family:'Crimson Pro';font-size:.9rem;color:var(--parchment-mid);flex:1;}
-.veh-del{background:none;border:none;color:var(--dust);cursor:pointer;font-size:.8rem;transition:color .18s;}
-.veh-del:hover{color:var(--rust);}
+/* ══ FUEL ══ */
+.fuel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:1.2rem;margin-bottom:1.9rem;}
+.fuel-card{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:1.2rem;}
+.fuel-card-title{font-family:'Playfair Display';font-size:.98rem;font-weight:700;color:var(--pm);margin-bottom:.95rem;display:flex;align-items:center;gap:.38rem;}
+.fuel-result{background:rgba(193,127,36,.07);border:1px solid var(--bd);border-radius:10px;padding:1.45rem;margin-top:1.4rem;}
+.fuel-result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:.95rem;}
+.fr-item .fr-lbl{font-family:'Space Mono';font-size:.52rem;color:var(--dust);letter-spacing:.16em;text-transform:uppercase;margin-bottom:.28rem;}
+.fr-item .fr-val{font-family:'Playfair Display';font-size:1.55rem;font-weight:700;color:var(--al);}
+.fr-item .fr-sub{font-family:'Crimson Pro';font-size:.8rem;color:var(--dust);margin-top:.12rem;}
 
-/* ── SCROLLBAR ── */
+/* ══ MISC ══ */
 ::-webkit-scrollbar{width:5px;}
 ::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:rgba(193,127,36,.25);border-radius:3px;}
+::-webkit-scrollbar-thumb{background:rgba(193,127,36,.22);border-radius:3px;}
 input[type=file]{display:none;}
-
-/* ── RESPONSIVE ── */
-@media(max-width:900px){
-  #sidebar{width:240px;}
-  #main{margin-left:0;}
-  #main.wide{margin-left:0;}
-  .panel{padding:1.1rem;}
-}
-.divider{border:none;border-top:1px solid var(--border);margin:1.75rem 0;}
-
-/* wizard */
-.wiz-prog{display:flex;gap:.4rem;margin-bottom:1.5rem;}
+.divider{border:none;border-top:1px solid var(--bd);margin:1.7rem 0;}
+@media(max-width:900px){#sidebar{width:240px;}#main{margin-left:0;}#main.wide{margin-left:0;}.panel{padding:1.1rem;}}
+/* weather-like tip banner */
+.tip-banner{background:linear-gradient(135deg,rgba(74,103,65,.15),rgba(193,127,36,.08));border:1px solid rgba(74,103,65,.25);border-radius:8px;padding:.75rem 1rem;display:flex;align-items:center;gap:.7rem;margin-bottom:1.25rem;font-family:'Crimson Pro';font-size:.88rem;color:var(--pm);}
+.tip-icon{font-size:1.1rem;flex-shrink:0;}
+.tip-close{background:none;border:none;color:var(--dust);cursor:pointer;margin-left:auto;font-size:.85rem;transition:color .18s;flex-shrink:0;}
+.tip-close:hover{color:var(--parchment);}
+/* wizard steps in welcome */
+.wiz-prog{display:flex;gap:.35rem;margin-bottom:1.35rem;}
 .wp{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.08);transition:background .3s;}
 .wp.done{background:var(--amber);}
-.wp.cur{background:var(--amber-light);}
+.wp.cur{background:var(--al);}
 .wiz-step{display:none;}
 .wiz-step.on{display:block;}
+/* nights input on stop */
+.nights-inline{width:60px;background:rgba(255,255,255,.05);border:1px solid var(--bd);color:var(--parchment);padding:.28rem .4rem;font-family:'Crimson Pro';font-size:.82rem;border-radius:4px;text-align:center;outline:none;}
+.nights-inline:focus{border-color:var(--amber);}
+/* sync badge */
+.sync-badge{font-family:'Space Mono';font-size:.52rem;padding:2px 8px;border-radius:10px;background:rgba(74,103,65,.25);color:var(--sgl);border:1px solid rgba(74,103,65,.35);}
 </style>
 </head>
 <body>
+
+<!-- ══ LOADER ══ -->
 <div id="loader">
-  <div class="ldr-ring"></div>
-  <div class="ldr-logo">TREK</div>
-  <div class="ldr-sub">Expedition Planner</div>
+  <div class="ldr-compass">
+    <div class="ldr-compass-ring"></div>
+    <div class="ldr-compass-inner"><div class="ldr-compass-needle"></div></div>
+  </div>
+  <div class="ldr-brand">
+    <div class="ldr-wordmark">TREK</div>
+    <div class="ldr-tagline">Expedition Planner</div>
+    <div class="ldr-divider"></div>
+    <div class="ldr-forgebit">A Forgebit Product</div>
+  </div>
 </div>
+
+<!-- ══ WELCOME / WIZARD ══ -->
+<div id="welcome">
+  <div class="wlc-wrap">
+    <div class="wlc-inner">
+      <div class="wlc-logo">✦ TREK</div>
+      <div class="wlc-sub">Expedition Planner</div>
+      <div class="wlc-by">A Forgebit Product</div>
+
+      <!-- existing trips list -->
+      <div id="wlcTripList" style="display:none">
+        <div class="trip-list-box">
+          <h3>Your Expeditions</h3>
+          <div id="wlcList"></div>
+        </div>
+        <button class="btn-secondary" style="width:100%;margin-top:.5rem" onclick="showWizard()">＋ Plan a new expedition</button>
+      </div>
+
+      <!-- new trip wizard -->
+      <div id="wlcWizard" style="display:none">
+        <div class="wiz-card">
+          <h3 id="wizTitle">New Expedition</h3>
+          <!-- step bar -->
+          <div class="wiz-steps-bar" id="wizBar">
+            <div class="wsb-step active" id="wb1"><div class="wsb-num">1</div>Basics</div>
+            <div class="wsb-line"></div>
+            <div class="wsb-step" id="wb2"><div class="wsb-num">2</div>Route</div>
+            <div class="wsb-line"></div>
+            <div class="wsb-step" id="wb3"><div class="wsb-num">3</div>Crew & Gear</div>
+          </div>
+
+          <!-- STEP 1: basics -->
+          <div class="wiz-pane on" id="wiz1">
+            <div class="form-row">
+              <div class="fg"><label>Trip Name</label><input type="text" id="wn" placeholder="Kgalagadi 2027"></div>
+              <div class="fg"><label>Destination</label><input type="text" id="wd" placeholder="Kgalagadi, South Africa"></div>
+            </div>
+            <div class="form-row">
+              <div class="fg"><label>Departure Date</label><input type="date" id="ws"></div>
+              <div class="fg"><label>Return Date</label><input type="date" id="we"></div>
+            </div>
+            <div class="form-row">
+              <div class="fg"><label>Trip Type</label>
+                <select id="wt"><option>4x4 Overland</option><option>Game Reserve</option><option>Desert Expedition</option><option>Coastal</option><option>Mountain</option><option>Mixed</option></select>
+              </div>
+              <div class="fg"><label>Accommodation Style</label>
+                <select id="wa"><option>Mix of camping &amp; chalets</option><option>Camping only</option><option>Chalets/lodges only</option><option>Wild camping</option></select>
+              </div>
+            </div>
+            <div class="modal-footer" style="border:none;padding:0;margin-top:1rem">
+              <button class="btn-primary" onclick="wizGo(2)">Route →</button>
+            </div>
+          </div>
+
+          <!-- STEP 2: route / stops with search -->
+          <div class="wiz-pane" id="wiz2">
+            <p style="font-family:'Crimson Pro';font-size:.88rem;color:var(--dust);font-style:italic;margin-bottom:.85rem">Search and add stops in order — starting point first, then each overnight destination.</p>
+            <div class="place-search-wrap">
+              <span class="ps-icon">🔍</span>
+              <input type="text" id="wizStopSearch" placeholder="Search: Tiger Reef Camping, Sesriem, Swakopmund…" autocomplete="off"
+                oninput="placeSearch(this.value,'wizResults')" onkeydown="psKeydown(event,'wizResults')">
+              <div class="ps-results" id="wizResults"></div>
+            </div>
+            <div id="wizStopPills" class="stop-pills"></div>
+            <div style="font-family:'Space Mono';font-size:.52rem;color:var(--dust);letter-spacing:.15em;text-transform:uppercase;margin-bottom:.4rem">Nights per stop</div>
+            <div id="wizNightsGrid" style="display:flex;flex-direction:column;gap:.35rem;margin-bottom:.85rem"></div>
+            <div class="modal-footer" style="border:none;padding:0;margin-top:1rem">
+              <button class="btn-secondary" onclick="wizGo(1)">← Back</button>
+              <button class="btn-primary" onclick="wizGo(3)">Crew & Gear →</button>
+            </div>
+          </div>
+
+          <!-- STEP 3: crew & vehicles -->
+          <div class="wiz-pane" id="wiz3">
+            <div class="form-row">
+              <div class="fg"><label>Number of Vehicles</label><select id="wvehs"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div>
+              <div class="fg"><label>Number of People</label><input type="number" id="wppl" placeholder="6" min="1"></div>
+            </div>
+            <div class="form-row">
+              <div class="fg"><label>Fuel Price (R/L estimate)</label><input type="number" id="wfuel" placeholder="24.50" step="0.01"></div>
+              <div class="fg"><label>Avg Consumption (L/100km)</label><input type="number" id="wcons" placeholder="12.5" step="0.1"></div>
+            </div>
+            <div class="form-row">
+              <div class="fg" style="flex:2"><label>Notes / Permits</label><input type="text" id="wnotes" placeholder="Kgalagadi permit required in advance…"></div>
+            </div>
+            <div class="modal-footer" style="border:none;padding:0;margin-top:1rem">
+              <button class="btn-secondary" onclick="wizGo(2)">← Back</button>
+              <button class="btn-primary" onclick="createTrip()">🗺️ Let's Go!</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOASTS ══ -->
 <div id="toasts"></div>
 
-<div id="app">
-  <!-- SIDEBAR -->
+<!-- ══ APP ══ -->
+<div id="app" style="display:none">
   <nav id="sidebar">
     <div class="sb-logo">
       <div class="sb-wordmark">✦ TREK</div>
-      <div class="sb-sub">Expedition Planner</div>
+      <div class="sb-tagline">Expedition Planner</div>
+      <div class="sb-forgebit">A Forgebit Product</div>
     </div>
     <div class="sb-trip">
       <label>Current Trip</label>
       <select id="tripSel" onchange="onTripSwitch(this.value)"></select>
-      <button class="btn-new-trip" onclick="openModal('newTripMod')">＋ Plan New Trip</button>
+      <button class="btn-new-trip" onclick="startNewTrip()">＋ New Expedition</button>
     </div>
     <nav class="sb-nav">
       <div class="nav-item active" data-panel="dashboard"><span class="nav-icon">🗺️</span><span class="nav-label">Dashboard</span></div>
       <div class="nav-item" data-panel="itinerary"><span class="nav-icon">📅</span><span class="nav-label">Itinerary</span></div>
       <div class="nav-item" data-panel="route"><span class="nav-icon">🧭</span><span class="nav-label">Route & Map</span></div>
       <div class="nav-item" data-panel="accommodation"><span class="nav-icon">🏕️</span><span class="nav-label">Accommodation</span></div>
-      <div class="nav-item" data-panel="fuel"><span class="nav-icon">⛽</span><span class="nav-label">Fuel Calculator</span></div>
+      <div class="nav-item" data-panel="fuel"><span class="nav-icon">⛽</span><span class="nav-label">Fuel & Costs</span></div>
       <div class="nav-item" data-panel="food"><span class="nav-icon">🔥</span><span class="nav-label">Food & Meals</span></div>
       <div class="nav-item" data-panel="packing"><span class="nav-icon">🎒</span><span class="nav-label">Packing List</span><span class="nav-badge" id="packBadge" style="display:none">0</span></div>
       <div class="nav-item" data-panel="crew"><span class="nav-icon">👥</span><span class="nav-label">Crew</span></div>
       <div class="nav-item" data-panel="docs"><span class="nav-icon">📄</span><span class="nav-label">Documents</span></div>
       <div class="nav-item" data-panel="gallery"><span class="nav-icon">📸</span><span class="nav-label">Gallery</span></div>
     </nav>
-    <div class="sb-countdown" id="cdWidget">
+    <div class="sb-countdown">
       <span class="cd-label">Departure in</span>
       <div class="cd-grid">
         <div class="cd-unit"><div class="cd-num" id="cdD">--</div><div class="cd-lbl">Days</div></div>
@@ -527,13 +556,13 @@ input[type=file]{display:none;}
         <div class="cd-unit"><div class="cd-num" id="cdS">--</div><div class="cd-lbl">Sec</div></div>
       </div>
     </div>
+    <div class="sb-forge-footer"><div class="sbf-txt">Forgebit · TREK v3</div></div>
   </nav>
 
-  <!-- MAIN -->
   <main id="main">
     <div class="topbar">
       <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-      <div class="topbar-title" id="topTitle">No trip selected</div>
+      <div class="topbar-title" id="topTitle">Dashboard</div>
       <div class="topbar-actions">
         <button class="btn-sm" onclick="exportTrip()">⬇ Export</button>
         <button class="btn-sm" onclick="shareTrip()">⬆ Share</button>
@@ -549,7 +578,10 @@ input[type=file]{display:none;}
     <section class="panel" id="panel-itinerary">
       <div class="ph">
         <div><div class="ph-title">Itinerary</div><div class="ph-sub">Every day, camp, drive and adventure</div></div>
-        <button class="btn-primary" onclick="openModal('addDayMod')">＋ Add Day</button>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <span class="sync-badge" id="itinSyncBadge" style="display:none">Synced from route</span>
+          <button class="btn-primary" onclick="openModal('addDayMod')">＋ Add Day</button>
+        </div>
       </div>
       <div id="itinList"></div>
       <button class="add-day-dashed" onclick="openModal('addDayMod')">＋ Add another day to the expedition</button>
@@ -558,24 +590,18 @@ input[type=file]{display:none;}
     <!-- ROUTE -->
     <section class="panel" id="panel-route">
       <div class="ph">
-        <div><div class="ph-title">Route &amp; Map</div><div class="ph-sub">Free map — stops auto-plot as you add them</div></div>
-        <button class="btn-primary" onclick="openModal('addStopMod')">&#65291; Add Stop</button>
+        <div><div class="ph-title">Route & Map</div><div class="ph-sub">Search for any place — route draws automatically</div></div>
+        <button class="btn-primary" onclick="openModal('addStopMod')">＋ Add Stop</button>
       </div>
       <div id="mapContainer"><div id="leafletMap"></div></div>
       <div class="route-stats-grid" id="routeStatsGrid"></div>
-      <div class="card" style="padding:1.25rem;">
-        <div style="font-family:'Playfair Display';font-size:1rem;font-weight:700;color:var(--parchment-mid);margin-bottom:1rem;">&#128205; Route Stops</div>
-        <table class="stops-table" id="stopsTable">
-          <thead><tr><th>#</th><th>Location</th><th>Nights</th><th>km from prev</th><th>Drive time</th><th></th></tr></thead>
-          <tbody id="stopsTbody"></tbody>
-        </table>
-      </div>
+      <div class="stop-list" id="stopList"></div>
     </section>
 
     <!-- ACCOMMODATION -->
     <section class="panel" id="panel-accommodation">
       <div class="ph">
-        <div><div class="ph-title">Accommodation</div><div class="ph-sub">Camps, chalets, lodges and guest houses</div></div>
+        <div><div class="ph-title">Accommodation</div><div class="ph-sub">Camps, chalets, lodges and guesthouses</div></div>
         <button class="btn-primary" onclick="openModal('addAccomMod')">＋ Add</button>
       </div>
       <div class="accom-grid" id="accomGrid"></div>
@@ -584,31 +610,30 @@ input[type=file]{display:none;}
     <!-- FUEL -->
     <section class="panel" id="panel-fuel">
       <div class="ph">
-        <div><div class="ph-title">Fuel Calculator</div><div class="ph-sub">Costs per vehicle based on route distance</div></div>
+        <div><div class="ph-title">Fuel & Costs</div><div class="ph-sub">Per-vehicle estimates for the full route</div></div>
         <button class="btn-primary" onclick="openModal('addVehMod')">＋ Add Vehicle</button>
       </div>
       <div class="fuel-grid" id="vehGrid"></div>
-      <div class="card" style="padding:1.25rem;margin-bottom:1.5rem;">
-        <div class="fuel-card-title">⛽ Fuel Price</div>
+      <div class="card" style="padding:1.4rem">
+        <div style="font-family:'Playfair Display';font-size:1.1rem;font-weight:700;color:var(--pm);margin-bottom:1.1rem">⛽ Fuel Calculator</div>
         <div class="form-row">
-          <div class="fg">
-            <label>Price per Litre (R)</label>
-            <input type="number" id="fuelPrice" value="24.50" step="0.01" oninput="calcFuel()">
-          </div>
-          <div class="fg">
-            <label>Total Route Distance (km)</label>
-            <input type="number" id="fuelTotalKm" placeholder="Auto from route" oninput="calcFuel()" readonly style="background:rgba(255,255,255,.02);cursor:not-allowed;">
-          </div>
+          <div class="fg"><label>Fuel Price (R/L)</label><input type="number" id="fuelPrice" value="24.50" step="0.01" oninput="calcFuel()"></div>
+          <div class="fg"><label>Route Distance (km)</label><input type="number" id="fuelTotalKm" placeholder="Auto from route" oninput="calcFuel()"></div>
         </div>
+        <div id="fuelResult"></div>
       </div>
-      <div class="fuel-result" id="fuelResult"></div>
     </section>
 
     <!-- FOOD -->
     <section class="panel" id="panel-food">
       <div class="ph">
-        <div><div class="ph-title">Food & Meals</div><div class="ph-sub">Braais, potjies and provisions for the road</div></div>
+        <div><div class="ph-title">Food & Meals</div><div class="ph-sub">Braais, potjies and camp provisions — days auto-populated from route</div></div>
         <button class="btn-primary" onclick="openModal('addFoodDayMod')">＋ Add Day</button>
+      </div>
+      <div id="foodTip" class="tip-banner">
+        <span class="tip-icon">💡</span>
+        <span>Days are auto-created from your route stops. Expand any day and start filling in meals — or leave them blank for later.</span>
+        <button class="tip-close" onclick="this.parentElement.style.display='none'">✕</button>
       </div>
       <div id="foodList"></div>
     </section>
@@ -617,17 +642,13 @@ input[type=file]{display:none;}
     <section class="panel" id="panel-packing">
       <div class="ph">
         <div><div class="ph-title">Packing List</div><div class="ph-sub">Everything the expedition needs</div></div>
-        <div style="display:flex;gap:.5rem;">
+        <div style="display:flex;gap:.5rem">
           <button class="btn-secondary" onclick="resetPacking()">↺ Reset</button>
           <button class="btn-primary" onclick="openModal('addCatMod')">＋ Category</button>
         </div>
       </div>
       <div class="pack-progress-bar">
-        <div class="pp-top">
-          <span class="pp-num" id="ppPacked">0</span>
-          <span class="pp-total" id="ppTotal">/ 0 items packed</span>
-          <span class="pp-pct" id="ppPct">0%</span>
-        </div>
+        <div class="pp-top"><span class="pp-num" id="ppPacked">0</span><span class="pp-total" id="ppTotal">/ 0 items packed</span><span class="pp-pct" id="ppPct">0%</span></div>
         <div class="prog-wrap"><div class="prog-fill" id="ppBar" style="width:0%"></div></div>
       </div>
       <div class="pack-grid" id="packGrid"></div>
@@ -638,25 +659,16 @@ input[type=file]{display:none;}
       <div class="ph"><div><div class="ph-title">Crew</div><div class="ph-sub">The people on this expedition</div></div></div>
       <div class="crew-grid" id="crewGrid"></div>
       <div class="invite-box">
-        <h3>Invite Someone</h3>
+        <h3>📨 Invite Crew Member</h3>
         <div class="form-row">
           <div class="fg"><label>Name</label><input type="text" id="invName" placeholder="Jannie van der Berg"></div>
-          <div class="fg"><label>Email</label><input type="email" id="invEmail" placeholder="jannie@trek.app"></div>
+          <div class="fg"><label>Email</label><input type="email" id="invEmail" placeholder="jannie@example.com"></div>
         </div>
         <div class="form-row">
-          <div class="fg"><label>Role</label>
-            <select id="invRole">
-              <option>Traveller</option><option>Organiser</option><option>Navigator</option>
-              <option>Camp Chef</option><option>Medic</option><option>Driver</option>
-            </select>
-          </div>
-          <div class="fg"><label>Vehicle</label>
-            <select id="invVeh">
-              <option>Vehicle 1 (Lead)</option><option>Vehicle 2</option><option>Vehicle 3</option><option>Vehicle 4</option>
-            </select>
-          </div>
+          <div class="fg"><label>Role</label><select id="invRole"><option>Traveller</option><option>Navigator</option><option>Camp Chef</option><option>Medic</option><option>Organiser</option><option>Driver</option></select></div>
+          <div class="fg"><label>Vehicle</label><select id="invVeh"><option>Vehicle 1</option><option>Vehicle 2</option><option>Vehicle 3</option><option>Vehicle 4</option></select></div>
         </div>
-        <button class="btn-primary" onclick="addCrew()">📨 Send Invite</button>
+        <button class="btn-primary" onclick="addCrew()">Send Invite</button>
       </div>
     </section>
 
@@ -664,12 +676,10 @@ input[type=file]{display:none;}
     <section class="panel" id="panel-docs">
       <div class="ph"><div><div class="ph-title">Documents</div><div class="ph-sub">Itineraries, permits, maps and more</div></div></div>
       <div class="drop-zone" id="dropZone" onclick="$('docFile').click()"
-        ondragover="ev.preventDefault();this.classList.add('over')"
-        ondragleave="this.classList.remove('over')"
-        ondrop="docDrop(event)">
+        ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="docDrop(event)">
         <div class="dz-icon">📎</div>
         <div class="dz-text">Drop files here or click to upload</div>
-        <div class="dz-sub">PDFs, spreadsheets, Word docs, images — anything goes</div>
+        <div class="dz-sub">PDFs, spreadsheets, images, Word docs — anything goes</div>
       </div>
       <input type="file" id="docFile" multiple onchange="docUpload(event)">
       <div class="docs-grid" id="docsGrid"></div>
@@ -679,7 +689,7 @@ input[type=file]{display:none;}
     <section class="panel" id="panel-gallery">
       <div class="ph">
         <div><div class="ph-title">Gallery</div><div class="ph-sub">Memories from the expedition</div></div>
-        <button class="btn-primary" onclick="$('photoFile').click()">＋ Photos</button>
+        <button class="btn-primary" onclick="$('photoFile').click()">＋ Add Photos</button>
       </div>
       <input type="file" id="photoFile" multiple accept="image/*" onchange="photoUpload(event)">
       <div class="gal-grid" id="galGrid"></div>
@@ -687,29 +697,41 @@ input[type=file]{display:none;}
   </main>
 </div>
 
-<!-- ═══════════════ MODALS ═══════════════ -->
-
-<!-- NEW TRIP -->
+<!-- ══ MODALS ══ -->
+<!-- New trip wizard (in-app, from sidebar) -->
 <div class="overlay" id="newTripMod">
   <div class="modal" style="position:relative">
     <button class="modal-close" onclick="closeModal('newTripMod')">✕</button>
     <div class="modal-title">Plan a New Expedition</div>
-    <div class="wiz-prog"><div class="wp cur" id="wp1"></div><div class="wp" id="wp2"></div></div>
+    <div class="wiz-prog"><div class="wp cur" id="wp1"></div><div class="wp" id="wp2"></div><div class="wp" id="wp3"></div></div>
     <div class="wiz-step on" id="ws1">
-      <div class="form-row"><div class="fg"><label>Trip Name</label><input type="text" id="nt-name" placeholder="Kgalagadi 2027"></div><div class="fg"><label>Destination</label><input type="text" id="nt-dest" placeholder="Kgalagadi, South Africa"></div></div>
-      <div class="form-row"><div class="fg"><label>Departure Date</label><input type="date" id="nt-start"></div><div class="fg"><label>Return Date</label><input type="date" id="nt-end"></div></div>
-      <div class="form-row"><div class="fg"><label>Trip Type</label><select id="nt-type"><option>4x4 Overland</option><option>Game Reserve</option><option>Desert Expedition</option><option>Coastal</option><option>Mountain</option><option>Mixed</option></select></div><div class="fg"><label>Accommodation Style</label><select id="nt-accom"><option>Mix of camping & chalets</option><option>Camping only</option><option>Chalets/lodges only</option><option>Wild camping</option></select></div></div>
-      <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('newTripMod')">Cancel</button><button class="btn-primary" onclick="wizNext()">Details →</button></div>
+      <div class="form-row"><div class="fg"><label>Trip Name</label><input type="text" id="nt-name" placeholder="Namibia 2027"></div><div class="fg"><label>Destination</label><input type="text" id="nt-dest" placeholder="Namibia"></div></div>
+      <div class="form-row"><div class="fg"><label>Departure</label><input type="date" id="nt-start"></div><div class="fg"><label>Return</label><input type="date" id="nt-end"></div></div>
+      <div class="form-row"><div class="fg"><label>Type</label><select id="nt-type"><option>4x4 Overland</option><option>Game Reserve</option><option>Desert Expedition</option><option>Coastal</option><option>Mountain</option><option>Mixed</option></select></div><div class="fg"><label>Accommodation</label><select id="nt-accom"><option>Mix of camping &amp; chalets</option><option>Camping only</option><option>Chalets/lodges only</option><option>Wild camping</option></select></div></div>
+      <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('newTripMod')">Cancel</button><button class="btn-primary" onclick="modalWizNext()">Route →</button></div>
     </div>
     <div class="wiz-step" id="ws2">
-      <div class="form-row"><div class="fg"><label>Number of Vehicles</label><select id="nt-vehs"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div><div class="fg"><label>Number of People</label><input type="number" id="nt-people" placeholder="6" min="1"></div></div>
-      <div class="form-row"><div class="fg" style="flex:2"><label>Notes / Permits needed</label><input type="text" id="nt-notes" placeholder="e.g. Kgalagadi permit required in advance"></div></div>
-      <div class="modal-footer"><button class="btn-secondary" onclick="wizBack()">← Back</button><button class="btn-primary" onclick="createTrip()">🗺️ Create Trip</button></div>
+      <p style="font-family:'Crimson Pro';font-size:.88rem;color:var(--dust);font-style:italic;margin-bottom:.85rem">Search and add route stops in order.</p>
+      <div class="place-search-wrap">
+        <span class="ps-icon">🔍</span>
+        <input type="text" id="modStopSearch" placeholder="Search: Tiger Reef Camping, Sesriem…" autocomplete="off"
+          oninput="placeSearch(this.value,'modResults')" onkeydown="psKeydown(event,'modResults')">
+        <div class="ps-results" id="modResults"></div>
+      </div>
+      <div id="modStopPills" class="stop-pills"></div>
+      <div id="modNightsGrid" style="display:flex;flex-direction:column;gap:.35rem;margin-bottom:.85rem"></div>
+      <div class="modal-footer"><button class="btn-secondary" onclick="modalWizBack()">← Back</button><button class="btn-primary" onclick="modalWizNext2()">Crew & Gear →</button></div>
+    </div>
+    <div class="wiz-step" id="ws3">
+      <div class="form-row"><div class="fg"><label>Vehicles</label><select id="nt-vehs"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div><div class="fg"><label>People</label><input type="number" id="nt-people" placeholder="6" min="1"></div></div>
+      <div class="form-row"><div class="fg"><label>Fuel Price (R/L)</label><input type="number" id="nt-fuel" placeholder="24.50" step="0.01"></div><div class="fg"><label>Avg Consumption (L/100km)</label><input type="number" id="nt-cons" placeholder="12.5" step="0.1"></div></div>
+      <div class="form-row"><div class="fg" style="flex:2"><label>Notes</label><input type="text" id="nt-notes" placeholder="Permits needed…"></div></div>
+      <div class="modal-footer"><button class="btn-secondary" onclick="modalWizBack2()">← Back</button><button class="btn-primary" onclick="createTripFromModal()">🗺️ Create Trip</button></div>
     </div>
   </div>
 </div>
 
-<!-- ADD DAY -->
+<!-- Add Day -->
 <div class="overlay" id="addDayMod">
   <div class="modal" style="position:relative">
     <button class="modal-close" onclick="closeModal('addDayMod')">✕</button>
@@ -718,24 +740,33 @@ input[type=file]{display:none;}
     <div class="form-row"><div class="fg"><label>Overnight Accommodation</label><input type="text" id="nd-accom" placeholder="Sossus Dune Lodge"></div><div class="fg"><label>Type</label><select id="nd-type"><option value="camp">🏕️ Camp</option><option value="chalet">🏠 Chalet</option><option value="lodge">🏡 Lodge</option><option value="drive">🚗 Drive Day</option><option value="guesthouse">🏘️ Guesthouse</option></select></div></div>
     <div class="form-row"><div class="fg"><label>Morning Activity</label><input type="text" id="nd-morning" placeholder="Dune 45 sunrise climb"></div><div class="fg"><label>Afternoon Activity</label><input type="text" id="nd-afternoon" placeholder="Dead Vlei walk"></div></div>
     <div class="form-row"><div class="fg"><label>Drive Distance (km)</label><input type="number" id="nd-km" placeholder="347"></div><div class="fg"><label>Drive Duration</label><input type="text" id="nd-time" placeholder="4.5 hrs"></div></div>
-    <div class="form-row"><div class="fg"><label>Notes</label><input type="text" id="nd-notes" placeholder="Book 4x4 permits in advance..."></div></div>
+    <div class="form-row"><div class="fg"><label>Notes</label><input type="text" id="nd-notes" placeholder="Book 4x4 permits…"></div></div>
     <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addDayMod')">Cancel</button><button class="btn-primary" onclick="addDay()">＋ Add Day</button></div>
   </div>
 </div>
 
-<!-- ADD ROUTE STOP -->
+<!-- Add Route Stop (in-app) -->
 <div class="overlay" id="addStopMod">
   <div class="modal" style="position:relative">
     <button class="modal-close" onclick="closeModal('addStopMod')">✕</button>
     <div class="modal-title">Add Route Stop</div>
-    <div class="form-row"><div class="fg"><label>Location Name</label><input type="text" id="rs-name" placeholder="Sesriem"></div><div class="fg"><label>Nights Here</label><input type="number" id="rs-nights" placeholder="3" min="0"></div></div>
-    <div class="form-row"><div class="fg"><label>Distance from Previous Stop (km)</label><input type="number" id="rs-km" placeholder="347" min="0"></div><div class="fg"><label>Estimated Drive Time</label><input type="text" id="rs-time" placeholder="4.5 hrs"></div></div>
+    <div class="place-search-wrap" style="margin-bottom:.85rem">
+      <span class="ps-icon">🔍</span>
+      <input type="text" id="routeStopSearch" placeholder="Search: Fish River Canyon, Sossusvlei…" autocomplete="off"
+        oninput="placeSearch(this.value,'routeResults')" onkeydown="psKeydown(event,'routeResults')">
+      <div class="ps-results" id="routeResults"></div>
+    </div>
+    <div id="routeStopPills" class="stop-pills"></div>
+    <div class="form-row">
+      <div class="fg"><label>Nights Here</label><input type="number" id="rs-nights" placeholder="3" min="0"></div>
+      <div class="fg"><label>Distance from prev. stop (km)</label><input type="number" id="rs-km" placeholder="347" min="0"></div>
+    </div>
     <div class="form-row"><div class="fg"><label>Notes</label><input type="text" id="rs-notes" placeholder="Fuel up before this leg"></div></div>
     <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addStopMod')">Cancel</button><button class="btn-primary" onclick="addStop()">＋ Add Stop</button></div>
   </div>
 </div>
 
-<!-- ADD ACCOMMODATION -->
+<!-- Add Accommodation -->
 <div class="overlay" id="addAccomMod">
   <div class="modal" style="position:relative">
     <button class="modal-close" onclick="closeModal('addAccomMod')">✕</button>
@@ -743,24 +774,24 @@ input[type=file]{display:none;}
     <div class="form-row"><div class="fg"><label>Name</label><input type="text" id="na-name" placeholder="Tiger Reef Camp"></div><div class="fg"><label>Type</label><select id="na-type"><option value="camp">🏕️ Camp Site</option><option value="chalet">🏠 Chalet</option><option value="lodge">🏡 Lodge</option><option value="guesthouse">🏘️ Guesthouse</option></select></div></div>
     <div class="form-row"><div class="fg"><label>Location</label><input type="text" id="na-loc" placeholder="Swakopmund"></div><div class="fg"><label>Nights</label><input type="number" id="na-nights" placeholder="4" min="1"></div></div>
     <div class="form-row"><div class="fg"><label>Check-in Date</label><input type="date" id="na-checkin"></div><div class="fg"><label>Booking Reference</label><input type="text" id="na-ref" placeholder="NR-2026-0045"></div></div>
-    <div class="form-row"><div class="fg"><label>Notes / Facilities</label><input type="text" id="na-notes" placeholder="Braai, pool, self-catering..."></div></div>
+    <div class="form-row"><div class="fg"><label>Notes / Facilities</label><input type="text" id="na-notes" placeholder="Braai, pool, self-catering…"></div></div>
     <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addAccomMod')">Cancel</button><button class="btn-primary" onclick="addAccom()">＋ Add</button></div>
   </div>
 </div>
 
-<!-- ADD VEHICLE -->
+<!-- Add Vehicle -->
 <div class="overlay" id="addVehMod">
   <div class="modal" style="position:relative">
     <button class="modal-close" onclick="closeModal('addVehMod')">✕</button>
     <div class="modal-title">Add Vehicle</div>
-    <div class="form-row"><div class="fg"><label>Vehicle Name / Description</label><input type="text" id="nv-name" placeholder="Hilux GD-6 (Lead)"></div><div class="fg"><label>Fuel Type</label><select id="nv-fuel"><option value="diesel">Diesel</option><option value="petrol">Petrol (95)</option><option value="petrol93">Petrol (93)</option></select></div></div>
+    <div class="form-row"><div class="fg"><label>Vehicle Name</label><input type="text" id="nv-name" placeholder="Hilux GD-6 (Lead)"></div><div class="fg"><label>Fuel Type</label><select id="nv-fuel"><option value="diesel">Diesel</option><option value="petrol">Petrol (95)</option><option value="petrol93">Petrol (93)</option></select></div></div>
     <div class="form-row"><div class="fg"><label>Consumption (L/100km)</label><input type="number" id="nv-cons" placeholder="12.5" step="0.1" min="1"></div><div class="fg"><label>Tank Size (L)</label><input type="number" id="nv-tank" placeholder="80" min="10"></div></div>
-    <div class="form-row"><div class="fg"><label>Driver / Owner</label><input type="text" id="nv-driver" placeholder="Quintus"></div></div>
+    <div class="form-row"><div class="fg"><label>Driver</label><input type="text" id="nv-driver" placeholder="Quintus"></div></div>
     <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addVehMod')">Cancel</button><button class="btn-primary" onclick="addVehicle()">＋ Add Vehicle</button></div>
   </div>
 </div>
 
-<!-- ADD FOOD DAY -->
+<!-- Add Food Day -->
 <div class="overlay" id="addFoodDayMod">
   <div class="modal" style="position:relative">
     <button class="modal-close" onclick="closeModal('addFoodDayMod')">✕</button>
@@ -770,191 +801,353 @@ input[type=file]{display:none;}
   </div>
 </div>
 
-<!-- ADD PACKING CATEGORY -->
+<!-- Add Packing Category -->
 <div class="overlay" id="addCatMod">
   <div class="modal" style="position:relative">
     <button class="modal-close" onclick="closeModal('addCatMod')">✕</button>
     <div class="modal-title">Add Packing Category</div>
-    <div class="form-row">
-      <div class="fg"><label>Category Name</label><input type="text" id="nc-name" placeholder="Medical"></div>
-      <div class="fg"><label>Icon (emoji)</label><input type="text" id="nc-icon" placeholder="🩺" maxlength="4"></div>
-    </div>
-    <div class="form-row">
-      <div class="fg"><label>First Item (optional)</label><input type="text" id="nc-item" placeholder="First aid kit"></div>
-    </div>
+    <div class="form-row"><div class="fg"><label>Category Name</label><input type="text" id="nc-name" placeholder="Medical"></div><div class="fg"><label>Icon (emoji)</label><input type="text" id="nc-icon" placeholder="🩺" maxlength="4"></div></div>
+    <div class="form-row"><div class="fg"><label>First Item (optional)</label><input type="text" id="nc-item" placeholder="First aid kit"></div></div>
     <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addCatMod')">Cancel</button><button class="btn-primary" onclick="addCategory()">＋ Add Category</button></div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  STATE
-// ═══════════════════════════════════════
-let trips = {};       // { key: tripObj }
-let cur = null;       // current trip key
-let cdTimer = null;
-
-const COLORS = [
-  'linear-gradient(135deg,#c17f24,#8b3a2a)',
-  'linear-gradient(135deg,#4a6741,#4a7fa5)',
-  'linear-gradient(135deg,#9c8b72,#c17f24)',
-  'linear-gradient(135deg,#8b3a2a,#d4541a)',
-  'linear-gradient(135deg,#4a7fa5,#4a6741)',
-  'linear-gradient(135deg,#c17f24,#4a6741)'
-];
-
-function newTrip(name, dest, start, end, type, accomStyle, vehs, people, notes) {
-  return {
-    name, dest, startDate: start, endDate: end, type, accomStyle,
-    vehicles: parseInt(vehs) || 1, people: parseInt(people) || 1, notes,
-    itinerary: [], stops: [], accommodation: [],
-    packing: [], food: [], crew: [], docs: [], photos: [],
-    vehicles_list: [],
-    fuelPrice: 24.50
-  };
-}
-
-function tripKey(name) {
-  return name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'') + '-' + Date.now();
-}
-
-// ═══════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    document.getElementById('loader').classList.add('out');
-    rebuildTripSelect();
-    renderAll();
-    startCountdown();
-  }, 1600);
-});
+// ══════════════════════════════════════════════════════
+const SK = 'trek_v3';
+let trips = {}, cur = null, cdTimer = null, currentPanel = 'dashboard';
+const COLORS = ['linear-gradient(135deg,#c17f24,#8b3a2a)','linear-gradient(135deg,#4a6741,#4a7fa5)','linear-gradient(135deg,#9c8b72,#c17f24)','linear-gradient(135deg,#8b3a2a,#d4541a)','linear-gradient(135deg,#4a7fa5,#4a6741)','linear-gradient(135deg,#c17f24,#4a6741)'];
+const panelTitles = {dashboard:'Overview',itinerary:'Itinerary',route:'Route & Map',accommodation:'Accommodation',fuel:'Fuel & Costs',food:'Food & Meals',packing:'Packing List',crew:'Crew',docs:'Documents',gallery:'Gallery'};
 
 function $( id ) { return document.getElementById(id); }
+function save() { try { localStorage.setItem(SK, JSON.stringify({trips,cur})); } catch(e){} }
+function load() { try { const d=JSON.parse(localStorage.getItem(SK)||'{}'); if(d.trips) trips=d.trips; if(d.cur) cur=d.cur; } catch(e){} }
 
-// ═══════════════════════════════════════
-//  TRIP MANAGEMENT
-// ═══════════════════════════════════════
-function rebuildTripSelect() {
-  const sel = $('tripSel');
-  sel.innerHTML = '';
-  if (Object.keys(trips).length === 0) {
-    sel.innerHTML = '<option value="">— No trips yet —</option>';
-    return;
+function newTripObj(name,dest,start,end,type,accomStyle,vehs,people,notes,fuelPrice,cons,stops) {
+  return { name,dest,startDate:start,endDate:end,type,accomStyle,
+    vehicleCount:parseInt(vehs)||1, people:parseInt(people)||1,
+    notes,fuelPrice:parseFloat(fuelPrice)||24.5,
+    avgCons:parseFloat(cons)||12.5,
+    itinerary:[],stops:stops||[],accommodation:[],
+    packing:[], food:[], crew:[], docs:[], photos:[],
+    vehicles_list:[], _routeKm:0 };
+}
+
+// ══════════════════════════════════════════════════════
+//  PLACE SEARCH (Nominatim — free, no key)
+// ══════════════════════════════════════════════════════
+let psTimer = null;
+let wizStops = []; // temp stops being built in wizard
+
+function placeSearch(q, resultsId) {
+  const el = $(resultsId);
+  if (!q || q.length < 2) { el.classList.remove('open'); return; }
+  el.classList.add('open');
+  el.innerHTML = '<div class="ps-loading">Searching…</div>';
+  clearTimeout(psTimer);
+  psTimer = setTimeout(() => {
+    fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=6&addressdetails=1`, {
+      headers:{'Accept-Language':'en','User-Agent':'TREKForgebit/3'}
+    })
+    .then(r=>r.json())
+    .then(data => {
+      if (!data.length) { el.innerHTML = '<div class="ps-loading">No results found</div>'; return; }
+      el.innerHTML = data.map((p,i) => {
+        const icon = placeIcon(p.type, p.class);
+        const name = p.namedetails?.name || p.display_name.split(',')[0];
+        const sub = p.display_name.split(',').slice(1,3).join(',').trim();
+        return `<div class="ps-item" data-idx="${i}" data-lat="${p.lat}" data-lon="${p.lon}" data-name="${escHtml(name)}" data-display="${escHtml(p.display_name)}"
+          onclick="selectPlace(this,'${resultsId}')">
+          <span class="ps-item-icon">${icon}</span>
+          <div><div>${escHtml(name)}</div><div class="ps-item-sub">${escHtml(sub)}</div></div>
+        </div>`;
+      }).join('');
+    })
+    .catch(() => { el.innerHTML = '<div class="ps-loading">Search unavailable — check connection</div>'; });
+  }, 320);
+}
+
+function placeIcon(type,cls) {
+  if (cls==='amenity') return '🏢'; if (cls==='tourism') return '🏕️';
+  if (type==='city'||type==='town') return '🏙️'; if (type==='village') return '🏡';
+  if (cls==='natural') return '🌿'; if (cls==='waterway') return '💧';
+  return '📍';
+}
+
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function psKeydown(e, resultsId) {
+  if (e.key === 'Escape') { $(resultsId).classList.remove('open'); }
+}
+
+// Close results when clicking outside
+document.addEventListener('click', e => {
+  document.querySelectorAll('.ps-results.open').forEach(el => {
+    if (!el.parentElement.contains(e.target)) el.classList.remove('open');
+  });
+});
+
+// selectPlace called from different contexts: wizard, modal route stop
+function selectPlace(el, resultsId) {
+  const name = el.dataset.name;
+  const lat = parseFloat(el.dataset.lat);
+  const lon = parseFloat(el.dataset.lon);
+  el.closest('.ps-results').classList.remove('open');
+  // find the input in the same .place-search-wrap
+  const inp = el.closest('.ps-results').previousElementSibling;
+  if (inp) inp.value = '';
+
+  // which context?
+  if (resultsId === 'wizResults') addWizStop({name,lat,lon});
+  else if (resultsId === 'modResults') addWizStop({name,lat,lon}, true);
+  else if (resultsId === 'routeResults') { routeStopSelected = {name,lat,lon}; showRouteStopPill(name); }
+}
+
+// ══════════════════════════════════════════════════════
+//  WIZARD STOPS (shared by welcome wizard & modal wizard)
+// ══════════════════════════════════════════════════════
+let isModal = false;
+function addWizStop(place, modal=false) {
+  isModal = modal;
+  wizStops.push({...place, nights:1});
+  renderWizPills(modal);
+  renderNightsGrid(modal);
+}
+function removeWizStop(i, modal) {
+  wizStops.splice(i,1);
+  renderWizPills(modal);
+  renderNightsGrid(modal);
+}
+function renderWizPills(modal) {
+  const el = $(modal ? 'modStopPills' : 'wizStopPills');
+  if (!el) return;
+  el.innerHTML = wizStops.map((s,i) =>
+    `<div class="stop-pill ${i===0?'is-start':''}">
+      ${i===0?'🚩 ':'📍 '}${s.name}
+      <button class="sp-del" onclick="removeWizStop(${i},${modal})">✕</button>
+    </div>`).join('');
+}
+function renderNightsGrid(modal) {
+  const el = $(modal ? 'modNightsGrid' : 'wizNightsGrid');
+  if (!el) return;
+  el.innerHTML = wizStops.map((s,i) => i === 0 ? '' : // skip starting point
+    `<div style="display:flex;align-items:center;gap:.65rem;font-family:'Crimson Pro';font-size:.88rem;color:var(--pm)">
+      <span style="color:var(--amber);font-family:'Space Mono';font-size:.65rem;min-width:18px">${i}</span>
+      <span style="flex:1">${s.name}</span>
+      <input class="nights-inline" type="number" min="0" value="${s.nights}" onchange="wizStops[${i}].nights=parseInt(this.value)||0" placeholder="0">
+      <span style="font-family:'Space Mono';font-size:.52rem;color:var(--dust)">nights</span>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════
+//  WELCOME FLOW
+// ══════════════════════════════════════════════════════
+let wizStep = 1;
+function showWelcome() {
+  const keys = Object.keys(trips);
+  if (keys.length > 0) {
+    // show trip list
+    $('wlcTripList').style.display = 'block';
+    $('wlcWizard').style.display = 'none';
+    const list = $('wlcList');
+    list.innerHTML = keys.map(k => {
+      const t = trips[k];
+      return `<div class="trip-list-item" onclick="pickTrip('${k}')">
+        <span class="tli-icon">🗺️</span>
+        <div><div class="tli-name">${t.name}</div><div class="tli-meta">${t.dest||''}${t.startDate?' · '+fmtDate(t.startDate):''}</div></div>
+      </div>`;
+    }).join('');
+  } else {
+    showWizard();
   }
-  Object.entries(trips).forEach(([k,t]) => {
-    const o = document.createElement('option');
-    o.value = k; o.textContent = t.name;
-    if (k === cur) o.selected = true;
+}
+function showWizard() {
+  $('wlcTripList').style.display = 'none';
+  $('wlcWizard').style.display = 'block';
+  wizStops = [];
+  wizStep = 1;
+  goWizPane(1);
+}
+function goWizPane(n) {
+  wizStep = n;
+  [1,2,3].forEach(i => {
+    $('wiz'+i).classList.toggle('on', i===n);
+    const wb = $('wb'+i);
+    if (wb) {
+      wb.classList.remove('active','done');
+      if (i < n) wb.classList.add('done');
+      else if (i === n) wb.classList.add('active');
+    }
+  });
+}
+function wizGo(n) {
+  if (n===2) {
+    const name = $('wn').value.trim();
+    if (!name) { toast('Enter a trip name','err'); return; }
+    wizStops = [];
+  }
+  goWizPane(n);
+}
+function pickTrip(k) { cur=k; save(); launchApp(); }
+
+function createTrip() {
+  const name=$('wn').value.trim();
+  if (!name) { toast('Enter a trip name','err'); return; }
+  const key='t'+Date.now();
+  trips[key] = newTripObj(name,$('wd').value.trim(),$('ws').value,$('we').value,$('wt').value,$('wa').value,$('wvehs').value,$('wppl').value,$('wnotes').value.trim(),$('wfuel').value,$('wcons').value, wizStops.map(s=>({...s})));
+  cur = key;
+  // sync from stops
+  syncAllFromStops(trips[key]);
+  save(); launchApp();
+}
+
+// ══════════════════════════════════════════════════════
+//  IN-APP MODAL WIZARD (sidebar New Trip)
+// ══════════════════════════════════════════════════════
+function startNewTrip() {
+  wizStops = [];
+  // reset modal wizard
+  $('ws1').classList.add('on'); $('ws2').classList.remove('on'); $('ws3').classList.remove('on');
+  ['wp1','wp2','wp3'].forEach((id,i)=>{ $(id).classList.remove('done','cur'); if(i===0) $(id).classList.add('cur'); });
+  openModal('newTripMod');
+}
+function modalWizNext() {
+  const name=$('nt-name').value.trim(); if(!name){toast('Enter a trip name','err');return;}
+  $('ws1').classList.remove('on'); $('ws2').classList.add('on');
+  $('wp1').classList.remove('cur'); $('wp1').classList.add('done'); $('wp2').classList.add('cur');
+  wizStops = [];
+}
+function modalWizBack() { $('ws2').classList.remove('on'); $('ws1').classList.add('on'); $('wp2').classList.remove('cur'); $('wp1').classList.remove('done'); $('wp1').classList.add('cur'); }
+function modalWizNext2() { $('ws2').classList.remove('on'); $('ws3').classList.add('on'); $('wp2').classList.remove('cur'); $('wp2').classList.add('done'); $('wp3').classList.add('cur'); }
+function modalWizBack2() { $('ws3').classList.remove('on'); $('ws2').classList.add('on'); $('wp3').classList.remove('cur'); $('wp2').classList.remove('done'); $('wp2').classList.add('cur'); }
+function createTripFromModal() {
+  const name=$('nt-name').value.trim(); if(!name){toast('Enter a trip name','err');return;}
+  const key='t'+Date.now();
+  trips[key]=newTripObj(name,$('nt-dest').value.trim(),$('nt-start').value,$('nt-end').value,$('nt-type').value,$('nt-accom').value,$('nt-vehs').value,$('nt-people').value,$('nt-notes').value.trim(),$('nt-fuel').value,$('nt-cons').value, wizStops.map(s=>({...s})));
+  cur=key;
+  syncAllFromStops(trips[key]);
+  save(); closeModal('newTripMod'); rebuildTripSelect(); renderAll(); startCountdown();
+  setTimeout(()=>{initLeaflet(); refreshMap(trips[cur]);},200);
+  toast('🗺️ '+name+' created!','ok');
+  ['nt-name','nt-dest','nt-start','nt-end','nt-notes','nt-fuel','nt-cons'].forEach(id=>$(id).value='');
+  wizStops=[];
+}
+
+// ══════════════════════════════════════════════════════
+//  SYNC: Build itinerary & food days from stops
+// ══════════════════════════════════════════════════════
+function syncAllFromStops(t) {
+  if (!t.stops.length) return;
+  let date = t.startDate ? new Date(t.startDate+'T00:00:00') : null;
+  const newDays = [];
+  const newFood = [];
+
+  t.stops.forEach((stop, idx) => {
+    const nights = parseInt(stop.nights) || 0;
+    if (idx === 0 && nights === 0) return; // starting point, no overnight
+
+    for (let n = 0; n < Math.max(1, nights); n++) {
+      const dayNum = newDays.length + 1;
+      const dateStr = date ? date.toISOString().slice(0,10) : '';
+      newDays.push({
+        date: dateStr, day: dayNum,
+        location: stop.name, accom: '', type: 'camp',
+        morning: '', afternoon: '', km: '', driveTime: '', notes: '',
+        fromRoute: true
+      });
+      newFood.push({ day: 'Day '+dayNum+(dateStr?' — '+fmtDate(dateStr):''), loc: stop.name, breakfast:[], lunch:[], dinner:[], fromRoute: true });
+      if (date) date.setDate(date.getDate()+1);
+    }
+  });
+
+  // merge: keep any manually added days, append new ones from route if not already there
+  const existingLocs = new Set(t.itinerary.map(d=>d.location));
+  newDays.forEach(d => { if (!existingLocs.has(d.location)) t.itinerary.push(d); });
+  t.itinerary.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  t.itinerary.forEach((d,i)=>d.day=i+1);
+
+  const existingFoodLocs = new Set(t.food.map(f=>f.loc));
+  newFood.forEach(f => { if (!existingFoodLocs.has(f.loc)) t.food.push(f); });
+}
+
+// ══════════════════════════════════════════════════════
+//  LAUNCH
+// ══════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  load();
+  setTimeout(() => {
+    $('loader').classList.add('out');
+    setTimeout(() => {
+      $('loader').style.display='none';
+      showWelcome();
+      $('welcome').style.display='flex';
+    }, 700);
+  }, 2200);
+});
+
+function launchApp() {
+  $('welcome').classList.add('out');
+  setTimeout(()=>$('welcome').style.display='none',500);
+  $('app').style.display='flex';
+  rebuildTripSelect();
+  renderAll();
+  startCountdown();
+}
+
+function rebuildTripSelect() {
+  const sel=$('tripSel'); sel.innerHTML='';
+  Object.entries(trips).forEach(([k,t])=>{
+    const o=document.createElement('option');
+    o.value=k; o.textContent=t.name; if(k===cur) o.selected=true;
     sel.appendChild(o);
   });
 }
-
 function onTripSwitch(key) {
-  if (!key || !trips[key]) return;
-  cur = key;
-  renderAll();
+  if (!key||!trips[key]) return;
+  cur=key; renderAll(); startCountdown();
+  if (currentPanel==='route') setTimeout(()=>{initLeaflet();refreshMap(trips[cur]);if(leafMap)leafMap.invalidateSize();},100);
 }
 
-function wizNext() {
-  const name = $('nt-name').value.trim();
-  if (!name) { toast('Please enter a trip name','err'); return; }
-  $('ws1').classList.remove('on'); $('ws2').classList.add('on');
-  $('wp1').classList.remove('cur'); $('wp1').classList.add('done');
-  $('wp2').classList.add('cur');
-}
-function wizBack() {
-  $('ws2').classList.remove('on'); $('ws1').classList.add('on');
-  $('wp2').classList.remove('cur'); $('wp1').classList.remove('done'); $('wp1').classList.add('cur');
-}
-
-function createTrip() {
-  const name = $('nt-name').value.trim();
-  const dest = $('nt-dest').value.trim();
-  const start = $('nt-start').value;
-  const end = $('nt-end').value;
-  if (!name) { toast('Please enter a trip name','err'); return; }
-  const key = tripKey(name);
-  trips[key] = newTrip(
-    name, dest, start, end,
-    $('nt-type').value, $('nt-accom').value,
-    $('nt-vehs').value, $('nt-people').value, $('nt-notes').value.trim()
-  );
-  cur = key;
-  rebuildTripSelect();
-  closeModal('newTripMod');
-  renderAll();
-  startCountdown();
-  toast('🗺️ ' + name + ' created!', 'ok');
-  // reset wizard
-  wizBack();
-  ['nt-name','nt-dest','nt-start','nt-end','nt-notes'].forEach(id => $(id).value = '');
-}
-
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  RENDER ALL
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 function renderAll() {
   const t = trips[cur];
-  if (!t) {
-    $('topTitle').textContent = 'No trip selected — create one to begin';
-    $('dashContent').innerHTML = `<div class="empty"><div class="empty-icon">🗺️</div><div class="empty-text">No expedition planned yet</div><div class="empty-sub">Click "+ Plan New Trip" to get started</div></div>`;
-    ['itinList','accomGrid','packGrid','crewGrid','foodList','docsGrid','galGrid','routeStatsGrid','stopsTbody','vehGrid','fuelResult'].forEach(id => { const el = $(id); if(el) el.innerHTML=''; });
-    return;
-  }
-  $('topTitle').textContent = t.name + ' — ' + (panelTitles[currentPanel] || 'Overview');
-  renderDashboard(t);
-  renderItinerary(t);
-  renderStops(t);
-  renderAccom(t);
-  renderPacking(t);
-  renderCrew(t);
-  renderFood(t);
-  renderDocs(t);
-  renderGallery(t);
-  renderFuel(t);
-  updatePackBadge(t);
+  if (!t) { $('topTitle').textContent='No trip — create one to begin'; $('dashContent').innerHTML=`<div class="empty"><div class="empty-icon">🗺️</div><div class="empty-text">No expedition planned yet</div><div class="empty-sub">Click "+ New Expedition" to get started</div></div>`; return; }
+  $('topTitle').textContent = t.name + ' — ' + (panelTitles[currentPanel]||'Overview');
+  renderDashboard(t); renderItinerary(t); renderStops(t); renderAccom(t); renderPacking(t); renderCrew(t); renderFood(t); renderDocs(t); renderGallery(t); renderFuel(t); updatePackBadge(t);
 }
 
-const panelTitles = { dashboard:'Overview', itinerary:'Itinerary', route:'Route & Map', accommodation:'Accommodation', fuel:'Fuel Calculator', food:'Food & Meals', packing:'Packing List', crew:'Crew', docs:'Documents', gallery:'Gallery' };
-let currentPanel = 'dashboard';
-
-// ═══════════════════════════════════════
-//  DASHBOARD — dynamic from real data
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════════════
 function renderDashboard(t) {
-  const days = t.itinerary.length;
-  const totalKm = t.stops.reduce((s,x)=>s+Number(x.km||0),0);
-  const stops = t.stops.length;
-  const camps = t.accommodation.filter(a=>a.type==='camp').length;
-  const chalets = t.accommodation.filter(a=>a.type==='chalet'||a.type==='lodge').length;
-  const packed = t.packing.reduce((s,c)=>s+c.items.filter(i=>i.checked).length,0);
-  const totalItems = t.packing.reduce((s,c)=>s+c.items.length,0);
-  const packPct = totalItems ? Math.round(packed/totalItems*100) : 0;
-  const confirmed = t.crew.filter(c=>c.status==='confirmed').length;
-
-  // next upcoming day
-  const today = new Date(); today.setHours(0,0,0,0);
-  const upcoming = t.itinerary.find(d => d.date && new Date(d.date) >= today);
-  const nextDinner = t.food.length > 0 ? t.food[0] : null;
-
-  // unpacked items
-  const missingItems = [];
-  t.packing.forEach(cat => cat.items.filter(i=>!i.checked).forEach(i => missingItems.push(i.text)));
-
-  const dateRange = (t.startDate && t.endDate)
-    ? fmtDate(t.startDate) + ' — ' + fmtDate(t.endDate)
-    : t.startDate ? 'From ' + fmtDate(t.startDate) : 'Dates not set';
-
-  $('dashContent').innerHTML = `
+  const days=t.itinerary.length;
+  const totalKm=t._routeKm||t.stops.reduce((s,x)=>s+Number(x.km||0),0);
+  const stops=t.stops.length;
+  const camps=t.accommodation.filter(a=>a.type==='camp').length;
+  const chalets=t.accommodation.filter(a=>a.type==='chalet'||a.type==='lodge').length;
+  const packed=t.packing.reduce((s,c)=>s+c.items.filter(i=>i.checked).length,0);
+  const totalItems=t.packing.reduce((s,c)=>s+c.items.length,0);
+  const packPct=totalItems?Math.round(packed/totalItems*100):0;
+  const confirmed=t.crew.filter(c=>c.status==='confirmed').length;
+  const today=new Date(); today.setHours(0,0,0,0);
+  const upcoming=t.itinerary.find(d=>d.date&&new Date(d.date)>=today);
+  const nextDinner=t.food.length>0?t.food[0]:null;
+  const missingItems=[];
+  t.packing.forEach(cat=>cat.items.filter(i=>!i.checked).forEach(i=>missingItems.push(i.text)));
+  const dateRange=(t.startDate&&t.endDate)?fmtDate(t.startDate)+' — '+fmtDate(t.endDate):(t.startDate?'From '+fmtDate(t.startDate):'Dates not set');
+  $('dashContent').innerHTML=`
     <div class="dash-hero">
       <div class="hero-name">${t.name}</div>
       <div class="hero-meta">
         <div class="hm"><span class="hm-icon">📅</span>${dateRange}</div>
-        ${t.dest ? `<div class="hm"><span class="hm-icon">📍</span>${t.dest}</div>` : ''}
-        <div class="hm"><span class="hm-icon">👥</span>${t.crew.length} crew member${t.crew.length!==1?'s':''}</div>
-        <div class="hm"><span class="hm-icon">🚗</span>${t.vehicles_list.length || t.vehicles} vehicle${(t.vehicles_list.length||t.vehicles)!==1?'s':''}</div>
-        ${camps||chalets?`<div class="hm"><span class="hm-icon">🏕️</span>${camps?camps+' camp'+(camps>1?'s':''):''}${camps&&chalets?' · ':''}${chalets?chalets+' chalet'+(chalets>1?'s/lodges':''):''}</div>`:''}
+        ${t.dest?`<div class="hm"><span class="hm-icon">📍</span>${t.dest}</div>`:''}
+        <div class="hm"><span class="hm-icon">👥</span>${t.crew.length} crew</div>
+        <div class="hm"><span class="hm-icon">🚗</span>${t.vehicles_list.length||t.vehicleCount} vehicle${(t.vehicles_list.length||t.vehicleCount)>1?'s':''}</div>
+        ${camps||chalets?`<div class="hm"><span class="hm-icon">🏕️</span>${[camps&&camps+' camp'+(camps>1?'s':''),chalets&&chalets+' chalet'+(chalets>1?'s':'')].filter(Boolean).join(' · ')}</div>`:''}
       </div>
     </div>
     <div class="stats-grid">
@@ -968,557 +1161,444 @@ function renderDashboard(t) {
     <div class="dash-grid">
       <div class="card dc">
         <div class="dc-title">📅 Next Stop</div>
-        ${upcoming
-          ? `<div style="font-family:'Playfair Display';font-size:1.2rem;color:var(--parchment);font-weight:700;">${upcoming.location}</div>
-             <div style="font-family:'Crimson Pro';font-size:.88rem;color:var(--dust);font-style:italic;margin-top:.2rem;">${fmtDate(upcoming.date)} · ${upcoming.accom||'—'}</div>
-             ${upcoming.morning?`<div style="margin-top:.6rem;font-family:'Crimson Pro';font-size:.88rem;color:var(--parchment-mid);">🌅 ${upcoming.morning}</div>`:''}
-             <div style="margin-top:.5rem;display:flex;gap:.3rem;flex-wrap:wrap;"><span class="tag t-${upcoming.type||'camp'}">${upcoming.type||'camp'}</span>${upcoming.km?`<span class="tag t-drive">🚗 ${upcoming.km}km</span>`:''}</div>`
-          : `<div class="empty" style="padding:1.5rem 0"><div class="empty-icon" style="font-size:2rem">📅</div><div class="empty-sub">No itinerary days yet</div></div>`}
+        ${upcoming?`<div style="font-family:'Playfair Display';font-size:1.2rem;color:var(--parchment);font-weight:700">${upcoming.location}</div>
+          <div style="font-family:'Crimson Pro';font-size:.86rem;color:var(--dust);font-style:italic;margin-top:.18rem">${fmtDate(upcoming.date)} · ${upcoming.accom||'—'}</div>
+          ${upcoming.morning?`<div style="margin-top:.55rem;font-family:'Crimson Pro';font-size:.86rem;color:var(--pm)">🌅 ${upcoming.morning}</div>`:''}
+          <div style="margin-top:.45rem;display:flex;gap:.28rem;flex-wrap:wrap"><span class="tag t-${upcoming.type||'camp'}">${upcoming.type||'camp'}</span>${upcoming.km?`<span class="tag t-drive">🚗 ${upcoming.km}km</span>`:''}</div>`
+          :`<div class="empty" style="padding:1.25rem 0"><div class="empty-icon" style="font-size:2rem">📅</div><div class="empty-sub">No itinerary days yet</div></div>`}
       </div>
       <div class="card dc">
         <div class="dc-title">🎒 Packing Progress</div>
-        ${totalItems
-          ? `<div style="font-family:'Crimson Pro';font-size:.9rem;color:var(--dust);">${packed} of ${totalItems} items packed</div>
-             <div class="prog-wrap" style="margin:.65rem 0"><div class="prog-fill" style="width:${packPct}%"></div></div>
-             ${missingItems.length>0?`<div style="font-family:'Space Mono';font-size:.58rem;color:var(--rust);margin-bottom:.35rem;">⚠ ${missingItems.length} item${missingItems.length>1?'s':''} still needed</div>
-             <div style="font-family:'Crimson Pro';font-size:.85rem;color:var(--parchment-mid);">${missingItems.slice(0,4).join(' · ')+(missingItems.length>4?' …':'')}</div>`:'<div style="color:var(--sage-light);font-family:\'Crimson Pro\';font-size:.9rem;">✓ All packed!</div>'}`
-          : `<div class="empty" style="padding:1.5rem 0"><div class="empty-icon" style="font-size:2rem">🎒</div><div class="empty-sub">No packing list yet</div></div>`}
+        ${totalItems?`<div style="font-family:'Crimson Pro';font-size:.88rem;color:var(--dust)">${packed} of ${totalItems} items packed</div>
+          <div class="prog-wrap" style="margin:.6rem 0"><div class="prog-fill" style="width:${packPct}%"></div></div>
+          ${missingItems.length>0?`<div style="font-family:'Space Mono';font-size:.56rem;color:var(--rust);margin-bottom:.28rem">⚠ ${missingItems.length} still needed</div><div style="font-family:'Crimson Pro';font-size:.83rem;color:var(--pm)">${missingItems.slice(0,4).join(' · ')+(missingItems.length>4?' …':'')}</div>`:'<div style="color:var(--sgl);font-family:Crimson Pro,serif;font-size:.88rem">✓ All packed!</div>'}`
+          :`<div class="empty" style="padding:1.25rem 0"><div class="empty-icon" style="font-size:2rem">🎒</div><div class="empty-sub">No packing list yet</div></div>`}
       </div>
       <div class="card dc">
         <div class="dc-title">👥 Crew</div>
-        ${t.crew.length
-          ? t.crew.slice(0,4).map((m,i)=>`<div style="display:flex;align-items:center;gap:.65rem;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.04);">
-              <div style="width:28px;height:28px;border-radius:50%;background:${COLORS[i%COLORS.length]};display:flex;align-items:center;justify-content:center;font-family:'Playfair Display';font-size:.85rem;color:#fff;flex-shrink:0;">${m.initials}</div>
-              <div style="flex:1;font-family:'Crimson Pro';font-size:.88rem;">${m.name}</div>
-              <span class="cr-status ${m.status==='confirmed'?'cr-confirmed':'cr-pending'}">${m.status==='confirmed'?'✓':'⏳'}</span>
-            </div>`).join('')
-            + (t.crew.length>4?`<div style="font-family:'Crimson Pro';font-size:.82rem;color:var(--dust);margin-top:.4rem;">+${t.crew.length-4} more</div>`:'')
-          : `<div class="empty" style="padding:1.5rem 0"><div class="empty-icon" style="font-size:2rem">👥</div><div class="empty-sub">No crew added yet</div></div>`}
+        ${t.crew.length?t.crew.slice(0,4).map((m,i)=>`<div style="display:flex;align-items:center;gap:.6rem;padding:.28rem 0;border-bottom:1px solid rgba(255,255,255,.04)"><div style="width:26px;height:26px;border-radius:50%;background:${COLORS[i%COLORS.length]};display:flex;align-items:center;justify-content:center;font-family:'Playfair Display';font-size:.8rem;color:#fff;flex-shrink:0">${m.initials}</div><div style="flex:1;font-family:'Crimson Pro';font-size:.86rem">${m.name}</div><span class="cr-status ${m.status==='confirmed'?'cr-confirmed':'cr-pending'}">${m.status==='confirmed'?'✓':'⏳'}</span></div>`).join('')+(t.crew.length>4?`<div style="font-family:'Crimson Pro';font-size:.8rem;color:var(--dust);margin-top:.38rem">+${t.crew.length-4} more</div>`:'')
+          :`<div class="empty" style="padding:1.25rem 0"><div class="empty-icon" style="font-size:2rem">👥</div><div class="empty-sub">No crew yet</div></div>`}
       </div>
       <div class="card dc">
         <div class="dc-title">🔥 Tonight's Dinner</div>
-        ${nextDinner && nextDinner.dinner && nextDinner.dinner.length
-          ? `<div style="font-family:'Playfair Display';font-size:1.1rem;color:var(--parchment);">${nextDinner.dinner[0]}</div>
-             <div style="font-family:'Crimson Pro';font-size:.85rem;color:var(--dust);font-style:italic;margin-top:.2rem;">${nextDinner.day} · ${nextDinner.loc}</div>`
-          : `<div class="empty" style="padding:1.5rem 0"><div class="empty-icon" style="font-size:2rem">🔥</div><div class="empty-sub">No meals planned yet</div></div>`}
+        ${nextDinner&&nextDinner.dinner&&nextDinner.dinner.length?`<div style="font-family:'Playfair Display';font-size:1.08rem;color:var(--parchment)">${nextDinner.dinner[0]}</div><div style="font-family:'Crimson Pro';font-size:.83rem;color:var(--dust);font-style:italic;margin-top:.18rem">${nextDinner.day} · ${nextDinner.loc}</div>`
+          :`<div class="empty" style="padding:1.25rem 0"><div class="empty-icon" style="font-size:2rem">🔥</div><div class="empty-sub">No meals planned yet</div></div>`}
       </div>
     </div>`;
 }
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  ITINERARY
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 function renderItinerary(t) {
-  const el = $('itinList');
-  if (!t.itinerary.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No days planned yet</div><div class="empty-sub">Click "+ Add Day" to start building your itinerary</div></div>'; return; }
-  el.innerHTML = t.itinerary.map((d,i) => `
-    <div class="day-card">
+  const el=$('itinList');
+  const synced = t.itinerary.filter(d=>d.fromRoute).length;
+  if ($('itinSyncBadge')) $('itinSyncBadge').style.display = synced>0?'':'none';
+  if (!t.itinerary.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No days planned yet</div><div class="empty-sub">Add route stops first — days will auto-populate, or click "+ Add Day"</div></div>'; return; }
+  el.innerHTML=t.itinerary.map((d,i)=>`
+    <div class="day-card ${d.fromRoute?'day-from-route':''}">
       <div class="day-hd" onclick="toggleDayBody(${i})">
         <div class="day-num">D${d.day}</div>
         <div class="day-info">
-          <div class="day-date">${fmtDate(d.date)}</div>
+          <div class="day-date">${fmtDate(d.date)}${d.fromRoute?' <span style="font-size:.45rem;color:var(--sgl);font-family:Space Mono,monospace;letter-spacing:.1em;text-transform:uppercase"> ROUTE</span>':''}</div>
           <div class="day-loc">${d.location}</div>
           <div class="day-tags">
-            <span class="tag t-${d.type}">${d.type}</span>
+            <span class="tag t-${d.type||'camp'}">${d.type||'camp'}</span>
             ${d.km?`<span class="tag t-drive">🚗 ${d.km}km</span>`:''}
             ${d.morning?`<span class="tag t-activity">Activity</span>`:''}
           </div>
         </div>
-        <button onclick="event.stopPropagation();removeDay(${i})" style="background:none;border:none;color:var(--dust);cursor:pointer;font-size:.85rem;transition:color .18s;padding:.25rem;" onmouseover="this.style.color='#8b3a2a'" onmouseout="this.style.color='var(--dust)'">✕</button>
+        <button onclick="event.stopPropagation();removeDay(${i})" style="background:none;border:none;color:var(--dust);cursor:pointer;font-size:.83rem;padding:.22rem;" onmouseover="this.style.color='#8b3a2a'" onmouseout="this.style.color='var(--dust)'">✕</button>
       </div>
       <div class="day-bd" id="dayBd${i}">
-        <div><div class="day-sec-title">🌅 Morning</div><div class="day-sec-text">${d.morning||'—'}</div></div>
-        <div><div class="day-sec-title">🌞 Afternoon</div><div class="day-sec-text">${d.afternoon||'—'}</div></div>
-        <div><div class="day-sec-title">🏕️ Overnight</div><div class="day-sec-text">${d.accom||'—'}</div></div>
-        ${d.km?`<div class="drive-badge"><div class="drive-item"><span>Distance</span><span>${d.km} km</span></div><div class="drive-item"><span>Drive Time</span><span>${d.driveTime||'—'}</span></div></div>`:'' }
+        <div>
+          <div class="day-sec-title">🏕️ Accommodation</div>
+          <div class="day-sec-text">${d.accom||'—'}</div>
+          <input class="day-sec-input" placeholder="Edit accommodation…" value="${d.accom||''}" onchange="updateDayField(${i},'accom',this.value)">
+        </div>
+        <div>
+          <div class="day-sec-title">🌅 Morning</div>
+          <div class="day-sec-text">${d.morning||'—'}</div>
+          <input class="day-sec-input" placeholder="Add morning activity…" value="${d.morning||''}" onchange="updateDayField(${i},'morning',this.value)">
+        </div>
+        <div>
+          <div class="day-sec-title">🌞 Afternoon</div>
+          <div class="day-sec-text">${d.afternoon||'—'}</div>
+          <input class="day-sec-input" placeholder="Add afternoon activity…" value="${d.afternoon||''}" onchange="updateDayField(${i},'afternoon',this.value)">
+        </div>
+        ${d.km?`<div class="drive-badge"><div class="drive-item"><span>Distance</span><span>${d.km} km</span></div><div class="drive-item"><span>Drive Time</span><span>${d.driveTime||'—'}</span></div></div>`:''}
         ${d.notes?`<div class="day-note">📝 ${d.notes}</div>`:''}
       </div>
     </div>`).join('');
 }
-function toggleDayBody(i) {
-  const el = $('dayBd'+i);
-  el.classList.toggle('open');
+function updateDayField(i, field, val) {
+  trips[cur].itinerary[i][field]=val; trips[cur].itinerary[i].fromRoute=false;
+  save(); renderDashboard(trips[cur]);
 }
-function removeDay(i) {
-  if (!confirm('Remove this day?')) return;
-  trips[cur].itinerary.splice(i,1);
-  trips[cur].itinerary.forEach((d,j)=>d.day=j+1);
-  renderItinerary(trips[cur]); renderDashboard(trips[cur]);
-}
+function toggleDayBody(i) { $('dayBd'+i).classList.toggle('open'); }
+function removeDay(i) { if(!confirm('Remove this day?'))return; trips[cur].itinerary.splice(i,1); trips[cur].itinerary.forEach((d,j)=>d.day=j+1); save(); renderItinerary(trips[cur]); renderDashboard(trips[cur]); }
 function addDay() {
-  const t = trips[cur]; if (!t) { toast('Create a trip first','err'); return; }
-  const loc = $('nd-loc').value.trim();
-  if (!loc) { toast('Please enter a location','err'); return; }
-  t.itinerary.push({
-    date:$('nd-date').value, day:t.itinerary.length+1, location:loc,
-    accom:$('nd-accom').value.trim(), type:$('nd-type').value,
-    morning:$('nd-morning').value.trim(), afternoon:$('nd-afternoon').value.trim(),
-    km:$('nd-km').value, driveTime:$('nd-time').value.trim(),
-    notes:$('nd-notes').value.trim()
-  });
+  const t=trips[cur]; if(!t){toast('Create a trip first','err');return;}
+  const loc=$('nd-loc').value.trim(); if(!loc){toast('Please enter a location','err');return;}
+  t.itinerary.push({date:$('nd-date').value,day:t.itinerary.length+1,location:loc,accom:$('nd-accom').value.trim(),type:$('nd-type').value,morning:$('nd-morning').value.trim(),afternoon:$('nd-afternoon').value.trim(),km:$('nd-km').value,driveTime:$('nd-time').value.trim(),notes:$('nd-notes').value.trim(),fromRoute:false});
   t.itinerary.sort((a,b)=>new Date(a.date)-new Date(b.date));
   t.itinerary.forEach((d,i)=>d.day=i+1);
-  renderItinerary(t); renderDashboard(t);
+  save(); renderItinerary(t); renderDashboard(t);
   closeModal('addDayMod');
   ['nd-loc','nd-accom','nd-morning','nd-afternoon','nd-km','nd-time','nd-notes'].forEach(id=>$(id).value='');
   $('nd-date').value='';
   toast('📅 Day added','ok');
 }
 
-// ═══════════════════════════════════════
-//  ROUTE & MAP
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
+//  ROUTE — in-app stop addition with place search
+// ══════════════════════════════════════════════════════
+let routeStopSelected = null;
+function showRouteStopPill(name) {
+  const el=$('routeStopPills');
+  el.innerHTML=`<div class="stop-pill is-start">📍 ${name}</div>`;
+}
 function addStop() {
-  const t = trips[cur]; if (!t) { toast('Create a trip first','err'); return; }
-  const name = $('rs-name').value.trim();
-  if (!name) { toast('Please enter a location name','err'); return; }
-  t.stops.push({ name, nights:Number($('rs-nights').value)||0, km:Number($('rs-km').value)||0, time:$('rs-time').value.trim(), notes:$('rs-notes').value.trim() });
-  renderStops(t); renderDashboard(t);
-  updateFuelKm(t);
-  refreshMap(t);
+  const t=trips[cur]; if(!t){toast('Create a trip first','err');return;}
+  let name='';
+  if (routeStopSelected) { name=routeStopSelected.name; }
+  else { name=$('routeStopSearch').value.trim(); }
+  if (!name){toast('Search for and select a location','err');return;}
+  const nights=Number($('rs-nights').value)||0;
+  const km=Number($('rs-km').value)||0;
+  const notes=$('rs-notes').value.trim();
+  const isFirst = t.stops.length===0;
+  t.stops.push({name, nights, km, notes, lat:routeStopSelected?.lat, lon:routeStopSelected?.lon, isStart:isFirst});
+  // sync itinerary & food from updated stops
+  syncAllFromStops(t);
+  save(); renderStops(t); renderItinerary(t); renderFood(t); renderDashboard(t);
+  updateFuelKm(t); refreshMap(t);
   closeModal('addStopMod');
-  ['rs-name','rs-nights','rs-km','rs-time','rs-notes'].forEach(id=>$(id).value='');
-  toast('🧭 Stop added','ok');
+  ['rs-nights','rs-km','rs-notes'].forEach(id=>$(id).value='');
+  $('routeStopSearch').value='';
+  $('routeStopPills').innerHTML='';
+  routeStopSelected=null;
+  toast('🧭 Stop added & itinerary updated','ok');
 }
 function removeStop(i) {
   trips[cur].stops.splice(i,1);
-  renderStops(trips[cur]); renderDashboard(trips[cur]);
+  save(); renderStops(trips[cur]); renderDashboard(trips[cur]);
   updateFuelKm(trips[cur]); refreshMap(trips[cur]);
 }
 function renderStops(t) {
-  const tbody = $('stopsTbody');
-  if (!t.stops.length) { tbody.innerHTML = '<tr><td colspan="6" style="color:var(--dust);font-style:italic;font-size:.88rem;">No stops yet — add stops to build the route</td></tr>'; renderRouteStats(t); return; }
-  tbody.innerHTML = t.stops.map((s,i)=>`
-    <tr>
-      <td style="color:var(--amber);font-family:'Space Mono';font-size:.7rem;">${i+1}</td>
-      <td style="font-weight:600;">${s.name}</td>
-      <td>${s.nights} night${s.nights!==1?'s':''}</td>
-      <td>${s.km?s.km+' km':'—'}</td>
-      <td>${s.time||'—'}</td>
-      <td><button onclick="removeStop(${i})">✕</button></td>
-    </tr>`).join('');
+  const el=$('stopList');
   renderRouteStats(t);
+  if (!t.stops.length) { el.innerHTML='<div class="stops-hint">No stops yet — add your starting point first, then each overnight destination.</div>'; return; }
+  el.innerHTML=t.stops.map((s,i)=>`
+    <div class="stop-row ${s.isStart?'is-start':''}">
+      <div class="sr-num">${i+1}</div>
+      <div class="sr-emoji">${s.isStart?'🚩':'📍'}</div>
+      <div class="sr-info">
+        <div class="sr-name">${s.name}</div>
+        <div class="sr-meta">${s.isStart?'Starting point':s.nights+' night'+(s.nights!==1?'s':'')}${s.km?' · '+s.km+' km':''}${s.notes?' · '+s.notes:''}</div>
+      </div>
+      <button class="sr-del" onclick="removeStop(${i})">✕</button>
+    </div>`).join('');
 }
 function renderRouteStats(t) {
-  const manualKm = t.stops.reduce((s,x)=>s+Number(x.km||0),0);
-  const totalKm = t._routeKm || manualKm;
-  const totalNights = t.stops.reduce((s,x)=>s+Number(x.nights||0),0);
-  const totalStops = t.stops.length;
-  const driveHrs = totalKm>0 ? Math.round(totalKm/80*10)/10 : '—';
-  $('routeStatsGrid').innerHTML = `
-    <div class="rs"><div class="rs-num" id="rs-km">${totalKm.toLocaleString()}</div><div class="rs-lbl">Total km</div></div>
-    <div class="rs"><div class="rs-num">${totalStops}</div><div class="rs-lbl">Stops</div></div>
-    <div class="rs"><div class="rs-num">${totalNights}</div><div class="rs-lbl">Nights</div></div>
-    <div class="rs"><div class="rs-num">${driveHrs}</div><div class="rs-lbl">Est. Drive Hrs</div></div>`;
-}
-function updateFuelKm(t) {
-  // Prefer OSRM-calculated route distance, fall back to sum of manual km entries
-  const totalKm = t._routeKm || t.stops.reduce((s,x)=>s+Number(x.km||0),0);
-  $('fuelTotalKm').value = totalKm || '';
-  calcFuel();
+  const km=t._routeKm||t.stops.reduce((s,x)=>s+Number(x.km||0),0);
+  const nights=t.stops.reduce((s,x)=>s+Number(x.nights||0),0);
+  $('routeStatsGrid').innerHTML=`
+    <div class="rs"><div class="rs-num" id="rs-km-disp">${km?km.toLocaleString():'—'}</div><div class="rs-lbl">Total km</div></div>
+    <div class="rs"><div class="rs-num">${t.stops.length}</div><div class="rs-lbl">Stops</div></div>
+    <div class="rs"><div class="rs-num">${nights}</div><div class="rs-lbl">Nights</div></div>
+    <div class="rs"><div class="rs-num">${km?Math.round(km/80*10)/10:'—'}</div><div class="rs-lbl">Est. Drive Hrs</div></div>`;
 }
 
-// ── LEAFLET / OPENSTREETMAP MAP (free, no API key) ──
-let leafMap = null;
-let leafMarkers = [];
-let leafPolyline = null;
-let leafMapReady = false;
-
+// ══════════════════════════════════════════════════════
+//  LEAFLET MAP
+// ══════════════════════════════════════════════════════
+let leafMap=null, leafMarkers=[], leafPolyline=null, leafReady=false;
 function initLeaflet() {
-  if (leafMapReady) return;
-  if (typeof L === 'undefined') return;
-  leafMap = L.map('leafletMap', { zoomControl: true, attributionControl: true }).setView([-22, 18], 5);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 19
-  }).addTo(leafMap);
-  leafMapReady = true;
-  if (trips[cur]) refreshMap(trips[cur]);
+  if (leafReady||typeof L==='undefined') return;
+  leafMap=L.map('leafletMap',{zoomControl:true,attributionControl:true}).setView([-22,18],5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:19}).addTo(leafMap);
+  leafReady=true;
 }
-
 function refreshMap(t) {
-  if (!leafMapReady || !leafMap) return;
-  // Clear existing layers
-  leafMarkers.forEach(m => leafMap.removeLayer(m));
-  leafMarkers = [];
-  if (leafPolyline) { leafMap.removeLayer(leafPolyline); leafPolyline = null; }
-
-  if (!t.stops.length) return;
-
-  // Geocode all stops using free Nominatim API then draw route via OSRM
-  const coords = new Array(t.stops.length).fill(null);
-  let pending = t.stops.length;
-
-  t.stops.forEach((stop, i) => {
-    fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(stop.name)}&format=json&limit=1`, {
-      headers: { 'Accept-Language': 'en', 'User-Agent': 'TREKExpeditionPlanner/1.0' }
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data && data[0]) {
-        coords[i] = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
-      }
-    })
-    .catch(() => {})
-    .finally(() => {
-      pending--;
-      if (pending === 0) drawMap(t, coords);
-    });
-  });
-}
-
-function drawMap(t, coords) {
-  const valid = coords.map((c,i) => ({c, stop:t.stops[i], i})).filter(x=>x.c);
-  if (!valid.length) return;
-
-  const bounds = [];
-
-  // Custom amber circular marker
-  valid.forEach(({c, stop, i}) => {
-    const icon = L.divIcon({
-      className: '',
-      html: `<div style="width:32px;height:32px;border-radius:50%;background:#c17f24;border:2.5px solid #f2e8d9;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:#0f0c07;box-shadow:0 2px 8px rgba(0,0,0,.5)">${i+1}</div>`,
-      iconSize: [32,32], iconAnchor:[16,16], popupAnchor:[0,-18]
-    });
-    const marker = L.marker(c, {icon}).addTo(leafMap);
-    marker.bindPopup(`<strong>${stop.name}</strong><br>${stop.nights} night${stop.nights!==1?'s':''}`);
-    leafMarkers.push(marker);
-    bounds.push(c);
-  });
-
-  leafMap.fitBounds(bounds, {padding:[40,40]});
-
-  // Draw route via OSRM (free, open-source routing)
-  if (valid.length >= 2) {
-    const coordStr = valid.map(x=>x.c[1]+','+x.c[0]).join(';');
-    fetch(`https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`)
-    .then(r=>r.json())
-    .then(data=>{
-      if (data.routes && data.routes[0]) {
-        const route = data.routes[0];
-        const latlngs = route.geometry.coordinates.map(c=>[c[1],c[0]]);
-        leafPolyline = L.polyline(latlngs, {color:'#c17f24', weight:3, opacity:.85}).addTo(leafMap);
-        // Update km stat from actual route distance
-        const km = Math.round(route.distance / 1000);
-        if (trips[cur]) {
-          trips[cur]._routeKm = km;
-          save();
-          updateFuelKm(trips[cur]);
-        }
-        const el = document.getElementById('rs-km');
-        if (el) el.textContent = km.toLocaleString();
-      }
-    })
-    .catch(()=>{
-      // Fallback: straight-line polyline if OSRM fails
-      leafPolyline = L.polyline(valid.map(x=>x.c), {color:'#c17f24', weight:2.5, opacity:.7, dashArray:'6 4'}).addTo(leafMap);
+  if (!leafReady||!leafMap) return;
+  leafMarkers.forEach(m=>leafMap.removeLayer(m)); leafMarkers=[];
+  if (leafPolyline){leafMap.removeLayer(leafPolyline);leafPolyline=null;}
+  if (!t||!t.stops.length) return;
+  // use stored lat/lon if available, else geocode
+  const stops = t.stops.filter(s=>s.lat&&s.lon);
+  if (stops.length >= 1) {
+    drawMapFromCoords(t, stops.map(s=>[s.lat,s.lon]), stops);
+  } else {
+    // geocode all
+    const coords=new Array(t.stops.length).fill(null);
+    let pending=t.stops.length;
+    t.stops.forEach((s,i)=>{
+      fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(s.name)}&format=json&limit=1`,{headers:{'Accept-Language':'en','User-Agent':'TREKForgebit/3'}})
+      .then(r=>r.json()).then(d=>{if(d&&d[0]){coords[i]=[parseFloat(d[0].lat),parseFloat(d[0].lon)]; s.lat=coords[i][0]; s.lon=coords[i][1]; save();}})
+      .catch(()=>{}).finally(()=>{ pending--; if(pending===0) drawMapFromCoords(t,coords.filter(Boolean),t.stops.filter((_,i)=>coords[i])); });
     });
   }
 }
+function drawMapFromCoords(t,latlngs,stops) {
+  if (!latlngs.length) return;
+  const bounds=[];
+  latlngs.forEach((c,i)=>{
+    const s=stops[i];
+    const icon=L.divIcon({className:'',html:`<div style="width:30px;height:30px;border-radius:50%;background:${s?.isStart?'#4a6741':'#c17f24'};border:2.5px solid #f2e8d9;display:flex;align-items:center;justify-content:center;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:#0f0c07;box-shadow:0 2px 8px rgba(0,0,0,.5)">${i+1}</div>`,iconSize:[30,30],iconAnchor:[15,15],popupAnchor:[0,-17]});
+    const m=L.marker(c,{icon}).addTo(leafMap);
+    m.bindPopup(`<strong>${s?.name||'Stop '+(i+1)}</strong>${s?.nights?'<br>'+s.nights+' night'+(s.nights>1?'s':''):''}`);
+    leafMarkers.push(m); bounds.push(c);
+  });
+  leafMap.fitBounds(bounds,{padding:[40,40]});
+  if (latlngs.length>=2){
+    const coordStr=latlngs.map(c=>c[1]+','+c[0]).join(';');
+    fetch(`https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`)
+    .then(r=>r.json()).then(data=>{
+      if (data.routes&&data.routes[0]){
+        const route=data.routes[0];
+        leafPolyline=L.polyline(route.geometry.coordinates.map(c=>[c[1],c[0]]),{color:'#c17f24',weight:3,opacity:.85}).addTo(leafMap);
+        const km=Math.round(route.distance/1000);
+        if(trips[cur]){trips[cur]._routeKm=km;save();updateFuelKm(trips[cur]);}
+        const el=document.getElementById('rs-km-disp'); if(el)el.textContent=km.toLocaleString();
+      }
+    }).catch(()=>{leafPolyline=L.polyline(latlngs,{color:'#c17f24',weight:2.5,opacity:.65,dashArray:'6 4'}).addTo(leafMap);});
+  }
+}
+function updateFuelKm(t) {
+  const km=t._routeKm||t.stops.reduce((s,x)=>s+Number(x.km||0),0);
+  $('fuelTotalKm').value=km||'';
+  calcFuel();
+}
 
-
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  ACCOMMODATION
-// ═══════════════════════════════════════
-const accomEmoji = { camp:'🏕️', chalet:'🏠', lodge:'🏡', guesthouse:'🏘️' };
+// ══════════════════════════════════════════════════════
+const accomEmoji={camp:'🏕️',chalet:'🏠',lodge:'🏡',guesthouse:'🏘️'};
 function renderAccom(t) {
-  const grid = $('accomGrid');
-  grid.innerHTML = t.accommodation.map((a,i) => `
+  const grid=$('accomGrid');
+  grid.innerHTML=t.accommodation.map((a,i)=>`
     <div class="accom-card card" onclick="removeAccomConfirm(${i})" title="Click to remove">
       <div class="ac-img ${a.type}">${accomEmoji[a.type]||'🏕️'}</div>
       <div class="ac-body">
         <div class="ac-name">${a.name}</div>
         <div class="ac-meta">📍 ${a.location}${a.ref?' · 🔖 '+a.ref:''}</div>
-        ${a.notes?`<div class="ac-meta" style="margin-top:.2rem;font-style:italic;">${a.notes}</div>`:''}
+        ${a.notes?`<div class="ac-meta" style="margin-top:.18rem;font-style:italic">${a.notes}</div>`:''}
         <div class="ac-nights">${a.nights} night${a.nights!==1?'s':''} · from ${fmtDate(a.checkin)}</div>
-        <div style="margin-top:.4rem;display:flex;gap:.3rem;"><span class="tag t-${a.type}">${a.type}</span></div>
+        <div style="margin-top:.38rem;display:flex;gap:.28rem"><span class="tag t-${a.type}">${a.type}</span></div>
       </div>
-    </div>`).join('') +
-    `<button class="add-accom-dashed" onclick="event.stopPropagation();openModal('addAccomMod')"><span>＋</span><span style="font-family:'Crimson Pro';font-size:.9rem;">Add accommodation</span></button>`;
+    </div>`).join('')+
+    `<button class="add-accom-dashed" onclick="event.stopPropagation();openModal('addAccomMod')"><span>＋</span><span style="font-family:'Crimson Pro';font-size:.88rem">Add accommodation</span></button>`;
 }
-function removeAccomConfirm(i) { if(confirm('Remove this accommodation?')) { trips[cur].accommodation.splice(i,1); renderAccom(trips[cur]); renderDashboard(trips[cur]); } }
+function removeAccomConfirm(i){if(confirm('Remove?')){trips[cur].accommodation.splice(i,1);save();renderAccom(trips[cur]);renderDashboard(trips[cur]);}}
 function addAccom() {
-  const t = trips[cur]; if (!t) { toast('Create a trip first','err'); return; }
-  const name = $('na-name').value.trim();
-  if (!name) { toast('Please enter a name','err'); return; }
-  t.accommodation.push({ name, type:$('na-type').value, location:$('na-loc').value.trim(), nights:Number($('na-nights').value)||1, checkin:$('na-checkin').value, ref:$('na-ref').value.trim(), notes:$('na-notes').value.trim() });
-  renderAccom(t); renderDashboard(t);
-  closeModal('addAccomMod');
+  const t=trips[cur];if(!t){toast('Create a trip first','err');return;}
+  const name=$('na-name').value.trim();if(!name){toast('Enter a name','err');return;}
+  t.accommodation.push({name,type:$('na-type').value,location:$('na-loc').value.trim(),nights:Number($('na-nights').value)||1,checkin:$('na-checkin').value,ref:$('na-ref').value.trim(),notes:$('na-notes').value.trim()});
+  save();renderAccom(t);renderDashboard(t);closeModal('addAccomMod');
   ['na-name','na-loc','na-nights','na-checkin','na-ref','na-notes'].forEach(id=>$(id).value='');
   toast('🏕️ Accommodation added','ok');
 }
 
-// ═══════════════════════════════════════
-//  FUEL CALCULATOR
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
+//  FUEL
+// ══════════════════════════════════════════════════════
 function renderFuel(t) {
-  const grid = $('vehGrid');
-  grid.innerHTML = t.vehicles_list.length
-    ? t.vehicles_list.map((v,i)=>`
-      <div class="fuel-card card">
-        <div class="fuel-card-title">🚗 ${v.name}</div>
-        <div style="font-family:'Crimson Pro';font-size:.88rem;color:var(--dust);margin-bottom:.75rem;">${v.driver?v.driver+' · ':''}${v.fuelType} · ${v.consumption}L/100km · ${v.tank}L tank</div>
-        <button class="btn-danger" onclick="removeVeh(${i})">Remove</button>
-      </div>`).join('')
-    : '<div class="empty" style="grid-column:1/-1;padding:2rem 0"><div class="empty-icon" style="font-size:2.5rem">🚗</div><div class="empty-sub">No vehicles added yet</div></div>';
+  const grid=$('vehGrid');
+  grid.innerHTML=t.vehicles_list.length
+    ?t.vehicles_list.map((v,i)=>`<div class="fuel-card card"><div class="fuel-card-title">🚗 ${v.name}</div><div style="font-family:'Crimson Pro';font-size:.86rem;color:var(--dust);margin-bottom:.7rem">${v.driver?v.driver+' · ':''}${v.fuelType} · ${v.consumption}L/100km · ${v.tank}L tank</div><button class="btn-danger" onclick="removeVeh(${i})">Remove</button></div>`).join('')
+    :`<div class="empty" style="grid-column:1/-1;padding:1.75rem 0"><div class="empty-icon" style="font-size:2.2rem">🚗</div><div class="empty-sub">No vehicles added yet</div></div>`;
   calcFuel();
 }
 function addVehicle() {
-  const t = trips[cur]; if (!t) { toast('Create a trip first','err'); return; }
-  const name = $('nv-name').value.trim();
-  if (!name) { toast('Please enter a vehicle name','err'); return; }
-  const cons = parseFloat($('nv-cons').value);
-  if (!cons||cons<=0) { toast('Please enter a valid consumption','err'); return; }
-  t.vehicles_list.push({ name, fuelType:$('nv-fuel').value, consumption:cons, tank:Number($('nv-tank').value)||80, driver:$('nv-driver').value.trim() });
-  renderFuel(t);
-  closeModal('addVehMod');
+  const t=trips[cur];if(!t){toast('Create a trip first','err');return;}
+  const name=$('nv-name').value.trim();if(!name){toast('Enter vehicle name','err');return;}
+  const cons=parseFloat($('nv-cons').value);if(!cons||cons<=0){toast('Enter valid consumption','err');return;}
+  t.vehicles_list.push({name,fuelType:$('nv-fuel').value,consumption:cons,tank:Number($('nv-tank').value)||80,driver:$('nv-driver').value.trim()});
+  save();renderFuel(t);closeModal('addVehMod');
   ['nv-name','nv-cons','nv-tank','nv-driver'].forEach(id=>$(id).value='');
   toast('🚗 Vehicle added','ok');
 }
-function removeVeh(i) { trips[cur].vehicles_list.splice(i,1); renderFuel(trips[cur]); }
+function removeVeh(i){trips[cur].vehicles_list.splice(i,1);save();renderFuel(trips[cur]);}
 function calcFuel() {
-  const t = trips[cur]; if (!t) return;
-  const totalKm = t.stops.reduce((s,x)=>s+Number(x.km||0),0);
-  const price = parseFloat($('fuelPrice').value)||24.5;
-  $('fuelTotalKm').value = totalKm || '';
-  if (!t.vehicles_list.length || !totalKm) {
-    $('fuelResult').innerHTML = '<div class="empty"><div class="empty-icon" style="font-size:2rem">⛽</div><div class="empty-sub">Add vehicles and route stops to calculate fuel costs</div></div>';
+  const t=trips[cur];if(!t)return;
+  const totalKm=t._routeKm||t.stops.reduce((s,x)=>s+Number(x.km||0),0);
+  const price=parseFloat($('fuelPrice').value)||24.5;
+  if(!t.vehicles_list.length||!totalKm){
+    $('fuelResult').innerHTML='<div class="empty"><div class="empty-icon" style="font-size:2rem">⛽</div><div class="empty-sub">Add vehicles and route stops to calculate fuel costs</div></div>';
     return;
   }
-  let rows = '';
-  let grandTotal = 0;
-  let grandLitres = 0;
-  t.vehicles_list.forEach(v => {
-    const litres = (totalKm / 100) * v.consumption;
-    const cost = litres * price;
-    const stops = Math.ceil(litres / v.tank);
-    grandTotal += cost;
-    grandLitres += litres;
-    rows += `<div class="fr-item">
-      <div class="fr-lbl">${v.name}</div>
-      <div class="fr-val">R${cost.toFixed(0)}</div>
-      <div class="fr-sub">${litres.toFixed(1)}L · ~${stops} fill${stops!==1?'s':''} · ${v.fuelType}</div>
-    </div>`;
+  let rows='',grand=0,grandL=0;
+  t.vehicles_list.forEach(v=>{
+    const L=(totalKm/100)*v.consumption, cost=L*price, fills=Math.ceil(L/v.tank);
+    grand+=cost;grandL+=L;
+    rows+=`<div class="fr-item"><div class="fr-lbl">${v.name}</div><div class="fr-val">R${cost.toFixed(0)}</div><div class="fr-sub">${L.toFixed(1)}L · ~${fills} fill${fills!==1?'s':''} · ${v.fuelType}</div></div>`;
   });
-  $('fuelResult').innerHTML = `
-    <div style="font-family:'Playfair Display';font-size:.95rem;font-weight:700;color:var(--parchment-mid);margin-bottom:1rem;">⛽ Fuel Estimates — ${totalKm.toLocaleString()} km total at R${price}/L</div>
+  $('fuelResult').innerHTML=`
+    <div style="font-family:'Playfair Display';font-size:.92rem;font-weight:700;color:var(--pm);margin-bottom:.95rem">⛽ ${totalKm.toLocaleString()} km at R${price}/L</div>
     <div class="fuel-result-grid">${rows}</div>
-    <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border);display:flex;gap:2rem;flex-wrap:wrap;">
-      <div class="fr-item"><div class="fr-lbl">Total Fuel Cost (all vehicles)</div><div class="fr-val" style="color:var(--campfire)">R${grandTotal.toFixed(0)}</div></div>
-      <div class="fr-item"><div class="fr-lbl">Total Litres</div><div class="fr-val">${grandLitres.toFixed(0)}L</div></div>
-      <div class="fr-item"><div class="fr-lbl">Per person (${t.crew.length||1})</div><div class="fr-val">R${(grandTotal/(t.crew.length||1)).toFixed(0)}</div></div>
+    <div style="margin-top:1.1rem;padding-top:.9rem;border-top:1px solid var(--bd);display:flex;gap:1.75rem;flex-wrap:wrap">
+      <div class="fr-item"><div class="fr-lbl">Total All Vehicles</div><div class="fr-val" style="color:var(--fire)">R${grand.toFixed(0)}</div></div>
+      <div class="fr-item"><div class="fr-lbl">Total Litres</div><div class="fr-val">${grandL.toFixed(0)}L</div></div>
+      <div class="fr-item"><div class="fr-lbl">Per person (${t.crew.length||1})</div><div class="fr-val">R${(grand/(t.crew.length||1)).toFixed(0)}</div></div>
     </div>`;
 }
 
-// ═══════════════════════════════════════
-//  FOOD & MEALS
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
+//  FOOD — auto-populated from route, editable in place
+// ══════════════════════════════════════════════════════
 function renderFood(t) {
-  const el = $('foodList');
-  if (!t.food.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🔥</div><div class="empty-text">No meal days added yet</div><div class="empty-sub">Click "+ Add Day" to start planning meals</div></div>'; return; }
-  el.innerHTML = t.food.map((d,di)=>`
+  const el=$('foodList');
+  if(!t.food.length){el.innerHTML='<div class="empty"><div class="empty-icon">🔥</div><div class="empty-text">No meal days yet</div><div class="empty-sub">Add route stops to auto-generate days, or click "+ Add Day"</div></div>';return;}
+  el.innerHTML=t.food.map((d,di)=>`
     <div class="food-day">
       <div class="fd-hd" onclick="toggleFoodDay(${di})">
         <div class="fd-title">${d.day}</div>
         <div class="fd-loc">📍 ${d.loc}</div>
-        <span style="color:var(--dust);font-size:.75rem;">▼</span>
+        ${d.fromRoute?'<span class="fd-empty-hint">auto</span>':''}
+        <span style="color:var(--dust);font-size:.72rem;margin-left:auto">▼</span>
       </div>
       <div class="fd-bd" id="fdBd${di}">
         ${['breakfast','lunch','dinner'].map(meal=>`
           <div>
             <div class="meal-lbl">${meal==='breakfast'?'🌅 Breakfast':meal==='lunch'?'☀️ Lunch':'🔥 Dinner'}</div>
             <div class="meal-items" id="mi-${di}-${meal}">
-              ${(d[meal]||[]).map((item,ii)=>`
-                <div class="meal-item">
-                  <span style="flex:1">${item}</span>
-                  <button class="mi-del" onclick="removeMealItem(${di},'${meal}',${ii})">✕</button>
-                </div>`).join('')}
+              ${(d[meal]||[]).map((item,ii)=>`<div class="meal-item"><span style="flex:1">${item}</span><button class="mi-del" onclick="removeMealItem(${di},'${meal}',${ii})">✕</button></div>`).join('')}
             </div>
             <div class="meal-add-row">
-              <input type="text" id="mi-inp-${di}-${meal}" placeholder="Add item..." onkeydown="if(event.key==='Enter')addMealItem(${di},'${meal}')">
+              <input type="text" id="mi-inp-${di}-${meal}" placeholder="${meal==='breakfast'?'Rusks & coffee…':meal==='lunch'?'Braai rolls…':'Potjie, boerewors…'}" onkeydown="if(event.key==='Enter')addMealItem(${di},'${meal}')">
               <button onclick="addMealItem(${di},'${meal}')">＋</button>
             </div>
           </div>`).join('')}
       </div>
     </div>`).join('');
 }
-function toggleFoodDay(i) { $('fdBd'+i).classList.toggle('open'); }
-function addFoodDay() {
-  const t = trips[cur]; if (!t) { toast('Create a trip first','err'); return; }
-  const day = $('nfd-day').value.trim();
-  if (!day) { toast('Please enter a day label','err'); return; }
-  t.food.push({ day, loc:$('nfd-loc').value.trim()||'', breakfast:[], lunch:[], dinner:[] });
-  renderFood(t); renderDashboard(t);
-  closeModal('addFoodDayMod');
+function toggleFoodDay(i){$('fdBd'+i).classList.toggle('open');}
+function addFoodDay(){
+  const t=trips[cur];if(!t){toast('Create a trip first','err');return;}
+  const day=$('nfd-day').value.trim();if(!day){toast('Enter a day label','err');return;}
+  t.food.push({day,loc:$('nfd-loc').value.trim()||'',breakfast:[],lunch:[],dinner:[],fromRoute:false});
+  save();renderFood(t);renderDashboard(t);closeModal('addFoodDayMod');
   ['nfd-day','nfd-loc'].forEach(id=>$(id).value='');
   toast('🔥 Meal day added','ok');
 }
-function addMealItem(di, meal) {
-  const inp = $(`mi-inp-${di}-${meal}`);
-  const val = inp.value.trim();
-  if (!val) return;
-  const t = trips[cur];
-  if (!t.food[di][meal]) t.food[di][meal] = [];
-  t.food[di][meal].push(val);
-  inp.value = '';
-  // re-render just this section to keep the panel open
-  const container = $(`mi-${di}-${meal}`);
-  container.innerHTML = t.food[di][meal].map((item,ii)=>`
-    <div class="meal-item">
-      <span style="flex:1">${item}</span>
-      <button class="mi-del" onclick="removeMealItem(${di},'${meal}',${ii})">✕</button>
-    </div>`).join('');
+function addMealItem(di,meal){
+  const inp=$(`mi-inp-${di}-${meal}`);const val=inp.value.trim();if(!val)return;
+  const t=trips[cur];
+  if(!t.food[di][meal])t.food[di][meal]=[];
+  t.food[di][meal].push(val); inp.value=''; t.food[di].fromRoute=false;
+  save();
+  const c=$(`mi-${di}-${meal}`);
+  c.innerHTML=t.food[di][meal].map((item,ii)=>`<div class="meal-item"><span style="flex:1">${item}</span><button class="mi-del" onclick="removeMealItem(${di},'${meal}',${ii})">✕</button></div>`).join('');
 }
-function removeMealItem(di, meal, ii) {
-  trips[cur].food[di][meal].splice(ii,1);
-  const container = $(`mi-${di}-${meal}`);
-  container.innerHTML = trips[cur].food[di][meal].map((item,i)=>`
-    <div class="meal-item">
-      <span style="flex:1">${item}</span>
-      <button class="mi-del" onclick="removeMealItem(${di},'${meal}',${i})">✕</button>
-    </div>`).join('');
+function removeMealItem(di,meal,ii){
+  trips[cur].food[di][meal].splice(ii,1);save();
+  const c=$(`mi-${di}-${meal}`);
+  c.innerHTML=trips[cur].food[di][meal].map((item,i)=>`<div class="meal-item"><span style="flex:1">${item}</span><button class="mi-del" onclick="removeMealItem(${di},'${meal}',${i})">✕</button></div>`).join('');
 }
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  PACKING
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 function renderPacking(t) {
-  const grid = $('packGrid');
-  if (!t.packing.length) {
-    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🎒</div><div class="empty-text">No packing categories yet</div><div class="empty-sub">Click "+ Category" to build your list</div></div>';
-    updatePackProgress(t); return;
-  }
-  grid.innerHTML = t.packing.map((cat,ci)=>`
+  const packed=t.packing.reduce((s,c)=>s+c.items.filter(i=>i.checked).length,0);
+  const total=t.packing.reduce((s,c)=>s+c.items.length,0);
+  const pct=total?Math.round(packed/total*100):0;
+  $('ppPacked').textContent=packed; $('ppTotal').textContent='/ '+total+' items packed'; $('ppPct').textContent=pct+'%'; $('ppBar').style.width=pct+'%';
+  const grid=$('packGrid');
+  if(!t.packing.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🎒</div><div class="empty-text">No packing categories yet</div><div class="empty-sub">Click "+ Category" to create one</div></div>';return;}
+  grid.innerHTML=t.packing.map((cat,ci)=>`
     <div class="pack-cat">
       <div class="pack-cat-hd">
-        <span class="pci">${cat.icon}</span>
+        <span class="pci">${cat.icon||'📦'}</span>
         <span class="pct">${cat.cat}</span>
         <span class="pcn">${cat.items.filter(i=>i.checked).length}/${cat.items.length}</span>
-        <button class="pc-del" onclick="removeCat(${ci})" title="Remove category">✕</button>
+        <button class="pc-del" onclick="deleteCat(${ci})" title="Delete category">✕</button>
       </div>
       ${cat.items.map((item,ii)=>`
-        <div class="pack-item ${item.checked?'done':''}" onclick="togglePack(${ci},${ii})">
+        <div class="pack-item ${item.checked?'done':''}" onclick="toggleItem(${ci},${ii})">
           <div class="chk"></div>
           <div class="pit">${item.text}${item.note?`<small>${item.note}</small>`:''}</div>
-          <button class="pi-del" onclick="event.stopPropagation();removePackItem(${ci},${ii})">✕</button>
+          <button class="pi-del" onclick="event.stopPropagation();deleteItem(${ci},${ii})">✕</button>
         </div>`).join('')}
       <div class="pack-add">
-        <input type="text" id="pi-${ci}" placeholder="Add item..." onkeydown="if(event.key==='Enter')addPackItem(${ci})">
+        <input type="text" placeholder="Add item…" id="pai${ci}" onkeydown="if(event.key==='Enter')addPackItem(${ci})">
         <button onclick="addPackItem(${ci})">＋</button>
       </div>
     </div>`).join('');
-  updatePackProgress(t);
 }
-function addCategory() {
-  const t = trips[cur]; if (!t) { toast('Create a trip first','err'); return; }
-  const name = $('nc-name').value.trim();
-  const icon = $('nc-icon').value.trim() || '📦';
-  if (!name) { toast('Please enter a category name','err'); return; }
-  const items = [];
-  const firstItem = $('nc-item').value.trim();
-  if (firstItem) items.push({ text:firstItem, note:'', checked:false });
-  t.packing.push({ cat:name, icon, items });
-  renderPacking(t); updatePackBadge(t);
-  closeModal('addCatMod');
+function toggleItem(ci,ii){trips[cur].packing[ci].items[ii].checked=!trips[cur].packing[ci].items[ii].checked;save();renderPacking(trips[cur]);updatePackBadge(trips[cur]);renderDashboard(trips[cur]);}
+function addPackItem(ci){const inp=$('pai'+ci);if(!inp||!inp.value.trim())return;trips[cur].packing[ci].items.push({text:inp.value.trim(),checked:false});inp.value='';save();renderPacking(trips[cur]);updatePackBadge(trips[cur]);}
+function deleteItem(ci,ii){trips[cur].packing[ci].items.splice(ii,1);save();renderPacking(trips[cur]);updatePackBadge(trips[cur]);}
+function deleteCat(ci){if(!confirm('Delete this category?'))return;trips[cur].packing.splice(ci,1);save();renderPacking(trips[cur]);updatePackBadge(trips[cur]);}
+function addCategory(){
+  const t=trips[cur];if(!t){toast('Create a trip first','err');return;}
+  const name=$('nc-name').value.trim();if(!name){toast('Enter a category name','err');return;}
+  const icon=$('nc-icon').value.trim()||'📦';
+  const first=$('nc-item').value.trim();
+  t.packing.push({cat:name,icon,items:first?[{text:first,checked:false}]:[]});
+  save();renderPacking(t);updatePackBadge(t);closeModal('addCatMod');
   ['nc-name','nc-icon','nc-item'].forEach(id=>$(id).value='');
-  toast('📦 Category added: '+name,'ok');
+  toast('✓ Category added','ok');
 }
-function removeCat(ci) { if(!confirm('Remove this category and all its items?')) return; trips[cur].packing.splice(ci,1); renderPacking(trips[cur]); updatePackBadge(trips[cur]); }
-function addPackItem(ci) {
-  const inp = $('pi-'+ci); const val = inp.value.trim();
-  if (!val) return;
-  trips[cur].packing[ci].items.push({ text:val, note:'', checked:false });
-  inp.value='';
-  renderPacking(trips[cur]); updatePackBadge(trips[cur]);
-}
-function removePackItem(ci,ii) { trips[cur].packing[ci].items.splice(ii,1); renderPacking(trips[cur]); updatePackBadge(trips[cur]); }
-function togglePack(ci,ii) { trips[cur].packing[ci].items[ii].checked=!trips[cur].packing[ci].items[ii].checked; renderPacking(trips[cur]); updatePackBadge(trips[cur]); }
-function updatePackProgress(t) {
-  const total=t.packing.reduce((s,c)=>s+c.items.length,0);
-  const packed=t.packing.reduce((s,c)=>s+c.items.filter(i=>i.checked).length,0);
-  const pct=total?Math.round(packed/total*100):0;
-  $('ppPacked').textContent=packed;
-  $('ppTotal').textContent='/ '+total+' items packed';
-  $('ppPct').textContent=pct+'%';
-  $('ppBar').style.width=pct+'%';
-}
-function updatePackBadge(t) {
-  const needed=t.packing.reduce((s,c)=>s+c.items.filter(i=>!i.checked).length,0);
-  const b=$('packBadge'); b.textContent=needed; b.style.display=needed>0?'':'none';
-}
-function resetPacking() { if(!confirm('Reset all items to unpacked?')) return; trips[cur].packing.forEach(c=>c.items.forEach(i=>i.checked=false)); renderPacking(trips[cur]); updatePackBadge(trips[cur]); toast('↺ Packing reset'); }
+function updatePackBadge(t){const n=t.packing.reduce((s,c)=>s+c.items.filter(i=>!i.checked).length,0);const b=$('packBadge');b.textContent=n;b.style.display=n>0?'':'none';}
+function resetPacking(){if(!confirm('Reset all items to unpacked?'))return;trips[cur].packing.forEach(c=>c.items.forEach(i=>i.checked=false));save();renderPacking(trips[cur]);updatePackBadge(trips[cur]);toast('↺ Packing reset');}
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  CREW
-// ═══════════════════════════════════════
-function renderCrew(t) {
-  const grid = $('crewGrid');
-  if (!t.crew.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👥</div><div class="empty-text">No crew yet</div><div class="empty-sub">Invite members below</div></div>'; return; }
-  grid.innerHTML = t.crew.map((m,i)=>`
-    <div class="crew-card">
-      <div class="cr-av" style="background:${COLORS[i%COLORS.length]}">${m.initials}</div>
-      <div class="cr-name">${m.name}</div>
-      <div class="cr-role">${m.role}</div>
-      <div class="cr-status ${m.status==='confirmed'?'cr-confirmed':'cr-pending'}">${m.status==='confirmed'?'✓ Confirmed':'⏳ Awaiting'}</div>
-    </div>`).join('');
+// ══════════════════════════════════════════════════════
+function renderCrew(t){
+  const grid=$('crewGrid');
+  if(!t.crew.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1"><div class="empty-icon">👥</div><div class="empty-text">No crew yet</div><div class="empty-sub">Invite members below</div></div>';return;}
+  grid.innerHTML=t.crew.map((m,i)=>`<div class="crew-card"><div class="cr-av" style="background:${COLORS[i%COLORS.length]}">${m.initials}</div><div class="cr-name">${m.name}</div><div class="cr-role">${m.role}</div><div class="cr-status ${m.status==='confirmed'?'cr-confirmed':'cr-pending'}">${m.status==='confirmed'?'✓ Confirmed':'⏳ Awaiting'}</div></div>`).join('');
 }
-function addCrew() {
-  const t = trips[cur]; if (!t) { toast('Create a trip first','err'); return; }
-  const name=$('invName').value.trim();
-  if (!name) { toast('Please enter a name','err'); return; }
+function addCrew(){
+  const t=trips[cur];if(!t){toast('Create a trip first','err');return;}
+  const name=$('invName').value.trim();if(!name){toast('Enter a name','err');return;}
   const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  t.crew.push({ name, email:$('invEmail').value.trim(), role:$('invRole').value, vehicle:$('invVeh').value, status:'pending', initials });
-  renderCrew(t); renderDashboard(t);
+  t.crew.push({name,email:$('invEmail').value.trim(),role:$('invRole').value,vehicle:$('invVeh').value,status:'pending',initials});
+  save();renderCrew(t);renderDashboard(t);
   ['invName','invEmail'].forEach(id=>$(id).value='');
   toast('📨 '+name+' invited','ok');
 }
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  DOCS
-// ═══════════════════════════════════════
-function renderDocs(t) {
+// ══════════════════════════════════════════════════════
+function renderDocs(t){
   const grid=$('docsGrid');
-  if (!t.docs.length) { grid.innerHTML=''; return; }
-  grid.innerHTML=t.docs.map(d=>`
-    <div class="doc-card"><div class="doc-icon">${d.icon}</div><div class="doc-name">${d.name}</div><div class="doc-meta">${d.size} · ${d.date}</div></div>`).join('');
+  if(!t.docs.length){grid.innerHTML='';return;}
+  grid.innerHTML=t.docs.map(d=>`<div class="doc-card"><div class="doc-icon">${d.icon}</div><div class="doc-name">${d.name}</div><div class="doc-meta">${d.size} · ${d.date}</div></div>`).join('');
 }
-function docUpload(e) {
-  const t=trips[cur]; if (!t) { toast('Create a trip first','err'); return; }
+function docUpload(e){
+  const t=trips[cur];if(!t){toast('Create a trip first','err');return;}
   Array.from(e.target.files).forEach(f=>{
-    const icon=f.type.includes('pdf')?'📄':(f.type.includes('sheet')||f.name.match(/\.xls/))?'📊':f.type.includes('image')?'🖼️':'📎';
-    t.docs.push({ name:f.name, size:(f.size/1024<1000?(f.size/1024).toFixed(0)+' KB':(f.size/1048576).toFixed(1)+' MB'), date:'Just now', icon });
+    const icon=f.type.includes('pdf')?'📄':(f.type.includes('sheet')||f.name.match(/\.xls/i))?'📊':f.type.includes('image')?'🖼️':'📎';
+    t.docs.push({name:f.name,size:(f.size/1024<999?(f.size/1024).toFixed(0)+' KB':(f.size/1048576).toFixed(1)+' MB'),date:'Just now',icon});
   });
-  renderDocs(t);
-  toast(e.target.files.length+' document'+(e.target.files.length>1?'s':'')+' uploaded','ok');
+  save();renderDocs(t);toast(e.target.files.length+' document'+(e.target.files.length>1?'s':'')+' uploaded','ok');
 }
-function docDrop(e) {
-  e.preventDefault(); $('dropZone').classList.remove('over');
-  if (e.dataTransfer.files.length) docUpload({target:e.dataTransfer});
-}
+function docDrop(e){e.preventDefault();$('dropZone').classList.remove('over');if(e.dataTransfer.files.length)docUpload({target:e.dataTransfer});}
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  GALLERY
-// ═══════════════════════════════════════
-function renderGallery(t) {
+// ══════════════════════════════════════════════════════
+function renderGallery(t){
   const grid=$('galGrid');
   grid.innerHTML=t.photos.map(p=>`<div class="gal-item"><img src="${p.src}" alt="${p.name}" loading="lazy"></div>`).join('')+
     `<button class="gal-add" onclick="$('photoFile').click()"><span>＋</span><small>Add photos</small></button>`;
 }
-function photoUpload(e) {
-  const t=trips[cur]; if (!t) { toast('Create a trip first','err'); return; }
-  Array.from(e.target.files).forEach(f=>{
-    const r=new FileReader();
-    r.onload=ev=>{ t.photos.push({src:ev.target.result,name:f.name}); renderGallery(t); };
-    r.readAsDataURL(f);
-  });
+function photoUpload(e){
+  const t=trips[cur];if(!t){toast('Create a trip first','err');return;}
+  Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=ev=>{t.photos.push({src:ev.target.result,name:f.name});save();renderGallery(t);};r.readAsDataURL(f);});
   toast(e.target.files.length+' photo'+(e.target.files.length>1?'s':'')+' added 📸','ok');
 }
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  NAVIGATION
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 document.querySelectorAll('.nav-item').forEach(item=>{
-  item.addEventListener('click', ()=>{
+  item.addEventListener('click',()=>{
     const panel=item.dataset.panel;
     document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
@@ -1526,82 +1606,69 @@ document.querySelectorAll('.nav-item').forEach(item=>{
     $('panel-'+panel).classList.add('active');
     currentPanel=panel;
     const t=trips[cur];
-    $('topTitle').textContent=(t?t.name:'No trip')+(panelTitles[panel]?' — '+panelTitles[panel]:'');
-    if (window.innerWidth<900) $('sidebar').classList.add('off');
-    if (panel==='route') { setTimeout(()=>{ initLeaflet(); if(trips[cur]) refreshMap(trips[cur]); if(leafMap) leafMap.invalidateSize(); },100); }
-    if (panel==='fuel') calcFuel();
+    $('topTitle').textContent=(t?t.name:'TREK')+(panelTitles[panel]?' — '+panelTitles[panel]:'');
+    if(window.innerWidth<900) $('sidebar').classList.add('off');
+    if(panel==='route'){setTimeout(()=>{initLeaflet();if(trips[cur])refreshMap(trips[cur]);if(leafMap)leafMap.invalidateSize();},100);}
+    if(panel==='fuel') calcFuel();
   });
 });
+function toggleSidebar(){$('sidebar').classList.toggle('off');$('main').classList.toggle('wide');}
 
-function toggleSidebar() {
-  $('sidebar').classList.toggle('off');
-  $('main').classList.toggle('wide');
-}
-
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  MODAL HELPERS
-// ═══════════════════════════════════════
-function openModal(id) { $(id).classList.add('open'); }
-function closeModal(id) { $(id).classList.remove('open'); }
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); }));
+// ══════════════════════════════════════════════════════
+function openModal(id){$(id).classList.add('open');}
+function closeModal(id){$(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  COUNTDOWN
-// ═══════════════════════════════════════
-function startCountdown() {
-  if (cdTimer) clearInterval(cdTimer);
-  function tick() {
+// ══════════════════════════════════════════════════════
+function startCountdown(){
+  if(cdTimer)clearInterval(cdTimer);
+  function tick(){
     const t=trips[cur];
-    if (!t||!t.startDate) { ['cdD','cdH','cdM','cdS'].forEach(id=>$(id).textContent='--'); return; }
+    if(!t||!t.startDate){['cdD','cdH','cdM','cdS'].forEach(id=>$(id).textContent='--');return;}
     const diff=new Date(t.startDate)-new Date();
-    if (diff<=0) { ['cdD','cdH','cdM','cdS'].forEach(id=>$(id).textContent='00'); return; }
+    if(diff<=0){['cdD','cdH','cdM','cdS'].forEach(id=>$(id).textContent='00');return;}
     $('cdD').textContent=String(Math.floor(diff/86400000)).padStart(2,'0');
     $('cdH').textContent=String(Math.floor(diff%86400000/3600000)).padStart(2,'0');
     $('cdM').textContent=String(Math.floor(diff%3600000/60000)).padStart(2,'0');
     $('cdS').textContent=String(Math.floor(diff%60000/1000)).padStart(2,'0');
   }
-  tick(); cdTimer=setInterval(tick,1000);
+  tick();cdTimer=setInterval(tick,1000);
 }
 
-// ═══════════════════════════════════════
+// ══════════════════════════════════════════════════════
 //  EXPORT / SHARE
-// ═══════════════════════════════════════
-function exportTrip() {
-  const t=trips[cur]; if (!t) { toast('No trip to export','err'); return; }
+// ══════════════════════════════════════════════════════
+function exportTrip(){
+  const t=trips[cur];if(!t){toast('No trip to export','err');return;}
   const blob=new Blob([JSON.stringify({...t,photos:[]},null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=(t.name||'trek').replace(/\s+/g,'-')+'.trek.json';
-  a.click(); URL.revokeObjectURL(a.href);
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(t.name||'trek').replace(/\s+/g,'-')+'.trek.json';a.click();URL.revokeObjectURL(a.href);
   toast('Trip exported 📥','ok');
 }
-function shareTrip() {
-  if (navigator.share) { navigator.share({title:trips[cur]?.name||'TREK',text:'Check out our expedition plan!',url:location.href}); }
-  else { navigator.clipboard?.writeText(location.href); toast('Link copied 🔗','ok'); }
+function shareTrip(){
+  if(navigator.share){navigator.share({title:(trips[cur]?.name||'TREK')+' — A Forgebit Expedition',text:'Check out my expedition plan!',url:location.href});}
+  else{navigator.clipboard?.writeText(location.href);toast('Link copied 🔗','ok');}
 }
 
-// ═══════════════════════════════════════
-//  TOAST
-// ═══════════════════════════════════════
-function toast(msg, type='') {
-  const c=$('toasts'), t=document.createElement('div');
-  t.className='toast'+(type?' '+type:''); t.textContent=msg;
-  c.appendChild(t);
+// ══════════════════════════════════════════════════════
+//  TOAST & UTILS
+// ══════════════════════════════════════════════════════
+function toast(msg,type=''){
+  const c=$('toasts'),t=document.createElement('div');
+  t.className='toast'+(type?' '+type:'');t.textContent=msg;c.appendChild(t);
   setTimeout(()=>{t.style.opacity='0';t.style.transform='translateY(6px)';t.style.transition='all .3s';},2700);
   setTimeout(()=>t.remove(),3100);
 }
-
-// ═══════════════════════════════════════
-//  UTILS
-// ═══════════════════════════════════════
-function fmtDate(s) {
-  if (!s) return '';
-  const d=new Date(s);
-  return d.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});
+function fmtDate(s){
+  if(!s)return'';
+  try{const d=new Date(s.includes('T')?s:s+'T00:00:00');return d.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});}catch(e){return s;}
 }
 
 // PWA
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
