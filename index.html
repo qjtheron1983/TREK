@@ -538,6 +538,7 @@ input[type=file]{display:none;}
       <label>Current Trip</label>
       <select id="tripSel" onchange="switchTrip(this.value)"></select>
       <button class="btn-newtrip" onclick="openNewTripModal()">＋ New Expedition</button>
+      <button onclick="openJoinTrip()" style="width:100%;margin-top:.25rem;background:var(--sky-bg);border:1px solid rgba(30,111,165,.25);color:var(--sky);padding:.4rem;font-size:.65rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border-radius:6px;transition:all .2s">🔗 Join a Trip</button>
       <button onclick="deleteCurrentTrip()" style="width:100%;margin-top:.25rem;background:none;border:1px solid rgba(139,50,34,.25);color:var(--rust);padding:.35rem;font-size:.6rem;font-weight:600;letter-spacing:.04em;cursor:pointer;border-radius:6px;transition:all .2s" onmouseover="this.style.background='var(--rust-bg)'" onmouseout="this.style.background='none'">🗑 Delete Current Trip</button>
     </div>
     <nav class="sb-nav">
@@ -615,7 +616,7 @@ input[type=file]{display:none;}
     <section class="panel" id="panel-fuel">
       <div class="ph">
         <div><div class="ph-title">Fuel & Costs</div><div class="ph-sub">Per-vehicle estimates for the full route</div></div>
-        <button class="btn-primary" onclick="openModal('addVehMod')">＋ Add Vehicle</button>
+        <button class="btn-primary" onclick="openAddVehicle()">＋ Add Vehicle</button>
       </div>
       <div id="fuelContent"></div>
     </section>
@@ -723,9 +724,19 @@ input[type=file]{display:none;}
     <div class="modal-footer"><button class="btn-secondary" onclick="wizGo(1)">← Back</button><button class="btn-primary" onclick="wizGo(3)">Crew & Gear →</button></div>
   </div>
   <div class="wiz-pane" id="wp3">
-    <div class="form-row"><div class="fg"><label>Number of Vehicles</label><select id="wvehs"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></div><div class="fg"><label>Number of People</label><input type="number" id="wppl" placeholder="6" min="1"></div></div>
-    <div class="form-row"><div class="fg"><label>Fuel Price (R/L)</label><input type="number" id="wfuel" placeholder="24.50" step="0.01"></div><div class="fg"><label>Avg Consumption (L/100km)</label><input type="number" id="wcons" placeholder="12.5" step="0.1"></div></div>
-    <div class="form-row"><div class="fg" style="flex:2"><label>Notes / Permits needed</label><input type="text" id="wnotes" placeholder="Kgalagadi permit required in advance…"></div></div>
+    <p style="font-size:.82rem;color:var(--text3);font-style:italic;margin-bottom:1rem">Your vehicle only — crew members add their own when they join.</p>
+    <div class="form-row">
+      <div class="fg"><label>My Vehicle Name</label><input type="text" id="wvname" placeholder="Hilux GD-6 / Fortuner…"></div>
+      <div class="fg"><label>Fuel Type</label><select id="wvftype"><option value="Diesel">Diesel</option><option value="Petrol 95">Petrol (95)</option><option value="Petrol 93">Petrol (93)</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Consumption (L/100km)</label><input type="number" id="wcons" placeholder="12.5" step="0.1" value="12.5"></div>
+      <div class="fg"><label>Tank Size (L)</label><input type="number" id="wvtank" placeholder="80" value="80"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Fuel Price (R/L)</label><input type="number" id="wfuel" placeholder="24.50" step="0.01" value="24.50"></div>
+      <div class="fg"><label>Notes / Permits needed</label><input type="text" id="wnotes" placeholder="Kgalagadi permit required in advance…"></div>
+    </div>
     <div class="modal-footer"><button class="btn-secondary" onclick="wizGo(2)">← Back</button><button class="btn-primary" onclick="createTrip()">🗺️ Create Expedition</button></div>
   </div>
 </div></div>
@@ -777,7 +788,7 @@ input[type=file]{display:none;}
   <div class="modal-title">Add Vehicle</div>
   <div class="form-row"><div class="fg"><label>Vehicle Name</label><input type="text" id="nv-nm" placeholder="Hilux GD-6 (Lead)"></div><div class="fg"><label>Fuel Type</label><select id="nv-ft"><option>Diesel</option><option>Petrol (95)</option><option>Petrol (93)</option></select></div></div>
   <div class="form-row"><div class="fg"><label>Consumption (L/100km)</label><input type="number" id="nv-co" placeholder="12.5" step="0.1"></div><div class="fg"><label>Tank Size (L)</label><input type="number" id="nv-tk" placeholder="80"></div></div>
-  <div class="form-row"><div class="fg"><label>Driver</label><input type="text" id="nv-dr" placeholder="Quintus"></div></div>
+  <div class="form-row"><div class="fg"><label>Driver</label><input type="text" id="nv-dr" placeholder="Driver name"></div></div>
   <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addVehMod')">Cancel</button><button class="btn-primary" onclick="addVehicle()">＋ Add</button></div>
 </div></div>
 
@@ -812,9 +823,79 @@ input[type=file]{display:none;}
   <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addCatMod')">Cancel</button><button class="btn-primary" onclick="addCategory()">＋ Add Category</button></div>
 </div></div>
 
+<!-- JOIN TRIP MODAL -->
+<div class="overlay" id="joinTripMod">
+<div class="modal" style="position:relative;max-width:460px">
+  <button class="modal-close" onclick="closeModal('joinTripMod')">✕</button>
+  <div class="modal-title">🔗 Join an Expedition</div>
+  <p style="font-size:.85rem;color:var(--text3);margin-bottom:1.25rem">Enter the invite code shared by the trip organiser, then add your vehicle details.</p>
+  <div class="fi"><label>Invite Code</label><input type="text" id="jt-code" placeholder="e.g. AB12CD" style="text-transform:uppercase;letter-spacing:.2em;font-family:'Space Mono';font-size:1.1rem" oninput="this.value=this.value.toUpperCase()"></div>
+  <hr style="border:none;border-top:1px solid var(--border2);margin:1.1rem 0">
+  <div style="font-size:.78rem;font-weight:700;color:var(--text2);margin-bottom:.85rem">🚗 My Vehicle</div>
+  <div class="form-row">
+    <div class="fg"><label>Vehicle Name</label><input type="text" id="jt-vname" placeholder="Ranger / Prado / Discovery…"></div>
+    <div class="fg"><label>Fuel Type</label><select id="jt-ftype"><option>Diesel</option><option>Petrol 95</option><option>Petrol 93</option></select></div>
+  </div>
+  <div class="form-row">
+    <div class="fg"><label>Consumption (L/100km)</label><input type="number" id="jt-cons" placeholder="12.5" step="0.1" value="12.5"></div>
+    <div class="fg"><label>Tank Size (L)</label><input type="number" id="jt-tank" placeholder="80" value="80"></div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn-secondary" onclick="closeModal('joinTripMod')">Cancel</button>
+    <button class="btn-primary" onclick="joinTrip()">🔗 Join Expedition</button>
+  </div>
+</div></div>
+
 <script>
-// ══════════════════════════════════════════════════════════════
-//  FIREBASE CONFIGURATION
+function openJoinTrip(){
+  $('jt-code').value='';
+  openModal('joinTripMod');
+}
+async function joinTrip(){
+  const code=$('jt-code').value.trim().toUpperCase();
+  if(!code){toast('Enter an invite code','err');return;}
+  // Search for trip with this invite code
+  let foundTrip=Object.values(DB.trips).find(t=>t.inviteCode===code);
+  // If not found locally, search Firebase
+  if(!foundTrip&&FB_READY){
+    try{
+      const snap=await fbDb.collection('trips').where('inviteCode','==',code).limit(1).get();
+      if(!snap.empty){
+        const doc=snap.docs[0];
+        foundTrip={...doc.data(),id:doc.id};
+        DB.trips[doc.id]=foundTrip;
+      }
+    }catch(e){console.warn('Join trip search:',e);}
+  }
+  if(!foundTrip){toast('Invite code not found — check with your organiser','err');return;}
+  // Check if already a member
+  const alreadyMember=foundTrip.crew&&foundTrip.crew.some(c=>c.id===ME.id||c.email===ME.email);
+  if(!alreadyMember){
+    // Add ME to crew
+    foundTrip.crew=foundTrip.crew||[];
+    foundTrip.crew.push({...ME,role:'Traveller',status:'confirmed',vehicle:$('jt-vname').value.trim()});
+    foundTrip._crewIds=[...new Set([...(foundTrip._crewIds||[]),ME.id])];
+  }
+  // Add vehicle
+  const vname=($('jt-vname').value.trim())||ME.name+"'s vehicle";
+  const cons=parseFloat($('jt-cons').value)||12.5;
+  if(!foundTrip.vehicles)foundTrip.vehicles=[];
+  const hasMyVeh=foundTrip.vehicles.some(v=>v.uid===ME.id);
+  if(!hasMyVeh){
+    foundTrip.vehicles.push({name:vname,fuelType:$('jt-ftype').value,consumption:cons,tank:Number($('jt-tank').value)||80,driver:ME.name,uid:ME.id});
+  }
+  DB.trips[foundTrip.id]=foundTrip;
+  DB.cur=foundTrip.id;
+  sv();
+  // Save back to Firebase
+  if(FB_READY){
+    fbDb.collection('trips').doc(foundTrip.id).set(foundTrip,{merge:true}).catch(()=>{});
+  }
+  rebuildSel(); renderAll(); startCD();
+  closeModal('joinTripMod');
+  toast('🎉 Joined '+foundTrip.name+'!','ok');
+}
+</script>
 //  Replace the config below with your Firebase project settings.
 //  Go to: https://console.firebase.google.com → Project Settings → Web App
 // ══════════════════════════════════════════════════════════════
@@ -979,35 +1060,53 @@ function doLogout(){
 window.addEventListener('load',()=>{
   ld();
   initFirebase();
-  // If Firebase is ready, listen for auth state
+
+  function dismissLoader(){
+    $('loader').classList.add('out');
+    setTimeout(()=>{$('loader').style.display='none';},700);
+  }
+
   if(FB_READY){
+    let launched=false;
+    // Safety net: if Firebase auth hangs for >6s, fall through to local
+    const fbTimeout=setTimeout(()=>{
+      if(!launched){
+        launched=true;
+        dismissLoader();
+        if(DB.lastUser&&DB.users[DB.lastUser]){ME=DB.users[DB.lastUser];launchApp();}
+      }
+    },6000);
+
     fbAuth.onAuthStateChanged(user=>{
-      if(user&&!ME){
+      if(launched)return;
+      launched=true;
+      clearTimeout(fbTimeout);
+
+      if(user){
+        // Ensure local user record exists
         if(!DB.users[user.uid]){
-          DB.users[user.uid]={id:user.uid,name:user.displayName||user.email.split('@')[0],email:user.email,initials:(user.displayName||user.email).slice(0,2).toUpperCase(),avatar:COLORS[0]};
+          DB.users[user.uid]={id:user.uid,name:user.displayName||user.email.split('@')[0],email:user.email,initials:((user.displayName||user.email).slice(0,2)).toUpperCase(),avatar:COLORS[0]};
         }
         ME=DB.users[user.uid]; DB.lastUser=ME.id;
         loadFromFirebase(ME.id).then(()=>{
-          sv();
-          $('loader').classList.add('out');
-          setTimeout(()=>{$('loader').style.display='none';launchApp();},700);
+          sv(); dismissLoader(); launchApp();
+        }).catch(()=>{
+          sv(); dismissLoader(); launchApp();
         });
-        return;
+      } else {
+        // Not logged in — show auth screen
+        dismissLoader();
       }
     });
-  }
-  setTimeout(()=>{
-    $('loader').classList.add('out');
+  } else {
+    // No Firebase — local mode
     setTimeout(()=>{
-      $('loader').style.display='none';
-      if(!FB_READY&&DB.lastUser&&DB.users[DB.lastUser]){
-        ME=DB.users[DB.lastUser];
-        launchApp();
-      } else if(!FB_READY){
-        // show auth
+      dismissLoader();
+      if(DB.lastUser&&DB.users[DB.lastUser]){
+        ME=DB.users[DB.lastUser]; launchApp();
       }
-    },700);
-  },2000);
+    },1500);
+  }
 });
 
 function launchApp(){
@@ -1028,7 +1127,7 @@ function newTripObj(name,dest,start,end,type,accom,vehs,ppl,notes,fuelP,cons,sto
   const id='t'+Date.now();
   const inviteCode=Math.random().toString(36).slice(2,8).toUpperCase();
   const crewList=[{...ME,role:'Organiser',status:'confirmed',isOrganiser:true}];
-  return{id,name,dest,startDate:start,endDate:end,type,accom,vehicleCount:parseInt(vehs)||1,people:parseInt(ppl)||1,notes,fuelPrice:parseFloat(fuelP)||24.5,avgCons:parseFloat(cons)||12.5,stops:stops||[],itinerary:[],accommodation:[],packing:[],food:[],crew:crewList,docs:[],photos:[],vehicles:[],expenses:[],_routeKm:0,inviteCode,createdBy:ME.id,_crewIds:[ME.id]};
+  return{id,name,dest,startDate:start,endDate:end,type,accom,notes,fuelPrice:parseFloat(fuelP)||24.5,avgCons:parseFloat(cons)||12.5,stops:stops||[],itinerary:[],accommodation:[],packing:[],food:[],crew:crewList,docs:[],photos:[],vehicles:[],expenses:[],_routeKm:0,inviteCode,createdBy:ME.id,_crewIds:[ME.id]};
 }
 function openNewTripModal(){
   wizStops=[]; goWizPane(1);
@@ -1051,11 +1150,26 @@ function goWizPane(n){
 function createTrip(){
   const name=$('wn').value.trim();if(!name){toast('Enter a trip name','err');return;}
   const id='t'+Date.now();
-  const t=newTripObj(name,$('wd').value.trim(),$('ws').value,$('we').value,$('wt').value,$('wa').value,$('wvehs').value,$('wppl').value,$('wnotes').value.trim(),$('wfuel').value,$('wcons').value,wizStops.map(s=>({...s})));
-  t.id=id; DB.trips[id]=t; DB.cur=id;
+  const fuelPrice=parseFloat($('wfuel').value)||24.5;
+  const cons=parseFloat($('wcons').value)||12.5;
+  const t=newTripObj(name,$('wd').value.trim(),$('ws').value,$('we').value,$('wt').value,$('wa').value,'1','1',$('wnotes').value.trim(),fuelPrice,cons,wizStops.map(s=>({...s})));
+  t.id=id;
+
+  // Auto-create MY vehicle from wizard input
+  const vname=($('wvname').value.trim())||ME.name+"'s vehicle";
+  t.vehicles=[{
+    name:vname,
+    fuelType:$('wvftype').value||'Diesel',
+    consumption:cons,
+    tank:Number($('wvtank').value)||80,
+    driver:ME.name,
+    uid:ME.id
+  }];
+
+  DB.trips[id]=t; DB.cur=id;
   syncFromStops(t); sv(); closeModal('newTripMod'); rebuildSel(); renderAll(); startCD();
   toast('🗺️ '+name+' created!','ok'); wizStops=[];
-  ['wn','wd','ws','we','wnotes','wfuel','wcons'].forEach(id2=>$(id2).value='');
+  ['wn','wd','ws','we','wnotes','wfuel','wcons','wvname','wvtank'].forEach(id2=>{if($(id2))$(id2).value='';});
 }
 function rebuildSel(){
   const sel=$('tripSel'); sel.innerHTML='';
@@ -2003,11 +2117,15 @@ function renderFuel(t){
     </div>
   </div>`;
 }
+function openAddVehicle(){
+  $('nv-dr').value=ME?ME.name:'';
+  openModal('addVehMod');
+}
 function addVehicle(){
   const t=T();if(!t){toast('Create a trip first','err');return;}
   const name=$('nv-nm').value.trim();if(!name){toast('Enter vehicle name','err');return;}
   const cons=parseFloat($('nv-co').value);if(!cons){toast('Enter consumption','err');return;}
-  t.vehicles.push({name,fuelType:$('nv-ft').value,consumption:cons,tank:Number($('nv-tk').value)||80,driver:$('nv-dr').value.trim()});
+  t.vehicles.push({name,fuelType:$('nv-ft').value,consumption:cons,tank:Number($('nv-tk').value)||80,driver:$('nv-dr').value.trim(),uid:ME.id});
   sv();renderFuel(t);renderDash(t);closeModal('addVehMod');
   ['nv-nm','nv-co','nv-tk','nv-dr'].forEach(id=>$(id).value='');
   toast('🚗 Vehicle added','ok');
