@@ -997,46 +997,86 @@ function openJoinTrip(){
 async function joinTrip(){
   const code=$('jt-code').value.trim().toUpperCase();
   if(!code){toast('Enter an invite code','err');return;}
-  // Search for trip with this invite code
+  if(code.length<4){toast('Code too short — check with your organiser','err');return;}
+
+  toast('🔍 Searching for trip…');
+
+  // 1. Search locally first
   let foundTrip=Object.values(DB.trips).find(t=>t.inviteCode===code);
-  // If not found locally, search Firebase
+
+  // 2. Search Firebase — try two strategies
   if(!foundTrip&&FB_READY){
     try{
+      // Strategy A: query by inviteCode field (needs Firestore index)
       const snap=await fbDb.collection('trips').where('inviteCode','==',code).limit(1).get();
       if(!snap.empty){
         const doc=snap.docs[0];
         foundTrip={...doc.data(),id:doc.id};
-        DB.trips[doc.id]=foundTrip;
       }
-    }catch(e){console.warn('Join trip search:',e);}
+    }catch(e){
+      console.warn('Firestore inviteCode query failed (may need index):', e.message);
+      // Strategy B: look up via invite_codes lookup collection
+      try{
+        const lookupDoc=await fbDb.collection('invite_codes').doc(code).get();
+        if(lookupDoc.exists){
+          const tripId=lookupDoc.data().tripId;
+          const tripDoc=await fbDb.collection('trips').doc(tripId).get();
+          if(tripDoc.exists)foundTrip={...tripDoc.data(),id:tripDoc.id};
+        }
+      }catch(e2){console.warn('Invite code lookup failed:',e2.message);}
+    }
   }
-  if(!foundTrip){toast('Invite code not found — check with your organiser','err');return;}
-  // Check if already a member
-  const alreadyMember=foundTrip.crew&&foundTrip.crew.some(c=>c.id===ME.id||c.email===ME.email);
+
+  if(!foundTrip){
+    toast('Code "'+code+'" not found. Check the code and try again.','err');
+    return;
+  }
+
+  // 3. Add ME to crew if not already a member
+  foundTrip.crew=foundTrip.crew||[];
+  const alreadyMember=foundTrip.crew.some(c=>c.id===ME.id||c.email===ME.email);
   if(!alreadyMember){
-    // Add ME to crew
-    foundTrip.crew=foundTrip.crew||[];
-    foundTrip.crew.push({...ME,role:'Traveller',status:'confirmed',vehicle:$('jt-vname').value.trim()});
+    foundTrip.crew.push({...ME,role:'Traveller',status:'confirmed'});
     foundTrip._crewIds=[...new Set([...(foundTrip._crewIds||[]),ME.id])];
   }
-  // Add vehicle
+
+  // 4. Add my vehicle
   const vname=($('jt-vname').value.trim())||ME.name+"'s vehicle";
   const cons=parseFloat($('jt-cons').value)||12.5;
-  if(!foundTrip.vehicles)foundTrip.vehicles=[];
-  const hasMyVeh=foundTrip.vehicles.some(v=>v.uid===ME.id);
-  if(!hasMyVeh){
+  foundTrip.vehicles=foundTrip.vehicles||[];
+  if(!foundTrip.vehicles.some(v=>v.uid===ME.id)){
     foundTrip.vehicles.push({name:vname,fuelType:$('jt-ftype').value,consumption:cons,tank:Number($('jt-tank').value)||80,driver:ME.name,uid:ME.id});
   }
+
+  // 5. Add default packing list for me if none
+  if(foundTrip.packing&&!foundTrip.packing.some(c=>c.uid===ME.id)){
+    const myPack=getDefaultPackingList(ME.id).filter(c=>c.type==='personal');
+    foundTrip.packing=[...foundTrip.packing,...myPack];
+  }
+
   DB.trips[foundTrip.id]=foundTrip;
   DB.cur=foundTrip.id;
-  sv();
-  // Save back to Firebase
+
+  // 6. Save back to Firebase — update crew + vehicles
   if(FB_READY){
-    fbDb.collection('trips').doc(foundTrip.id).set(foundTrip,{merge:true}).catch(()=>{});
+    try{
+      await fbDb.collection('trips').doc(foundTrip.id).set({
+        crew:foundTrip.crew,
+        vehicles:foundTrip.vehicles,
+        packing:foundTrip.packing,
+        _crewIds:foundTrip._crewIds,
+        _updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+      // Also write invite code lookup for future joins
+      await fbDb.collection('invite_codes').doc(foundTrip.inviteCode).set({tripId:foundTrip.id,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    }catch(e){console.warn('Firestore join save:',e.message);}
   }
-  rebuildSel(); renderAll(); startCD();
+
+  sv();rebuildSel();renderAll();startCD();
   closeModal('joinTripMod');
   toast('🎉 Joined '+foundTrip.name+'!','ok');
+  // Auto-fetch map in background
+  setTimeout(()=>{if(!leafReady)initLeaflet();refreshMap(foundTrip);},800);
 }
 
 
@@ -1091,11 +1131,20 @@ function sv(){
   // Firebase sync: save current trip to Firestore
   if(FB_READY&&ME&&DB.cur&&DB.trips[DB.cur]){
     try{
+      const t=DB.trips[DB.cur];
       fbDb.collection('trips').doc(DB.cur).set({
-        ...DB.trips[DB.cur],
+        ...t,
         _owner:ME.id,
         _updatedAt:firebase.firestore.FieldValue.serverTimestamp()
       },{merge:true}).catch(e=>console.warn('Firestore write:',e));
+      // Write invite code lookup so other users can find this trip by code
+      if(t.inviteCode){
+        fbDb.collection('invite_codes').doc(t.inviteCode).set({
+          tripId:DB.cur,
+          tripName:t.name||'',
+          _owner:ME.id
+        },{merge:true}).catch(()=>{});
+      }
     }catch(e){}
   }
 }
@@ -2990,9 +3039,27 @@ function resetPacking(){if(!confirm('Reset?'))return;T().packing.forEach(c=>c.it
 // ══════════════════════════════════════════════════════════════
 //  CREW + INVITE CODE
 // ══════════════════════════════════════════════════════════════
+function copyInviteCode(code,tripName){
+  const msg=`Join my TREK expedition "${tripName}"!\n\nInvite code: ${code}\n\nOpen TREK at qjtheron1983.github.io/TREK → tap "Join a Trip" → enter code`;
+  if(navigator.clipboard){navigator.clipboard.writeText(msg).then(()=>toast('📋 Invite message copied!','ok')).catch(()=>{navigator.clipboard.writeText(code).then(()=>toast('Code copied: '+code,'ok'));});}
+  else{toast('Code: '+code,'ok');}
+}
+function shareInviteCode(code,tripName){
+  const msg=`Join my TREK expedition "${tripName}"! Invite code: ${code} — open qjtheron1983.github.io/TREK, tap "Join a Trip" and enter the code.`;
+  if(navigator.share){navigator.share({title:'Join '+tripName+' on TREK',text:msg,url:'https://qjtheron1983.github.io/TREK/'}).catch(()=>{});}
+  else{copyInviteCode(code,tripName);}
+}
 function renderCrew(t){
   const grid=$('crewGrid');
-  $('inviteCodeBox').innerHTML=`<div class="invite-code-box"><div class="icb-label">Trip Invite Code — share with your crew</div><div class="icb-code">${t.inviteCode||'—'}</div><button class="icb-copy" onclick="navigator.clipboard?.writeText('${t.inviteCode}');toast('Invite code copied 📋','ok')">Copy Code</button></div>`;
+  $('inviteCodeBox').innerHTML=`<div class="invite-code-box">
+    <div class="icb-label">Trip Invite Code</div>
+    <div class="icb-code">${t.inviteCode||'—'}</div>
+    <div style="font-size:.72rem;color:var(--text3);margin:.35rem 0 .55rem;line-height:1.5">Share this code with your crew. They open TREK, tap <strong>Join a Trip</strong> and enter the code.</div>
+    <div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap">
+      <button class="icb-copy" onclick="copyInviteCode('${t.inviteCode}','${esc(t.name)}')">📋 Copy Code</button>
+      <button class="icb-copy" style="background:var(--sky)" onclick="shareInviteCode('${t.inviteCode}','${esc(t.name)}')">⬆ Share</button>
+    </div>
+  </div>`;
   if(!t.crew.length){grid.innerHTML='';return;}
   grid.innerHTML=t.crew.map((m,i)=>{
     const isMe=m.id===ME.id;
