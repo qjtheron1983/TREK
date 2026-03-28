@@ -268,6 +268,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .leaflet-popup-tip{background:var(--surface);}
 .leaflet-popup-content{font-size:.85rem;margin:.5rem .8rem;}
 .leaflet-control-zoom a{background:var(--surface);color:var(--amber);border-color:var(--border2);}
+.leaflet-control-zoom{border:1px solid var(--border2) !important;border-radius:8px !important;}
+.leaflet-control-attribution{font-size:9px !important;}
 
 /* ROUTE */
 .rsr{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.8rem;margin-bottom:1rem;}
@@ -685,7 +687,6 @@ if('serviceWorker' in navigator){
     </section>
     <!-- PLAN (Route · Stays · Food) -->
     <section class="panel" id="panel-plan">
-      <div id="mapContainer"><div id="leafletMap"></div></div>
       <div class="subtabs">
         <button class="stab active" data-stab="route" onclick="setPlanTab('route',this)">🧭 Route</button>
         <button class="stab" data-stab="stays" onclick="setPlanTab('stays',this)">🏕️ Stays</button>
@@ -701,6 +702,7 @@ if('serviceWorker' in navigator){
 
         <div class="rsr" id="routeStats"></div>
         <div class="stop-list" id="stopList"></div>
+        <div id="mapContainer" style="margin-top:.75rem"><div id="leafletMap"></div></div>
       </div>
       <!-- Stays -->
       <div class="stpane" id="stp-stays">
@@ -1638,7 +1640,8 @@ function renderDash(t){
 
   // Build "what's missing" checklist
   const hasStops=t.stops.filter(s=>!s.isStart&&!s.isEnd).length>0;
-  const hasAccom=t.accommodation.filter(a=>!a.placeholder&&a.name).length>0;
+  const overnightStops=t.stops.filter(s=>!s.isStart&&!s.isEnd&&parseInt(s.nights)>0);
+  const hasAccom=overnightStops.length===0||t.accommodation.filter(a=>!a.placeholder&&a.name).length>0;
   const hasVehicle=t.vehicles&&t.vehicles.length>0;
   const hasFoodPlanned=t.food.some(f=>(f.dinner&&f.dinner.length)||(f.breakfast&&f.breakfast.length));
   const hasPacking=t.packing&&t.packing.length>0;
@@ -1759,7 +1762,6 @@ function calcFuelEstimate(t){
   if(!km||!t.vehicles||!t.vehicles.length)return 0;
   return t.vehicles.reduce((a,v)=>a+(km/100)*(Number(v.consumption)||12.5)*price,0);
 }
-function calcTotalFuel(t){return calcFuelEstimate(t);}
 function calcTotalFuel(t){return calcFuelEstimate(t);}
 
 // ══════════════════════════════════════════════════════════════
@@ -2122,12 +2124,9 @@ Return ONLY a valid JSON array of strings. No markdown, no explanation, no extra
       })
     });
     const data=await resp.json();
-    // Extract text from response — may have tool_use blocks mixed in
-    const textBlock=data.content?.find(b=>b.type==='text');
-    const text=textBlock?.text||'[]';
-    const cleaned=text.replace(/```json|```/g,'').trim();
-    // Find JSON array in the text
-    const match=cleaned.match(/\[.*\]/s);
+    if(data.error)throw new Error(data.error.message||'API error');
+    const allText=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join(' ').replace(/```json|```/g,'').trim();
+    const match=allText.match(/\[[\s\S]*?\]/);
     const activities=JSON.parse(match?match[0]:'[]');
     if(Array.isArray(activities)&&activities.length){
       activityCache[cacheKey]=activities;
@@ -2142,19 +2141,19 @@ Return ONLY a valid JSON array of strings. No markdown, no explanation, no extra
 
 function getOfflineSuggestions(name){
   const n=name.toLowerCase();
-  // SA/Namibia context-aware offline fallbacks
-  if(n.includes('sossusvlei')||n.includes('sesriem')){return['Sunrise drive to Dune 45','Walk the Dead Vlei salt pan','Sossusvlei 4x4 dunes at dawn','Sesriem Canyon sunset walk','Elim Dune short hike','Star gazing — zero light pollution'];}
-  if(n.includes('etosha')){return['Dawn game drive at water hole','Okaukuejo floodlit waterhole at night','Halali to Namutoni drive','Self-drive loop around Etosha pan','Rhino spotting at Okondeka','Elephant herds at sunset'];}
-  if(n.includes('swakopmund')||n.includes('swakop')){return['Quad biking on Dorob dunes','Daredevil Adventures skydive','Swartkoppies desert drive','Seal colony at Cape Cross','Desolation Valley 4x4 track','Seafood dinner on The Strand'];}
-  if(n.includes('kgalagadi')||n.includes('kalahari')){return['Lion tracking at dawn','Twee Rivieren to Mata Mata drive','Gemsbok and springbok herds','Sociable weaver nest viewpoint','Nossob dry river bed drive','Star gazing — darkest sky reserve'];}
-  if(n.includes('fish river')||n.includes('ai-ais')){return['Fish River Canyon viewpoint hike','Hobas lookout at sunrise','Hellskloof Pass 4x4 route','Hot springs at Ai-Ais','Canyon rim walk','Sunset from southern viewpoint'];}
-  if(n.includes('augrabies')){return['Augrabies waterfall viewpoint','Klipspringer hiking trail','Orange River sunset canoe','4x4 Dassie trail','Kokerboom forest walk','Rock art near park entrance'];}
-  if(n.includes('cape town')||n.includes('kaapstad')){return['Table Mountain cable car','Chapman\'s Peak coastal drive','Boulders Beach penguins','V&A Waterfront lunch','Cape Point 4x4 route','Signal Hill sunset'];}
-  if(n.includes('namibia')||n.includes('skeleton coast')){return['Shipwreck discovery walk','Seal colonies at Cape Cross','Desolation desert 4x4 track','Fishing in Namibian surf','Coastal dunes exploration','Benguela fog mist photography'];}
-  if(n.includes('kruger')){return['Sunrise game drive','Self-drive big 5 loop','Sunset sundowners in bush','Guided bush walk','Night drive with ranger','Bird watching at waterhole'];}
-  if(n.includes('drakensberg')){return['Amphitheatre hike to base','Tugela Falls viewpoint','Horse riding in foothills','San rock art cave trail','Cathedral Peak day hike','Fly fishing in mountain stream'];}
-  // Generic SA/Namibia overland fallbacks
-  return['Sunrise 4x4 exploration','Game viewing from vehicle','Sunset braai at camp','Local nature walk','Star gazing — Southern Cross viewing','Photography of wildlife/landscape','Chat to local camp staff about hidden spots'];
+  if(n.includes('grotto bay'))return['Snorkelling at tidal pools at low tide','Whale watching Aug to Nov from shore','West Coast National Park wildflowers day trip','Sunset braai on the rocks','Kayak in the bay (bring own)'];
+  if(n.includes('tiger reef'))return['Fishing kob and steenbras off the beach (surf rod)','4x4 beach drive south toward Langebaan','Strandloper open-air seafood +27 22 772 2490','West Coast National Park day trip (R180pp)','Langebaan lagoon kite surfing'];
+  if(n.includes('sossusvlei')||n.includes('sesriem'))return['Dune 45 sunrise climb 45km south on C27 from Sesriem','Dead Vlei walk 1km from Sossusvlei 2x4 park','Sesriem Canyon walk at sunset self-guided','Hidden Vlei 4km hike no crowds','Elim Dune sunset 5 min from camp'];
+  if(n.includes('etosha'))return['Okaukuejo floodlit waterhole at dusk — black rhino likely','Okaukuejo to Halali self-drive loop 60km','Namutoni Fort sunrise walk','Rhino spotting at Okondeka waterhole'];
+  if(n.includes('swakopmund')||n.includes('swakop'))return['Quad biking Alter-Action Adventures +264 64 402 096','Skydive Swakopmund +264 64 402 422','Sandwich Harbour 4x4 Desert Explorers +264 64 406 096','Mondesa township tour +264 81 127 8246','Desolation Valley half-day self-drive (ask camp)'];
+  if(n.includes('walvis bay'))return['Pelican feeding at lagoon free daily 08:00','Flamingo kayak Levo Expeditions levotouring.com','Dune 7 sandboard 10km east on B2 free','Walvis Bay lagoon birding Ramsar site','Oyster tasting Raft Restaurant +264 64 209 390'];
+  if(n.includes('kgalagadi')||n.includes('twee rivieren')||n.includes('nossob'))return['Dawn lion tracking Nossob road 160km self-drive','Auob river road golden hour — gemsbok and springbok','Sociable weaver colony at Kij Kij waterhole','Night sky — SA darkest sky reserve'];
+  if(n.includes('fish river')||n.includes('hobas')||n.includes('ai-ais'))return['Hobas viewpoint sunrise 4.5km from camp easy walk','Hot springs Ai-Ais resort +264 63 297 111','Hells Corner viewpoint hike 5km from Hobas','Canyon rim 4x4 track high clearance required'];
+  if(n.includes('augrabies'))return['Augrabies Falls viewpoint walk 1km loop','Klipspringer trail 3.7km 2 hours','Orange River canoe Gravity Adventures +27 21 683 3698','Dassie 4x4 trail permit R150 from reception'];
+  if(n.includes('cape town'))return['Table Mountain cableway +27 21 424 8181 book online','Chapmans Peak scenic drive toll R52','Boulders Beach penguins Simonstown +27 12 428 9111','Cape Point Two Oceans Restaurant for lunch'];
+  if(n.includes('kruger')||n.includes('skukuza')||n.includes('satara'))return['Sunrise game drive gates open 05:30 summer','Night drive SANParks ranger book at camp by 15:00','Guided bush walk Skukuza +27 13 735 4000','Sunset Dam birding Lower Sabie camp'];
+  if(n.includes('drakensberg'))return['Amphitheatre hike 10km return Sentinel car park','Tugela Falls walk 3 hours return','San rock art cave with registered guide Didima','Drakensberg Fly Fishing +27 82 416 3337'];
+  return['Ask camp manager for todays wildlife sightings','Self-drive morning loop get park map from reception','Sunset viewpoint ask staff for best local spot','Star gazing from camp no light pollution','Early morning bird walk with binoculars'];
 }
 
 async function suggestActivitiesForStop(stopName,lat,lon){
@@ -2424,7 +2423,8 @@ function updStopKm(idx,val){
 // ══════════════════════════════════════════════════════════════
 function initLeaflet(){
   if(leafReady||typeof L==='undefined')return;
-  leafMap=L.map('leafletMap',{zoomControl:true}).setView([-22,22],5);
+  leafMap=L.map('leafletMap',{zoomControl:true,tap:false,tapTolerance:15,doubleClickZoom:false}).setView([-22,22],5);
+  leafMap.zoomControl.setPosition('topright');
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:19}).addTo(leafMap);
   leafReady=true;
 }
@@ -2516,6 +2516,7 @@ function renderAccom(t){
       <div style="display:flex;align-items:center;gap:.65rem;margin-bottom:.75rem">
         <span style="font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">📍 ${stopName}</span>
         <button class="btn-primary" style="font-size:.62rem;padding:.3rem .65rem" onclick="openAccomForStop('${esc(stopName)}')">＋ Add here</button>
+        ${t.stops.find(s=>s.isEnd&&s.name===stopName)?'<span style="font-size:.72rem;color:var(--sage);font-weight:600;background:var(--sage-bg);padding:.22rem .55rem;border-radius:6px">🏠 Home — no stay needed</span>':''}
       </div>
       <div class="accom-grid">
         ${accs.filter(a=>!a.placeholder).map((a,i)=>`
@@ -3136,7 +3137,6 @@ document.querySelectorAll('.ni').forEach(item=>{
 
   });
 });
-function openExpenseModal_prefill(){/* Just ensure modal is not open on nav */}
 function toggleSB(){$('sidebar').classList.toggle('off');$('main').classList.toggle('wide');}
 
 // ══════════════════════════════════════════════════════════════
@@ -3203,7 +3203,6 @@ function toggleMap(){
   if(!showing){initLeaflet();if(T())refreshMap(T());setTimeout(()=>leafMap&&leafMap.invalidateSize(),80);}
 }
 function openExpenseModal_prefill(){}
-function toggleSB(){$('sidebar').classList.toggle('off');}
 </script>
 </body>
 </html>
