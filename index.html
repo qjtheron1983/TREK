@@ -3462,9 +3462,12 @@ async function spInit(){
   });
 }
 
+let _spCallbackHandled=false;
 async function spHandleCallback(){
   const p=new URLSearchParams(location.search);
   if(p.get('state')!=='trek_spotify'||!p.get('code'))return false;
+  if(_spCallbackHandled)return false; // prevent double-fire
+  _spCallbackHandled=true;
   // Clean URL immediately so it doesn't fire again on next reload
   history.replaceState({},'',location.pathname);
   const verifier=localStorage.getItem('sp_verifier');
@@ -3483,12 +3486,17 @@ async function spHandleCallback(){
       localStorage.setItem('sp_token',d.access_token);
       localStorage.setItem('sp_token_expiry',String(Date.now()+(d.expires_in||3600)*1000));
       localStorage.removeItem('sp_verifier');
-      toast('Spotify connected!','ok');
-      // Restore trip and navigate to playlist tab
+      toast('Spotify connected! 🎵','ok');
       const savedTrip=localStorage.getItem('sp_trip');
       if(savedTrip&&DB.trips[savedTrip])DB.cur=savedTrip;
-      navTo('crew');
-      setTimeout(()=>{const t=T();if(t)renderSpotify(t);},300);
+      localStorage.removeItem('sp_trip');
+      // Reinit player with fresh token that has all scopes
+      spPlayer=null; spPlayerReady=false; spDeviceId=null;
+      setTimeout(()=>{
+        spInitPlayer();
+        navTo('crew');
+        setTimeout(()=>{const t=T();if(t)renderSpotify(t);},500);
+      },300);
       return true;
     }else{
       toast('Spotify auth failed: '+(d.error||'unknown'),'err');
@@ -3697,15 +3705,14 @@ window.onSpotifyWebPlaybackSDKReady=()=>{
     spShowPremiumMsg();
   });
   spPlayer.addListener('authentication_error',({message})=>{
-    console.warn('Spotify auth error:',message);
-    // Token invalid — clear it so user is prompted to reconnect
-    localStorage.removeItem('sp_token');
-    localStorage.removeItem('sp_token_expiry');
-    toast('Spotify token expired — please reconnect','err');
-    const t=T();if(t)renderSpotify(t);
+    console.warn('Spotify streaming unavailable (app not in extended quota mode or user not added as tester):',message);
+    // Streaming scope not granted — fall back to open-in-Spotify silently
+    spPlayerReady=false;
+    // Don't clear the token — search/playlist export still works fine
   });
   spPlayer.addListener('account_error',({message})=>{
     console.warn('Spotify account error (Premium required):',message);
+    spPlayerReady=false;
     spShowPremiumMsg();
   });
   spPlayer.addListener('player_state_changed',state=>{
@@ -3812,7 +3819,7 @@ function renderSpotify(t){
   const ca=$('spConnectArea'),sa=$('spSearchArea');if(!ca)return;
   const tok=spToken();
   if(tok){
-    if(!spPlayer)setTimeout(spInitPlayer,500);
+    if(!spPlayer&&!_spCallbackHandled)setTimeout(spInitPlayer,500);
     const hasPlaylist=t?.spotifyPlaylistUrl;
     ca.innerHTML='';
     const wrap=document.createElement('div');wrap.style.cssText='display:flex;align-items:center;gap:.4rem;flex-wrap:wrap';
