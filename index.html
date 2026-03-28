@@ -1208,6 +1208,62 @@ async function loadFromFirebase(uid){
       const ids=Object.keys(DB.trips);
       DB.cur=ids.length?ids[0]:null;
     }
+    // Process pending join_requests for trips I OWN
+    try{
+      const myTripIds=Object.keys(DB.trips).filter(id=>DB.trips[id]._owner===uid);
+      if(myTripIds.length){
+        // Firestore 'in' query supports max 10 items
+        const chunks=[];
+        for(let i=0;i<myTripIds.length;i+=10)chunks.push(myTripIds.slice(i,i+10));
+        for(const chunk of chunks){
+          const jrSnap=await fbDb.collection('join_requests')
+            .where('tripId','in',chunk)
+            .where('status','==','pending')
+            .get().catch(()=>null);
+          if(!jrSnap)continue;
+          for(const jrDoc of jrSnap.docs){
+            const jr=jrDoc.data();
+            const t=DB.trips[jr.tripId];
+            if(!t)continue;
+            // Add joiner to crew
+            t.crew=t.crew||[];
+            if(!t.crew.some(c=>c.id===jr.userId)){
+              t.crew.push({
+                id:jr.userId,name:jr.userName,email:jr.userEmail||'',
+                initials:jr.userInitials||jr.userName.slice(0,2).toUpperCase(),
+                avatar:jr.userAvatar||COLORS[t.crew.length%6],
+                role:'Traveller',status:'confirmed',isOrganiser:false
+              });
+            }
+            // Add to _crewIds
+            t._crewIds=[...new Set([...(t._crewIds||[]),jr.userId])];
+            // Add vehicle
+            t.vehicles=t.vehicles||[];
+            if(!t.vehicles.some(v=>v.uid===jr.userId)){
+              t.vehicles.push({
+                name:jr.vehicleName||jr.userName+"'s vehicle",
+                fuelType:jr.fuelType||'Diesel',
+                consumption:jr.consumption||12.5,
+                tank:jr.tank||80,
+                driver:jr.userName,
+                uid:jr.userId
+              });
+            }
+            // Write updated trip back to Firebase (organiser has permission)
+            await fbDb.collection('trips').doc(jr.tripId).set(
+              {...t,_updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
+              {merge:true}
+            ).catch(e=>console.warn('join_request trip update:',e));
+            // Mark request as accepted
+            await fbDb.collection('join_requests').doc(jrDoc.id)
+              .update({status:'accepted'})
+              .catch(()=>{});
+            console.log('[JOIN] Organiser processed join from',jr.userName,'into trip',jr.tripId);
+          }
+        }
+      }
+    }catch(e){console.warn('join_requests processing:',e);}
+
     localStorage.setItem(SK,JSON.stringify(DB));
   }catch(e){console.warn('Firestore read:',e);}
 }
