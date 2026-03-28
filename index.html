@@ -995,20 +995,33 @@ function openJoinTrip(){
 async function joinTrip(){
   const code=$('jt-code').value.trim().toUpperCase();
   if(!code){toast('Enter an invite code','err');return;}
-  // Search for trip with this invite code
+  if(code.length<4){toast('Code too short','err');return;}
+  toast('Searching…');
+  // 1. Check locally first
   let foundTrip=Object.values(DB.trips).find(t=>t.inviteCode===code);
-  // If not found locally, search Firebase
+  // 2. Firebase search — two strategies
   if(!foundTrip&&FB_READY){
+    // Strategy A: invite_codes lookup doc (no Firestore index needed)
     try{
-      const snap=await fbDb.collection('trips').where('inviteCode','==',code).limit(1).get();
-      if(!snap.empty){
-        const doc=snap.docs[0];
-        foundTrip={...doc.data(),id:doc.id};
-        DB.trips[doc.id]=foundTrip;
+      const ld=await fbDb.collection('invite_codes').doc(code).get();
+      if(ld.exists){
+        const tripDoc=await fbDb.collection('trips').doc(ld.data().tripId).get();
+        if(tripDoc.exists)foundTrip={...tripDoc.data(),id:tripDoc.id};
       }
-    }catch(e){console.warn('Join trip search:',e);}
+    }catch(e){console.warn('Strategy A (invite_codes lookup) failed:',e.code, e.message);}
+    // Strategy B: where query (needs Firestore index — may throw)
+    if(!foundTrip){
+      try{
+        const snap=await fbDb.collection('trips').where('inviteCode','==',code).limit(1).get();
+        if(!snap.empty){const doc=snap.docs[0];foundTrip={...doc.data(),id:doc.id};}
+      }catch(e){console.warn('Strategy B (where inviteCode query) failed:',e.code, e.message);}
+    }
   }
-  if(!foundTrip){toast('Invite code not found — check with your organiser','err');return;}
+  if(!foundTrip){
+    if(!FB_READY)toast('No Firebase connection — make sure you are signed in','err');
+    else toast('Code "'+code+'" not found. The organiser must open the Crew tab first to register the code, then share it again.','err');
+    return;
+  }
   // Check if already a member
   const alreadyMember=foundTrip.crew&&foundTrip.crew.some(c=>c.id===ME.id||c.email===ME.email);
   if(!alreadyMember){
