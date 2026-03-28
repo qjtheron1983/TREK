@@ -1099,14 +1099,20 @@ const panelLabels={dashboard:'Overview',itinerary:'Itinerary',route:'Route & Map
 function $(id){return document.getElementById(id);}
 function sv(){
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
-  // Firebase sync: save current trip to Firestore
   if(FB_READY&&ME&&DB.cur&&DB.trips[DB.cur]){
     try{
+      const _t=DB.trips[DB.cur];
       fbDb.collection('trips').doc(DB.cur).set({
-        ...DB.trips[DB.cur],
-        _owner:ME.id,
+        ..._t,_owner:ME.id,
         _updatedAt:firebase.firestore.FieldValue.serverTimestamp()
       },{merge:true}).catch(e=>console.warn('Firestore write:',e));
+      // Always write invite_codes lookup — needed for join to work
+      if(_t.inviteCode){
+        fbDb.collection('invite_codes').doc(_t.inviteCode).set(
+          {tripId:DB.cur,tripName:_t.name||'',_owner:ME.id},
+          {merge:true}
+        ).catch(e=>console.warn('invite_codes write:',e));
+      }
     }catch(e){}
   }
 }
@@ -1267,6 +1273,17 @@ window.addEventListener('load',()=>{
 });
 
 function launchApp(){
+  // Handle Spotify OAuth callback first
+  if(new URLSearchParams(location.search).get('state')==='trek_spotify'){
+    $('authScreen').classList.add('hidden');
+    $('app').classList.add('visible');
+    $('sbAvatar').textContent=ME.initials;
+    $('sbAvatar').style.background=ME.avatar||COLORS[0];
+    $('sbUname').textContent=ME.name;
+    rebuildSel(); renderAll(); startCD();
+    spHandleCallback();
+    return;
+  }
   $('authScreen').classList.add('hidden');
   if(!FB_READY)$('fbSetupBanner').style.display='block';
   $('app').classList.add('visible');
@@ -1772,7 +1789,6 @@ function calcFuelEstimate(t){
   if(!km||!t.vehicles||!t.vehicles.length)return 0;
   return t.vehicles.reduce((a,v)=>a+(km/100)*(Number(v.consumption)||12.5)*price,0);
 }
-function calcTotalFuel(t){return calcFuelEstimate(t);}
 function calcTotalFuel(t){return calcFuelEstimate(t);}
 
 // ══════════════════════════════════════════════════════════════
@@ -3005,6 +3021,14 @@ function resetPacking(){if(!confirm('Reset?'))return;T().packing.forEach(c=>c.it
 // ══════════════════════════════════════════════════════════════
 function renderCrew(t){
   const grid=$('crewGrid');
+  // Write invite_codes lookup doc every time Crew tab opens so joining always works
+  if(FB_READY&&t.inviteCode&&t.id){
+    fbDb.collection('invite_codes').doc(t.inviteCode).set(
+      {tripId:t.id,tripName:t.name||'',_owner:ME.id},
+      {merge:true}
+    ).then(()=>console.log('invite_codes written:',t.inviteCode))
+     .catch(e=>console.error('invite_codes write failed:',e));
+  }
   $('inviteCodeBox').innerHTML=`<div class="invite-code-box"><div class="icb-label">Trip Invite Code — share with your crew</div><div class="icb-code">${t.inviteCode||'—'}</div><button class="icb-copy" onclick="navigator.clipboard?.writeText('${t.inviteCode}');toast('Invite code copied 📋','ok')">Copy Code</button></div>`;
   if(!t.crew.length){grid.innerHTML='';return;}
   grid.innerHTML=t.crew.map((m,i)=>{
@@ -3150,8 +3174,6 @@ document.querySelectorAll('.ni').forEach(item=>{
 
   });
 });
-function openExpenseModal_prefill(){/* Just ensure modal is not open on nav */}
-function toggleSB(){$('sidebar').classList.toggle('off');$('main').classList.toggle('wide');}
 
 // ══════════════════════════════════════════════════════════════
 //  MODAL HELPERS
@@ -3218,6 +3240,185 @@ function toggleMap(){
 }
 function openExpenseModal_prefill(){}
 function toggleSB(){$('sidebar').classList.toggle('off');}
+
+// ══════════════════════════════════════════════════════════════
+//  SPOTIFY PKCE OAUTH
+// ══════════════════════════════════════════════════════════════
+const SP_CLIENT_ID='ee0ad780e03b4032a7bdd5d8a4f18445';
+const SP_REDIRECT=window.location.origin+window.location.pathname;
+const SP_SCOPES='user-read-private playlist-read-private user-library-read';
+const SP_TRACKS={};
+let spSearchTimer=null;
+
+function spToken(){
+  const t=sessionStorage.getItem('sp_token'),e=sessionStorage.getItem('sp_token_expiry');
+  return(t&&e&&Date.now()<parseInt(e))?t:null;
+}
+
+async function spInit(){
+  if(spToken()){renderSpotify(T());return;}
+  const raw=crypto.getRandomValues(new Uint8Array(32));
+  const verifier=Array.from(raw).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,43);
+  const challenge=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))
+    .then(buf=>btoa(String.fromCharCode(...new Uint8Array(buf)))
+      .replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''));
+  sessionStorage.setItem('sp_verifier',verifier);
+  sessionStorage.setItem('sp_trip',DB.cur||'');
+  window.location.href='https://accounts.spotify.com/authorize?'+new URLSearchParams({
+    client_id:SP_CLIENT_ID,response_type:'code',
+    redirect_uri:SP_REDIRECT,scope:SP_SCOPES,
+    code_challenge_method:'S256',code_challenge:challenge,state:'trek_spotify'
+  });
+}
+
+async function spHandleCallback(){
+  const p=new URLSearchParams(location.search);
+  if(p.get('state')!=='trek_spotify'||!p.get('code'))return false;
+  // Clean URL immediately
+  history.replaceState({},'',location.pathname);
+  const verifier=sessionStorage.getItem('sp_verifier');
+  if(!verifier){toast('Spotify auth error — please try again','err');return false;}
+  try{
+    const res=await fetch('https://accounts.spotify.com/api/token',{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:new URLSearchParams({
+        client_id:SP_CLIENT_ID,grant_type:'authorization_code',
+        code:p.get('code'),redirect_uri:SP_REDIRECT,code_verifier:verifier
+      })
+    });
+    const d=await res.json();
+    if(d.access_token){
+      sessionStorage.setItem('sp_token',d.access_token);
+      sessionStorage.setItem('sp_token_expiry',String(Date.now()+(d.expires_in||3600)*1000));
+      sessionStorage.removeItem('sp_verifier');
+      toast('Spotify connected!','ok');
+      // Restore trip and navigate to playlist tab
+      const savedTrip=sessionStorage.getItem('sp_trip');
+      if(savedTrip&&DB.trips[savedTrip])DB.cur=savedTrip;
+      navTo('crew');
+      setTimeout(()=>{const t=T();if(t)renderSpotify(t);},300);
+      return true;
+    }else{
+      toast('Spotify auth failed: '+(d.error||'unknown'),'err');
+    }
+  }catch(e){toast('Spotify connection error','err');console.error(e);}
+  return false;
+}
+
+function spDisconnect(){
+  sessionStorage.removeItem('sp_token');
+  sessionStorage.removeItem('sp_token_expiry');
+  renderSpotify(T());
+  toast('Spotify disconnected','ok');
+}
+
+function spSearchDebounce(q){clearTimeout(spSearchTimer);spSearchTimer=setTimeout(()=>spSearch(q),380);}
+
+async function spSearch(q){
+  const el=$('spSearchResults');if(!el)return;
+  if(!q||q.length<2){el.innerHTML='';return;}
+  const tok=spToken();if(!tok)return;
+  el.innerHTML='<div style="color:#b3b3b3;font-size:.78rem;padding:.5rem">Searching...</div>';
+  try{
+    const res=await fetch('https://api.spotify.com/v1/search?q='+encodeURIComponent(q)+'&type=track&limit=6&market=ZA',
+      {headers:{Authorization:'Bearer '+tok}});
+    if(res.status===401){sessionStorage.removeItem('sp_token');renderSpotify(T());toast('Spotify session expired','err');return;}
+    const d=await res.json();
+    const tracks=d.tracks?.items||[];
+    const playlist=(T()?.playlist||[]);
+    el.innerHTML='';
+    if(!tracks.length){el.innerHTML='<div style="color:#b3b3b3;font-size:.78rem;padding:.5rem">No results</div>';return;}
+    tracks.forEach(tr=>{
+      const img=tr.album?.images?.[1]?.url||'';
+      const art=(tr.artists||[]).map(a=>a.name).join(', ');
+      const inList=playlist.some(p=>p.id===tr.id);
+      SP_TRACKS[tr.id]={id:tr.id,name:tr.name,artist:art,img,duration_ms:tr.duration_ms||0};
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:.6rem;padding:.5rem;border-radius:7px;cursor:pointer;transition:background .15s';
+      row.onmouseover=()=>row.style.background='rgba(255,255,255,.07)';
+      row.onmouseout=()=>row.style.background='transparent';
+      const thumb=document.createElement('div');
+      thumb.style.cssText='width:38px;height:38px;border-radius:4px;overflow:hidden;flex-shrink:0;background:#333;display:flex;align-items:center;justify-content:center';
+      thumb.innerHTML=img?`<img src="${img}" style="width:100%;height:100%;object-fit:cover">`:'🎵';
+      const info=document.createElement('div');info.style.cssText='flex:1;overflow:hidden';
+      info.innerHTML=`<div style="font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff">${tr.name}</div><div style="font-size:.7rem;color:#b3b3b3">${art}</div>`;
+      const action=document.createElement('div');
+      if(inList){action.innerHTML='<span style="color:#1DB954;font-size:.7rem;font-weight:700">✓ Added</span>';}
+      else{
+        const btn=document.createElement('button');
+        btn.textContent='＋ Add';
+        btn.style.cssText='padding:.28rem .65rem;border-radius:20px;border:1.5px solid #1DB954;background:transparent;color:#1DB954;font-size:.68rem;font-weight:800;cursor:pointer;white-space:nowrap';
+        btn.onclick=()=>spAdd(SP_TRACKS[tr.id]);
+        action.appendChild(btn);
+      }
+      row.appendChild(thumb);row.appendChild(info);row.appendChild(action);
+      el.appendChild(row);
+    });
+  }catch(e){el.innerHTML='<div style="color:#b3b3b3;font-size:.78rem;padding:.5rem">Search failed</div>';}
+}
+
+async function spAdd(track){
+  const t=T();if(!t)return;
+  t.playlist=t.playlist||[];
+  if(t.playlist.some(p=>p.id===track.id)){toast('Already in playlist','ok');return;}
+  t.playlist.push({...track,votes:0,addedBy:ME.id,addedAt:Date.now()});
+  sv();spRenderPlaylist(t);toast('Added: '+track.name,'ok');
+}
+
+async function spVote(id,dir){
+  const t=T();if(!t)return;
+  const tr=(t.playlist||[]).find(p=>p.id===id);if(!tr)return;
+  tr.votes=(tr.votes||0)+dir;
+  sv();spRenderPlaylist(t);
+}
+
+function spRemove(id){
+  const t=T();if(!t)return;
+  t.playlist=(t.playlist||[]).filter(p=>p.id!==id);
+  sv();spRenderPlaylist(t);toast('Removed','ok');
+}
+
+function spRenderPlaylist(t){
+  const el=$('spPlaylist');if(!el)return;
+  const list=(t?.playlist||[]).sort((a,b)=>(b.votes||0)-(a.votes||0));
+  el.innerHTML='';
+  if(!list.length){
+    el.innerHTML='<div style="text-align:center;color:#b3b3b3;font-size:.82rem;padding:1.2rem;font-style:italic">No tracks yet — search above to add 🎶</div>';
+    return;
+  }
+  list.forEach((tr,i)=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;gap:.6rem;padding:.55rem .5rem;border-bottom:1px solid rgba(255,255,255,.05)';
+    const num=document.createElement('div');num.style.cssText='color:#b3b3b3;font-size:.7rem;font-weight:700;width:16px;text-align:right;flex-shrink:0';num.textContent=i+1;
+    const thumb=document.createElement('div');thumb.style.cssText='width:36px;height:36px;border-radius:4px;overflow:hidden;flex-shrink:0;background:#333;display:flex;align-items:center;justify-content:center';
+    thumb.innerHTML=tr.img?`<img src="${tr.img}" style="width:100%;height:100%;object-fit:cover">`:'🎵';
+    const info=document.createElement('div');info.style.cssText='flex:1;overflow:hidden';
+    info.innerHTML=`<div style="font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff">${tr.name}</div><div style="font-size:.68rem;color:#b3b3b3">${tr.artist||''}</div>`;
+    const actions=document.createElement('div');actions.style.cssText='display:flex;align-items:center;gap:.25rem;flex-shrink:0';
+    const btnD=document.createElement('button');btnD.textContent='👎';btnD.style.cssText='background:transparent;border:none;color:#b3b3b3;cursor:pointer;font-size:.85rem;padding:2px';btnD.onclick=()=>spVote(tr.id,-1);
+    const votes=document.createElement('span');votes.style.cssText='color:#1DB954;font-weight:800;font-size:.75rem;min-width:18px;text-align:center';votes.textContent=tr.votes||0;
+    const btnU=document.createElement('button');btnU.textContent='👍';btnU.style.cssText='background:transparent;border:none;color:#1DB954;cursor:pointer;font-size:.85rem;padding:2px';btnU.onclick=()=>spVote(tr.id,1);
+    actions.appendChild(btnD);actions.appendChild(votes);actions.appendChild(btnU);
+    if(tr.addedBy===ME.id){const del=document.createElement('button');del.textContent='✕';del.style.cssText='background:transparent;border:none;color:#535353;cursor:pointer;font-size:.7rem;padding:2px 4px';del.onclick=()=>spRemove(tr.id);actions.appendChild(del);}
+    row.appendChild(num);row.appendChild(thumb);row.appendChild(info);row.appendChild(actions);
+    el.appendChild(row);
+  });
+}
+
+function renderSpotify(t){
+  const ca=$('spConnectArea'),sa=$('spSearchArea');if(!ca)return;
+  const tok=spToken();
+  if(tok){
+    ca.innerHTML='<div style="display:flex;align-items:center;gap:.45rem"><div style="width:8px;height:8px;background:#1DB954;border-radius:50%"></div><span style="color:#1DB954;font-size:.72rem;font-weight:700">Connected</span><button onclick="spDisconnect()" style="background:transparent;border:1px solid #535353;border-radius:4px;color:#b3b3b3;font-size:.65rem;padding:2px 6px;cursor:pointer;margin-left:.2rem">Disconnect</button></div>';
+    if(sa)sa.style.display='block';
+  }else{
+    ca.innerHTML='<button onclick="spInit()" style="padding:.38rem .85rem;background:#1DB954;border:none;border-radius:20px;color:#000;font-weight:800;font-size:.75rem;cursor:pointer">🎵 Connect Spotify</button>';
+    if(sa)sa.style.display='none';
+  }
+  if(t)spRenderPlaylist(t);
+}
+
 </script>
 </body>
 </html>
