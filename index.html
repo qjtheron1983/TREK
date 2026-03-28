@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#f7f2eb">
+<meta name="theme-color" content="#0f1512">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="TREK">
@@ -18,7 +18,7 @@
 <meta http-equiv="Expires" content="0">
 <title>TREK — Expedition Planner by Forgebit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -28,19 +28,19 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 :root{
-  --bg:#f7f2eb;--bg2:#eee8dd;--surface:#fff;--border:#ddd4c0;--border2:#e8dfd0;
-  --text:#1c1612;--text2:#4a3f30;--text3:#7a6e5f;
-  --amber:#b8720f;--al:#c9921a;--amber-bg:rgba(184,114,15,.1);--amber-bd:rgba(184,114,15,.25);
-  --sage:#3d6435;--sage-bg:rgba(61,100,53,.1);--sage-bd:rgba(61,100,53,.25);
-  --rust:#8b3222;--rust-bg:rgba(139,50,34,.08);
-  --sky:#1e6fa5;--sky-bg:rgba(30,111,165,.1);--sky-bd:rgba(30,111,165,.25);
-  --fire:#c94b1a;
-  --sh:rgba(28,22,18,.08);--shm:rgba(28,22,18,.14);
+  --bg:#0f1512;--bg2:#161d19;--surface:#1c2620;--border:#2a3830;--border2:#243028;
+  --text:#f0ede8;--text2:#c8bfb4;--text3:#8a9490;
+  --amber:#e8a020;--al:#f0b030;--amber-bg:rgba(232,160,32,.12);--amber-bd:rgba(232,160,32,.28);
+  --sage:#4a8c5c;--sage-bg:rgba(74,140,92,.12);--sage-bd:rgba(74,140,92,.28);
+  --rust:#c0422a;--rust-bg:rgba(192,66,42,.1);
+  --sky:#3b8fc0;--sky-bg:rgba(59,143,192,.12);--sky-bd:rgba(59,143,192,.28);
+  --fire:#e05a20;
+  --sh:rgba(0,0,0,.25);--shm:rgba(0,0,0,.4);
   --r:10px;--rl:16px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;-webkit-font-smoothing:antialiased;}
-body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:14px;line-height:1.5;overscroll-behavior-y:none;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;font-size:14px;line-height:1.5;overscroll-behavior-y:none;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 
@@ -49,10 +49,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 #loader.out{opacity:0;pointer-events:none;transform:scale(1.03);}
 .lring{width:60px;height:60px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--amber);animation:spin 1.3s linear infinite;margin-bottom:1.6rem;}
 @keyframes spin{to{transform:rotate(360deg)}}
-.llogo{font-family:'Playfair Display';font-size:2.5rem;font-weight:900;letter-spacing:.22em;color:var(--text);}
-.ltag{font-family:'Space Mono';font-size:.52rem;letter-spacing:.28em;color:var(--text3);text-transform:uppercase;margin-top:.25rem;}
+.llogo{font-family:'DM Serif Display';font-size:2.5rem;font-weight:900;letter-spacing:.22em;color:var(--text);}
+.ltag{font-family:'JetBrains Mono';font-size:.52rem;letter-spacing:.28em;color:var(--text3);text-transform:uppercase;margin-top:.25rem;}
 .ldiv{width:32px;height:1px;background:var(--border);margin:.8rem auto;}
-.lfb{font-family:'Space Mono';font-size:.45rem;letter-spacing:.18em;color:var(--amber);text-transform:uppercase;}
+.lfb{font-family:'JetBrains Mono';font-size:.45rem;letter-spacing:.18em;color:var(--amber);text-transform:uppercase;}
 @keyframes lfi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .llogo,.ltag,.ldiv,.lfb{animation:lfi .5s ease both;}
 .ltag{animation-delay:.15s}.ldiv{animation-delay:.25s}.lfb{animation-delay:.35s}
@@ -62,15 +62,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 #authScreen.hidden{display:none;}
 .auth-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:2.25rem;box-shadow:0 4px 24px var(--sh);}
 .auth-logo{text-align:center;margin-bottom:1.5rem;}
-.auth-logo-mark{font-family:'Playfair Display';font-size:1.85rem;font-weight:900;letter-spacing:.18em;}
-.auth-logo-sub{font-size:.65rem;color:var(--text3);letter-spacing:.14em;font-family:'Space Mono';text-transform:uppercase;margin-top:.18rem;}
-.auth-logo-fb{font-size:.48rem;color:var(--amber);letter-spacing:.16em;font-family:'Space Mono';text-transform:uppercase;margin-top:.12rem;}
+.auth-logo-mark{font-family:'DM Serif Display';font-size:1.85rem;font-weight:900;letter-spacing:.18em;}
+.auth-logo-sub{font-size:.65rem;color:var(--text3);letter-spacing:.14em;font-family:'JetBrains Mono';text-transform:uppercase;margin-top:.18rem;}
+.auth-logo-fb{font-size:.48rem;color:var(--amber);letter-spacing:.16em;font-family:'JetBrains Mono';text-transform:uppercase;margin-top:.12rem;}
 .auth-tabs{display:flex;background:var(--bg2);border-radius:8px;padding:3px;margin-bottom:1.4rem;}
 .auth-tab{flex:1;padding:.48rem;text-align:center;border-radius:6px;cursor:pointer;font-size:.78rem;font-weight:500;color:var(--text3);transition:all .18s;}
 .auth-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px var(--sh);}
 .fi{margin-bottom:.9rem;}
 .fi label{display:block;font-size:.68rem;font-weight:600;color:var(--text2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:.3rem;}
-.fi input{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.65rem .82rem;border-radius:8px;font-size:.95rem;outline:none;transition:border-color .18s;}
+.fi input{width:100%;background:var(--bg);border:1.5px solid var(--border);color:var(--text);padding:.65rem .82rem;border-radius:8px;font-size:.95rem;outline:none;transition:border-color .18s;}
 .fi input:focus{border-color:var(--amber);background:var(--surface);}
 .btn-auth{width:100%;background:var(--amber);color:#fff;border:none;padding:.75rem;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:.2rem;}
 .btn-auth:hover{background:var(--al);}
@@ -89,11 +89,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 #sidebar{width:232px;background:var(--surface);border-right:1px solid var(--border2);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:200;transition:transform .26s ease;overflow-y:auto;box-shadow:2px 0 12px var(--sh);}
 #sidebar.off{transform:translateX(-232px);}
 .sb-head{padding:1.3rem 1.2rem 1rem;border-bottom:1px solid var(--border2);}
-.sb-logo{font-family:'Playfair Display';font-size:1.6rem;font-weight:900;letter-spacing:.14em;}
-.sb-tag{font-size:.48rem;color:var(--text3);letter-spacing:.28em;font-family:'Space Mono';text-transform:uppercase;margin-top:.12rem;}
-.sb-fb{font-size:.42rem;color:var(--amber);letter-spacing:.16em;font-family:'Space Mono';text-transform:uppercase;margin-top:.06rem;}
+.sb-logo{font-family:'DM Serif Display';font-size:1.6rem;font-weight:900;letter-spacing:.14em;}
+.sb-tag{font-size:.48rem;color:var(--text3);letter-spacing:.28em;font-family:'JetBrains Mono';text-transform:uppercase;margin-top:.12rem;}
+.sb-fb{font-size:.42rem;color:var(--amber);letter-spacing:.16em;font-family:'JetBrains Mono';text-transform:uppercase;margin-top:.06rem;}
 .sb-user{padding:.8rem 1.2rem;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:.7rem;}
-.sb-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display';font-size:.95rem;font-weight:700;color:#fff;flex-shrink:0;}
+.sb-av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display';font-size:.95rem;font-weight:700;color:#fff;flex-shrink:0;}
 .sb-uname{font-size:.82rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .sb-logout{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.8rem;padding:.18rem;}
 .sb-logout:hover{color:var(--rust);}
@@ -112,21 +112,21 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .ni:hover{color:var(--text);background:var(--bg2);}
 .ni.active{color:var(--amber);border-left-color:var(--amber);background:var(--amber-bg);}
 .ni-ic{width:15px;text-align:center;font-size:.88rem;flex-shrink:0;}
-.ni-badge{margin-left:auto;background:var(--rust);color:#fff;font-size:.5rem;padding:1px 5px;border-radius:10px;font-family:'Space Mono';}
+.ni-badge{margin-left:auto;background:var(--rust);color:#fff;font-size:.5rem;padding:1px 5px;border-radius:10px;font-family:'JetBrains Mono';}
 .sb-cd{margin:.6rem .9rem .75rem;background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:8px;padding:.75rem;}
 .cd-lbl{font-size:.54rem;font-weight:600;color:var(--amber);letter-spacing:.09em;text-transform:uppercase;display:block;margin-bottom:.5rem;}
 .cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.1rem;}
 .cd-u{text-align:center;}
-.cd-n{font-family:'Playfair Display';font-size:1.25rem;font-weight:700;color:var(--amber);line-height:1;}
-.cd-l{font-size:.4rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'Space Mono';}
-.sb-foot{padding:.55rem 1.2rem .75rem;border-top:1px solid var(--border2);font-size:.45rem;color:var(--text3);letter-spacing:.1em;font-family:'Space Mono';text-transform:uppercase;text-align:center;}
+.cd-n{font-family:'DM Serif Display';font-size:1.25rem;font-weight:700;color:var(--amber);line-height:1;}
+.cd-l{font-size:.4rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono';}
+.sb-foot{padding:.55rem 1.2rem .75rem;border-top:1px solid var(--border2);font-size:.45rem;color:var(--text3);letter-spacing:.1em;font-family:'JetBrains Mono';text-transform:uppercase;text-align:center;}
 
 /* MAIN */
 #main{margin-left:232px;min-height:100vh;background:var(--bg);}
 .topbar{background:var(--surface);border-bottom:1px solid var(--border2);padding:.75rem 1.5rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px var(--sh);}
 .menu-btn{background:none;border:1px solid var(--border);color:var(--amber);padding:.3rem .5rem;cursor:pointer;border-radius:6px;font-size:.85rem;transition:all .16s;}
 .menu-btn:hover{background:var(--amber-bg);}
-.tb-title{font-family:'Playfair Display';font-size:1rem;font-style:italic;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tb-title{font-family:'DM Serif Display';font-size:1rem;font-style:italic;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .btn-sm{background:none;border:1px solid var(--border);color:var(--text3);padding:.28rem .6rem;cursor:pointer;border-radius:6px;font-size:.75rem;transition:all .16s;}
 .btn-sm:hover{color:var(--text);border-color:var(--amber);}
 
@@ -136,7 +136,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 @keyframes pIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* BUTTONS */
-.btn-primary{background:var(--amber);color:#fff;border:none;padding:.55rem 1.15rem;font-size:.73rem;font-weight:600;letter-spacing:.03em;cursor:pointer;border-radius:8px;transition:all .18s;white-space:nowrap;}
+.btn-primary{background:var(--amber);color:#0f1512;border:none;padding:.55rem 1.15rem;font-size:.73rem;font-weight:600;letter-spacing:.03em;cursor:pointer;border-radius:8px;transition:all .18s;white-space:nowrap;}
 .btn-primary:hover{background:var(--al);transform:translateY(-1px);box-shadow:0 3px 10px rgba(184,114,15,.3);}
 .btn-primary:active{transform:scale(.97);}
 .btn-secondary{background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:.5rem 1rem;font-size:.72rem;font-weight:500;cursor:pointer;border-radius:8px;transition:all .18s;}
@@ -164,7 +164,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .overlay.open{opacity:1;pointer-events:all;}
 .modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl) var(--rl) 0 0;padding:1.6rem 1.6rem calc(1.6rem + env(safe-area-inset-bottom));width:100%;max-width:580px;max-height:92vh;overflow-y:auto;transform:translateY(24px);transition:transform .25s;position:relative;}
 .overlay.open .modal{transform:none;}
-.modal-title{font-family:'Playfair Display';font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:1.2rem;}
+.modal-title{font-family:'DM Serif Display';font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:1.2rem;}
 .modal-close{position:absolute;top:.85rem;right:.85rem;background:var(--bg2);border:none;color:var(--text3);font-size:.9rem;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .16s;}
 .modal-close:hover{background:var(--border);color:var(--text);}
 
@@ -232,14 +232,14 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .wiz-pane.on{display:block;}
 
 /* OVERVIEW DASHBOARD */
-.dash-hero{background:linear-gradient(135deg,#2e1f0c 0%,#4a3020 45%,#2d4028 100%);border-radius:var(--rl);padding:1.75rem 2rem;margin-bottom:1.3rem;color:#fff;position:relative;overflow:hidden;}
+.dash-hero{background:linear-gradient(135deg,#0a1a0f 0%,#162a1e 50%,#0f1e28 100%);border:1px solid var(--border);border-radius:var(--rl);padding:1.75rem 2rem;margin-bottom:1.3rem;color:#fff;position:relative;overflow:hidden;}
 .dash-hero::after{content:'';position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.04);pointer-events:none;}
-.dh-name{font-family:'Playfair Display';font-size:2rem;font-weight:900;color:#fff;position:relative;z-index:1;}
+.dh-name{font-family:'DM Serif Display';font-size:2rem;font-weight:900;color:#fff;position:relative;z-index:1;}
 .dh-meta{display:flex;gap:1.1rem;flex-wrap:wrap;margin-top:.55rem;position:relative;z-index:1;}
 .dh-mi{display:flex;align-items:center;gap:.32rem;font-size:.82rem;color:rgba(255,255,255,.78);}
 .stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:.8rem;margin-bottom:1.3rem;}
 .stat{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.9rem;box-shadow:0 1px 4px var(--sh);}
-.stat-n{font-family:'Playfair Display';font-size:1.7rem;font-weight:700;color:var(--amber);}
+.stat-n{font-family:'DM Serif Display';font-size:1.7rem;font-weight:700;color:var(--amber);}
 .stat-l{font-size:.58rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:.12rem;}
 .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.3rem;}
 .dc{padding:1.1rem;}
@@ -248,7 +248,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 /* INSIGHTS */
 .bi-kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.8rem;margin-bottom:1.3rem;}
 .bi-kpi{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.9rem;box-shadow:0 1px 4px var(--sh);text-align:center;}
-.bi-kpi-n{font-family:'Playfair Display';font-size:1.85rem;font-weight:700;color:var(--amber);}
+.bi-kpi-n{font-family:'DM Serif Display';font-size:1.85rem;font-weight:700;color:var(--amber);}
 .bi-kpi-l{font-size:.58rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:.1rem;}
 .bi-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.3rem;}
 .bi-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:1.3rem;box-shadow:0 1px 4px var(--sh);}
@@ -272,13 +272,13 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 /* ROUTE */
 .rsr{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.8rem;margin-bottom:1rem;}
 .rs{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.82rem;text-align:center;box-shadow:0 1px 4px var(--sh);}
-.rs-n{font-family:'Playfair Display';font-size:1.4rem;font-weight:700;color:var(--sky);}
+.rs-n{font-family:'DM Serif Display';font-size:1.4rem;font-weight:700;color:var(--sky);}
 .rs-l{font-size:.58rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-top:.12rem;}
 .stop-list{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1rem;}
 .stop-row{display:flex;align-items:flex-start;gap:.75rem;padding:.7rem .9rem;background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);box-shadow:0 1px 3px var(--sh);}
 .stop-row.is-start{border-left:3px solid var(--sage);}
 .stop-row.is-end{border-left:3px solid var(--rust);}
-.sr-n{font-family:'Playfair Display';font-size:1.15rem;font-weight:700;color:var(--amber);min-width:22px;padding-top:.05rem;}
+.sr-n{font-family:'DM Serif Display';font-size:1.15rem;font-weight:700;color:var(--amber);min-width:22px;padding-top:.05rem;}
 .sr-icon{font-size:1.1rem;flex-shrink:0;}
 .sr-body{flex:1;}
 .sr-nm{font-size:.88rem;font-weight:600;color:var(--text);}
@@ -308,7 +308,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .day-card.from-route{border-left:3px solid var(--sage);}
 .day-card.travel-day{border-left:3px solid var(--sky);}
 .dh{display:flex;align-items:center;gap:.8rem;padding:.85rem 1rem;cursor:pointer;background:var(--bg2);}
-.dn{font-family:'Playfair Display';font-size:1.3rem;font-weight:700;min-width:38px;}
+.dn{font-family:'DM Serif Display';font-size:1.3rem;font-weight:700;min-width:38px;}
 .di{flex:1;}
 .dd{font-size:.62rem;font-weight:600;color:var(--text3);letter-spacing:.03em;}
 .dl{font-size:.88rem;font-weight:600;color:var(--text);}
@@ -349,9 +349,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .ac-btns{display:flex;gap:.35rem;margin-top:.65rem;flex-wrap:wrap;}
 
 /* BUDGET */
-.budget-hero{background:linear-gradient(135deg,#1f1408,#2d1e0a);border-radius:var(--rl);padding:1.4rem 1.75rem;color:#fff;margin-bottom:1.1rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.budget-hero{background:linear-gradient(135deg,#0a1508,#0d2010);border:1px solid var(--border);border-radius:var(--rl);padding:1.4rem 1.75rem;color:#fff;margin-bottom:1.1rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
 .bh-label{font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.65;margin-bottom:.2rem;}
-.bh-amount{font-family:'Playfair Display';font-size:2.2rem;font-weight:900;color:#f0c060;}
+.bh-amount{font-family:'DM Serif Display';font-size:2.2rem;font-weight:900;color:#f0c060;}
 .bh-sub{font-size:.75rem;opacity:.55;margin-top:.15rem;}
 .bh-details{display:flex;gap:1.75rem;flex-wrap:wrap;}
 .bh-di{}
@@ -365,13 +365,13 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .fv-card.fv-mine{border-color:var(--amber-bd);background:var(--amber-bg);}
 .fv-name{font-size:.86rem;font-weight:700;color:var(--text);}
 .fv-meta{font-size:.72rem;color:var(--text3);margin-top:.15rem;}
-.fv-cost{font-family:'Playfair Display';font-size:1.25rem;font-weight:700;color:var(--amber);margin-top:.45rem;}
+.fv-cost{font-family:'DM Serif Display';font-size:1.25rem;font-weight:700;color:var(--amber);margin-top:.45rem;}
 .my-cost-banner{background:linear-gradient(135deg,var(--amber-bg),var(--sky-bg));border:1px solid var(--amber-bd);border-radius:var(--r);padding:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
 .mcb-label{font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;}
-.mcb-amount{font-family:'Playfair Display';font-size:1.5rem;font-weight:700;color:var(--amber);}
+.mcb-amount{font-family:'DM Serif Display';font-size:1.5rem;font-weight:700;color:var(--amber);}
 .cost-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:1.1rem;box-shadow:0 1px 4px var(--sh);margin-bottom:.75rem;}
 .cost-card-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;font-size:.82rem;font-weight:600;color:var(--text);}
-.cost-amount{font-family:'Playfair Display';font-size:1.35rem;font-weight:700;color:var(--amber);}
+.cost-amount{font-family:'DM Serif Display';font-size:1.35rem;font-weight:700;color:var(--amber);}
 .split-row{display:flex;align-items:center;gap:.6rem;padding:.38rem 0;border-bottom:1px solid var(--border2);font-size:.8rem;}
 .split-row:last-child{border:none;}
 .split-pct{width:56px;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:.2rem .32rem;border-radius:4px;font-size:.78rem;text-align:center;outline:none;}
@@ -426,14 +426,14 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .pack-add button{background:var(--amber-bg);border:1px solid var(--amber-bd);color:var(--amber);padding:.28rem .58rem;cursor:pointer;border-radius:6px;font-size:.8rem;font-weight:600;transition:all .16s;}
 .pack-add button:hover{background:var(--amber);color:#fff;}
 .pp-top{display:flex;align-items:baseline;gap:.85rem;flex-wrap:wrap;margin-bottom:.4rem;}
-.pp-n{font-family:'Playfair Display';font-size:1.55rem;font-weight:700;color:var(--amber);}
+.pp-n{font-family:'DM Serif Display';font-size:1.55rem;font-weight:700;color:var(--amber);}
 .pp-t{font-size:.88rem;color:var(--text3);}
 .pp-p{font-size:.7rem;font-weight:600;color:var(--text3);margin-left:auto;}
 
 /* CREW */
 .crew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-bottom:1.4rem;}
 .cc{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:1.1rem;text-align:center;box-shadow:0 1px 4px var(--sh);}
-.cr-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display';font-size:1.25rem;font-weight:700;color:#fff;margin:0 auto .8rem;}
+.cr-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display';font-size:1.25rem;font-weight:700;color:#fff;margin:0 auto .8rem;}
 .cr-nm{font-size:.88rem;font-weight:700;color:var(--text);}
 .cr-rl{font-size:.62rem;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-top:.16rem;}
 .cr-st{font-size:.62rem;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:.5rem;display:inline-block;}
@@ -442,7 +442,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .cst-self{background:var(--sky-bg);color:var(--sky);}
 .invite-code-box{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--r);padding:.9rem;text-align:center;margin-bottom:1.2rem;}
 .icb-label{font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.38rem;}
-.icb-code{font-family:'Space Mono';font-size:1.55rem;font-weight:700;color:var(--amber);letter-spacing:.22em;}
+.icb-code{font-family:'JetBrains Mono';font-size:1.55rem;font-weight:700;color:var(--amber);letter-spacing:.22em;}
 .icb-copy{background:var(--amber);color:#fff;border:none;padding:.32rem .82rem;border-radius:6px;font-size:.7rem;font-weight:600;cursor:pointer;margin-top:.48rem;transition:all .18s;}
 .icb-copy:hover{background:var(--al);}
 
@@ -482,7 +482,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 /* MISC */
 input[type=file]{display:none;}
 .divider{border:none;border-top:1px solid var(--border2);margin:1.4rem 0;}
-.ph-title{font-family:'Playfair Display';font-size:1.65rem;font-weight:700;}
+.ph-title{font-family:'DM Serif Display';font-size:1.65rem;font-weight:700;}
 .ph-sub{font-size:.8rem;color:var(--text3);margin-top:.15rem;}
 
 /* RESPONSIVE */
@@ -690,13 +690,13 @@ if('serviceWorker' in navigator){
     </section>
     <!-- PLAN (Route · Stays · Food) -->
     <section class="panel" id="panel-plan">
-      <div id="mapContainer"><div id="leafletMap"></div></div>
       <div class="subtabs">
         <button class="stab active" data-stab="route" onclick="setPlanTab('route',this)">🧭 Route</button>
         <button class="stab" data-stab="stays" onclick="setPlanTab('stays',this)">🏕️ Stays</button>
         <button class="stab" data-stab="food" onclick="setPlanTab('food',this)">🔥 Food</button>
         <button class="stab" data-stab="activities" onclick="setPlanTab('activities',this)">💡 Activities</button>
         <button class="stab" data-stab="itinerary" onclick="setPlanTab('itinerary',this)">📅 Itinerary</button>
+        <button class="stab" data-stab="playlist" onclick="setPlanTab('playlist',this)">🎵 Playlist</button>
       </div>
       <!-- Route -->
       <div class="stpane on" id="stp-route">
@@ -707,6 +707,7 @@ if('serviceWorker' in navigator){
 
         <div class="rsr" id="routeStats"></div>
         <div class="stop-list" id="stopList"></div>
+        <div id="mapContainer" style="margin-top:.75rem"><div id="leafletMap"></div></div>
       </div>
       <!-- Stays -->
       <div class="stpane" id="stp-stays">
@@ -727,6 +728,26 @@ if('serviceWorker' in navigator){
         <div id="activitiesContent"></div>
       </div>
       <div class="stpane" id="stp-itinerary"><div id="itinContent"></div></div>
+      <div class="stpane" id="stp-playlist">
+        <div id="spPlaylistPane" style="background:#121212;border-radius:var(--rl);overflow:hidden;margin-top:.25rem">
+          <div style="padding:1rem 1.1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+            <div style="display:flex;align-items:center;gap:.6rem">
+              <div style="width:32px;height:32px;background:#1DB954;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">🎵</div>
+              <div><div style="font-family:'DM Serif Display';font-size:1rem;color:#fff">Expedition Playlist</div><div style="font-size:.7rem;color:#b3b3b3;margin-top:.1rem">Add &amp; vote on tracks together</div></div>
+            </div>
+            <div id="spConnectArea"></div>
+          </div>
+          <div id="spSearchArea" style="display:none;padding:0 1rem .75rem">
+            <input id="spSearchInput" placeholder="🔍 Search Spotify..." style="width:100%;padding:.6rem .9rem;background:#282828;border:1.5px solid #3E3E3E;border-radius:8px;color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none" oninput="spSearchDebounce(this.value)">
+            <div id="spSearchResults" style="margin-top:.5rem"></div>
+          </div>
+          <div style="padding:0 1rem .1rem">
+            <div style="font-size:.65rem;font-weight:700;color:#b3b3b3;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.5rem">Playlist</div>
+            <div id="spPlaylist"><div style="text-align:center;color:#b3b3b3;font-size:.82rem;padding:1.2rem;font-style:italic">No tracks yet 🎶</div></div>
+          </div>
+          <div style="height:.75rem"></div>
+        </div>
+      </div>
     </section>
     <!-- DAYS -->
     
@@ -767,7 +788,7 @@ if('serviceWorker' in navigator){
       <div id="inviteCodeBox"></div>
       <div class="crew-grid" id="crewGrid"></div>
       <div class="card card-pad" style="margin-bottom:1.1rem">
-        <div style="font-family:'Playfair Display';font-size:1.1rem;margin-bottom:.9rem">📨 Invite Member</div>
+        <div style="font-family:'DM Serif Display';font-size:1.1rem;margin-bottom:.9rem">📨 Invite Member</div>
         <div class="form-row">
           <div class="fg"><label>Name</label><input type="text" id="invName" placeholder="Jannie Smit"></div>
           <div class="fg"><label>Email</label><input type="email" id="invEmail" placeholder="jannie@example.com"></div>
@@ -776,7 +797,7 @@ if('serviceWorker' in navigator){
         <button class="btn-primary" onclick="addCrew()">Send Invite</button>
       </div>
       <div class="card card-pad" style="margin-bottom:1.1rem">
-        <div style="font-family:'Playfair Display';font-size:1.1rem;margin-bottom:.9rem">📄 Documents</div>
+        <div style="font-family:'DM Serif Display';font-size:1.1rem;margin-bottom:.9rem">📄 Documents</div>
         <div class="drop-zone" style="padding:1.4rem;margin-bottom:.75rem" onclick="$('docFile').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="docDrop(event)">
           <div class="dz-icon" style="font-size:1.5rem">📎</div><div class="dz-text" style="font-size:.85rem">Tap or drop to upload</div>
         </div>
@@ -785,32 +806,16 @@ if('serviceWorker' in navigator){
       </div>
       <div class="card card-pad">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
-          <div style="font-family:'Playfair Display';font-size:1.1rem">📸 Gallery</div>
+          <div style="font-family:'DM Serif Display';font-size:1.1rem">📸 Gallery</div>
           <button class="btn-primary" style="font-size:.7rem" onclick="$('photoFile').click()">＋ Photos</button>
         </div>
         <input type="file" id="photoFile" multiple accept="image/*" onchange="photoUpload(event)">
         <div class="gal-grid" id="galGrid"></div>
       </div>
-      <!-- SPOTIFY PLAYLIST -->
-      <div id="spotifyCard" style="margin-top:1.1rem;background:#121212;border-radius:var(--rl);overflow:hidden">
-        <div style="padding:1rem 1.1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
-          <div style="display:flex;align-items:center;gap:.6rem">
-            <div style="width:32px;height:32px;background:#1DB954;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">🎵</div>
-            <div><div style="font-family:'DM Serif Display';font-size:1rem;color:#fff">Expedition Playlist</div><div style="font-size:.7rem;color:#b3b3b3;margin-top:.1rem">Add &amp; vote on tracks together</div></div>
-          </div>
-          <div id="spConnectArea"></div>
-        </div>
-        <div id="spSearchArea" style="display:none;padding:0 1rem .75rem">
-          <input id="spSearchInput" placeholder="🔍 Search Spotify..." style="width:100%;padding:.6rem .9rem;background:#282828;border:1.5px solid #3E3E3E;border-radius:8px;color:#fff;font-family:'DM Sans',sans-serif;font-size:.85rem;outline:none" oninput="spSearchDebounce(this.value)">
-          <div id="spSearchResults" style="margin-top:.5rem"></div>
-        </div>
-        <div style="padding:0 1rem .1rem"><div style="font-size:.65rem;font-weight:700;color:#b3b3b3;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.5rem">Playlist</div><div id="spPlaylist"><div style="text-align:center;color:#b3b3b3;font-size:.82rem;padding:1.2rem;font-style:italic">No tracks yet 🎶</div></div></div>
-        <div style="height:.75rem"></div>
-      </div>
       <!-- SUMMARY SHEET -->
       <div class="card card-pad" id="summarySheet" style="margin-top:1.1rem">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
-          <div style="font-family:'Playfair Display';font-size:1.1rem">📋 Summary Sheet</div>
+          <div style="font-family:'DM Serif Display';font-size:1.1rem">📋 Summary Sheet</div>
           <button class="btn-secondary" style="font-size:.7rem" onclick="printSummary()">🖨 Print / Save PDF</button>
         </div>
         <div id="summaryContent"></div>
@@ -875,7 +880,7 @@ if('serviceWorker' in navigator){
   <button class="modal-close" onclick="closeModal('joinTripMod')">✕</button>
   <div class="modal-title">🔗 Join an Expedition</div>
   <p style="font-size:.83rem;color:var(--text3);margin-bottom:1.1rem">Enter the invite code from your trip organiser, then add your vehicle.</p>
-  <div class="fi"><label>Invite Code</label><input type="text" id="jt-code" placeholder="AB12CD" style="text-transform:uppercase;letter-spacing:.2em;font-family:'Space Mono';font-size:1.05rem" oninput="this.value=this.value.toUpperCase()"></div>
+  <div class="fi"><label>Invite Code</label><input type="text" id="jt-code" placeholder="AB12CD" style="text-transform:uppercase;letter-spacing:.2em;font-family:'JetBrains Mono';font-size:1.05rem" oninput="this.value=this.value.toUpperCase()"></div>
   <div style="border-top:1px solid var(--border2);margin:.9rem 0 1rem"></div>
   <div style="font-size:.78rem;font-weight:700;color:var(--text2);margin-bottom:.85rem">🚗 My Vehicle</div>
   <div class="form-row"><div class="fg"><label>Vehicle Name</label><input type="text" id="jt-vname" placeholder="Ranger / Prado…"></div><div class="fg"><label>Fuel Type</label><select id="jt-ftype"><option>Diesel</option><option>Petrol 95</option><option>Petrol 93</option></select></div></div>
@@ -1011,19 +1016,27 @@ function openJoinTrip(){
 async function joinTrip(){
   const code=$('jt-code').value.trim().toUpperCase();
   if(!code){toast('Enter an invite code','err');return;}
-  // Search for trip with this invite code
+  if(code.length<4){toast('Code too short — check with your organiser','err');return;}
+  toast('Searching for trip…');
   let foundTrip=Object.values(DB.trips).find(t=>t.inviteCode===code);
-  // If not found locally, search Firebase
   if(!foundTrip&&FB_READY){
     try{
+      // Strategy A: where query (works if Firestore index exists)
       const snap=await fbDb.collection('trips').where('inviteCode','==',code).limit(1).get();
-      if(!snap.empty){
-        const doc=snap.docs[0];
-        foundTrip={...doc.data(),id:doc.id};
-        DB.trips[doc.id]=foundTrip;
-      }
-    }catch(e){console.warn('Join trip search:',e);}
+      if(!snap.empty){const doc=snap.docs[0];foundTrip={...doc.data(),id:doc.id};}
+    }catch(e){
+      console.warn('inviteCode where query failed, trying lookup collection:',e.message);
+      // Strategy B: invite_codes lookup doc (no index needed)
+      try{
+        const ld=await fbDb.collection('invite_codes').doc(code).get();
+        if(ld.exists){
+          const td=await fbDb.collection('trips').doc(ld.data().tripId).get();
+          if(td.exists)foundTrip={...td.data(),id:td.id};
+        }
+      }catch(e2){console.warn('Invite lookup failed:',e2.message);}
+    }
   }
+  if(!foundTrip){toast('Code "'+code+'" not found — check with your organiser','err');return;}
   if(!foundTrip){toast('Invite code not found — check with your organiser','err');return;}
   // Check if already a member
   const alreadyMember=foundTrip.crew&&foundTrip.crew.some(c=>c.id===ME.id||c.email===ME.email);
@@ -1095,21 +1108,26 @@ let leafMap=null,leafMarkers=[],leafPolyline=null,leafReady=false;
 let wizStops=[],rStopSelected=null,psTimer=null;
 let biCharts={};
 
-const COLORS=['linear-gradient(135deg,#b8720f,#8b3222)','linear-gradient(135deg,#3d6435,#1e6fa5)','linear-gradient(135deg,#7a6e5f,#b8720f)','linear-gradient(135deg,#8b3222,#c94b1a)','linear-gradient(135deg,#1e6fa5,#3d6435)','linear-gradient(135deg,#b8720f,#3d6435)'];
+const COLORS=['linear-gradient(135deg,#e8a020,#c0422a)','linear-gradient(135deg,#4a8c5c,#3b8fc0)','linear-gradient(135deg,#3b8fc0,#7b5ea0)','linear-gradient(135deg,#c0422a,#e05a20)','linear-gradient(135deg,#4a8c5c,#e8a020)','linear-gradient(135deg,#7b5ea0,#3b8fc0)'];
 const CAT_ICONS={accommodation:'🏕️',activity:'🏃',food:'🔥',fuel:'⛽',permits:'📋',gear:'🎒',medical:'💊',transport:'✈️',other:'💳'};
 const panelLabels={dashboard:'Overview',itinerary:'Itinerary',route:'Route & Map',accommodation:'Accommodation',fuel:'Fuel & Costs',costs:'Trip Costs',food:'Food & Meals',packing:'Packing List',crew:'Crew',docs:'Documents',gallery:'Gallery'};
 
 function $(id){return document.getElementById(id);}
 function sv(){
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
-  // Firebase sync: save current trip to Firestore
   if(FB_READY&&ME&&DB.cur&&DB.trips[DB.cur]){
     try{
+      const _t=DB.trips[DB.cur];
       fbDb.collection('trips').doc(DB.cur).set({
-        ...DB.trips[DB.cur],
-        _owner:ME.id,
+        ..._t,_owner:ME.id,
         _updatedAt:firebase.firestore.FieldValue.serverTimestamp()
       },{merge:true}).catch(e=>console.warn('Firestore write:',e));
+      // Write invite code lookup so joining works without compound index
+      if(_t.inviteCode){
+        fbDb.collection('invite_codes').doc(_t.inviteCode).set(
+          {tripId:DB.cur,tripName:_t.name||'',_owner:ME.id},{merge:true}
+        ).catch(()=>{});
+      }
     }catch(e){}
   }
 }
@@ -1482,6 +1500,10 @@ function getDefaultPackingList(uid){
 }
 function syncFromStops(t){
   if(!t.stops||!t.stops.length)return;
+  // Auto-populate default packing categories on first sync
+  if(!t.packing||t.packing.length===0){
+    t.packing=getDefaultPackingList(ME.id);
+  }
   let date=t.startDate?new Date(t.startDate+'T00:00:00'):null;
 
   // Build a key-set of already-existing items to avoid duplicates
@@ -1609,7 +1631,7 @@ function renderAll(){
     $('dashContent').innerHTML=`
       <div style="min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;text-align:center">
         <div style="font-size:3.5rem;margin-bottom:1rem;opacity:.7">🗺️</div>
-        <div style="font-family:'Playfair Display';font-size:1.65rem;font-weight:700;color:var(--text);margin-bottom:.5rem">Ready to explore?</div>
+        <div style="font-family:'DM Serif Display';font-size:1.65rem;font-weight:700;color:var(--text);margin-bottom:.5rem">Ready to explore?</div>
         <div style="font-size:.9rem;color:var(--text3);margin-bottom:2rem;max-width:280px;line-height:1.6">Plan your route, stops, accommodation, food, budget and crew — all in one place.</div>
         <button onclick="openNewTripModal()" style="background:var(--amber);color:#fff;border:none;padding:.85rem 2rem;border-radius:28px;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:0 4px 18px rgba(184,114,15,.4);letter-spacing:.03em;transition:all .2s">＋ New Expedition</button>
         <div style="margin-top:1rem">
@@ -1629,7 +1651,6 @@ function renderAll(){
   renderFood(t);
   renderPacking(t);
   renderCrew(t);
-  renderSpotify(t);
   renderDocs(t);
   renderGallery(t);
   updatePackBadge(t);
@@ -1713,7 +1734,7 @@ function renderDash(t){
     </div>
     <div class="card dc" onclick="navTo('budget')" style="cursor:pointer">
       <div class="dc-title">💰 My Cost</div>
-      <div style="font-family:'Playfair Display';font-size:1.85rem;font-weight:700;color:var(--amber)">${myCost>0?fmtR(myCost):(hasVehicle&&!km?'⏳':fmtR(0))}</div>
+      <div style="font-family:'DM Serif Display';font-size:1.85rem;font-weight:700;color:var(--amber)">${myCost>0?fmtR(myCost):(hasVehicle&&!km?'⏳':fmtR(0))}</div>
       ${hasVehicle&&!km?`<div style="font-size:.72rem;color:var(--text3);margin-top:.18rem;display:flex;align-items:center;gap:.35rem"><div style="width:10px;height:10px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--amber);animation:spin 1s linear infinite;flex-shrink:0"></div>Calculating fuel…</div>`:`
       <div style="margin-top:.45rem;display:flex;flex-direction:column;gap:.16rem">
         ${calcMyVehicleFuel(t)>0?`<div style="display:flex;justify-content:space-between;font-size:.76rem"><span style="color:var(--text3)">⛽ My fuel</span><span style="font-weight:600;color:var(--text2)">${fmtR(calcMyVehicleFuel(t))}</span></div>`:''}
@@ -2441,7 +2462,8 @@ function updStopKm(idx,val){
 // ══════════════════════════════════════════════════════════════
 function initLeaflet(){
   if(leafReady||typeof L==='undefined')return;
-  leafMap=L.map('leafletMap',{zoomControl:true}).setView([-22,22],5);
+  leafMap=L.map('leafletMap',{zoomControl:true,tap:false,tapTolerance:15,doubleClickZoom:false}).setView([-22,22],5);
+  leafMap.zoomControl.setPosition('topright');
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:19}).addTo(leafMap);
   leafReady=true;
 }
@@ -2733,11 +2755,11 @@ function renderBudget(t){
       <div class="bh-details">
         <div class="bh-di">
           <div class="bh-label">Shared costs</div>
-          <div style="font-family:'Playfair Display';font-size:1.15rem;font-weight:700;color:#f0c060">${fmtR(sharedTotal)}</div>
+          <div style="font-family:'DM Serif Display';font-size:1.15rem;font-weight:700;color:#f0c060">${fmtR(sharedTotal)}</div>
         </div>
         <div class="bh-di">
           <div class="bh-label">Vehicles</div>
-          <div style="font-family:'Playfair Display';font-size:1.15rem;font-weight:700;color:#f0c060">${(t.vehicles||[]).length}</div>
+          <div style="font-family:'DM Serif Display';font-size:1.15rem;font-weight:700;color:#f0c060">${(t.vehicles||[]).length}</div>
         </div>
       </div>
     </div>`;
@@ -2816,11 +2838,11 @@ function renderBudget(t){
     <div style="background:linear-gradient(135deg,var(--amber-bg),rgba(30,111,165,.07));border:1px solid var(--amber-bd);border-radius:12px;padding:.85rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
       <div>
         <div style="font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">My share of shared expenses</div>
-        <div style="font-family:'Playfair Display';font-size:1.55rem;font-weight:700;color:var(--amber);margin-top:.1rem">${fmtR(myExpShare)}</div>
+        <div style="font-family:'DM Serif Display';font-size:1.55rem;font-weight:700;color:var(--amber);margin-top:.1rem">${fmtR(myExpShare)}</div>
       </div>
       <div style="text-align:right">
         <div style="font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Total shared</div>
-        <div style="font-family:'Playfair Display';font-size:1.2rem;font-weight:700;color:var(--text2);margin-top:.1rem">${fmtR(sharedTotal)}</div>
+        <div style="font-family:'DM Serif Display';font-size:1.2rem;font-weight:700;color:var(--text2);margin-top:.1rem">${fmtR(sharedTotal)}</div>
       </div>
     </div>
     `:''}
