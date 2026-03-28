@@ -254,7 +254,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .ins-sub{font-size:.75rem;color:var(--text3);margin-top:.1rem;}
 
 /* MAP */
-#mapContainer{border-radius:var(--rl);overflow:hidden;border:1px solid var(--border2);box-shadow:0 2px 8px var(--sh);margin-bottom:1rem;height:380px;display:none;}
+#mapContainer{border-radius:var(--rl);overflow:hidden;border:1px solid var(--border2);box-shadow:0 2px 8px var(--sh);margin-bottom:1rem;height:380px;display:block;}
 #leafletMap{width:100%;height:100%;}
 .leaflet-popup-content-wrapper{background:var(--surface);border:1px solid var(--border2);color:var(--text);border-radius:8px;box-shadow:0 4px 16px var(--shm);}
 .leaflet-popup-tip{background:var(--surface);}
@@ -600,6 +600,7 @@ input[type=file]{display:none;}
         <button class="stab active" data-stab="route" onclick="setPlanTab('route',this)">🧭 Route</button>
         <button class="stab" data-stab="stays" onclick="setPlanTab('stays',this)">🏕️ Stays</button>
         <button class="stab" data-stab="food" onclick="setPlanTab('food',this)">🔥 Food</button>
+        <button class="stab" data-stab="activities" onclick="setPlanTab('activities',this)">💡 Activities</button>
       </div>
       <!-- Route -->
       <div class="stpane on" id="stp-route">
@@ -607,7 +608,7 @@ input[type=file]{display:none;}
           <div style="font-size:.75rem;color:var(--text3)">First stop = 🚩 Start · Last = 🏁 End · Edit km per leg below</div>
           <button class="btn-primary" onclick="openModal('addStopMod')">＋ Add Stop</button>
         </div>
-        <button class="map-toggle-btn" onclick="toggleMap()">🗺️ Show / Hide Map</button>
+
         <div class="rsr" id="routeStats"></div>
         <div class="stop-list" id="stopList"></div>
       </div>
@@ -624,6 +625,10 @@ input[type=file]{display:none;}
           <button class="btn-primary" onclick="openModal('addFoodDayMod')">＋ Add Day</button>
         </div>
         <div id="foodList"></div>
+      </div>
+      <!-- Activities -->
+      <div class="stpane" id="stp-activities" style="display:none">
+        <div id="activitiesContent"></div>
       </div>
     </section>
     <!-- DAYS -->
@@ -1375,15 +1380,15 @@ function renderDash(t){
   renderInsights(t);
 }
 
-function calcMyCost(t){
-  const expCost=(t.expenses||[]).reduce((a,e)=>{
+function calcMyExpenseShare(t){
+  return (t.expenses||[]).reduce((a,e)=>{
     const split=e.splits&&e.splits[ME.id];
     if(split!==undefined)return a+(Number(e.amount)*split/100);
     return a+Number(e.amount)/(t.crew.length||1);
   },0);
-  // Add my share of fuel
-  const fuelShare=calcTotalFuel(t)/(t.crew.length||1);
-  return expCost+fuelShare;
+}
+function calcMyCost(t){
+  return calcMyExpenseShare(t) + calcTotalFuel(t)/(t.crew.length||1);
 }
 function calcTotalFuel(t){
   // Best km source: OSRM auto-calculated > sum of manual stop km > 0
@@ -1752,6 +1757,52 @@ async function suggestActivitiesForStop(stopName,lat,lon){
   });
   if(changed){sv();renderItinerary(t);toast('💡 Activities suggested for '+stopName,'ok');}
 }
+function renderActivitiesTab(t){
+  const el=$('activitiesContent');if(!el||!t)return;
+  const overnightStops=t.stops.filter(s=>!s.isStart&&!s.isEnd&&parseInt(s.nights)>0);
+  if(!overnightStops.length){
+    el.innerHTML=`<div class="empty"><div class="ei">💡</div><div class="et">No overnight stops yet</div><div class="es">Add stops with nights in the Route tab — activities will appear here</div></div>`;
+    return;
+  }
+  el.innerHTML=overnightStops.map(s=>{
+    // Collect all suggestions for this stop from itinerary days
+    const days=t.itinerary.filter(d=>d.location===s.name&&!d.isTravel);
+    const sugs=days.length&&days[0].suggestions?days[0].suggestions:[];
+    const usedMorning=days.filter(d=>d.morning).map(d=>d.morning);
+    const usedAfternoon=days.filter(d=>d.afternoon).map(d=>d.afternoon);
+    return`<div class="card card-pad" style="margin-bottom:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem">
+        <div>
+          <div style="font-size:.92rem;font-weight:700;color:var(--text)">📍 ${s.name}</div>
+          <div style="font-size:.72rem;color:var(--text3);margin-top:.12rem">${s.nights} night${s.nights!==1?'s':''}</div>
+        </div>
+        <button class="btn-secondary" style="font-size:.68rem;padding:.3rem .72rem" onclick="refreshActivities('${esc(s.name)}',${s.lat||0},${s.lon||0})">↻ Refresh</button>
+      </div>
+      ${sugs.length?`
+        <div class="sug-lbl" style="margin-bottom:.5rem">💡 Suggested — tap to add to itinerary</div>
+        <div class="sug-row" style="margin-bottom:${usedMorning.length||usedAfternoon.length?'.85rem':'0'}">
+          ${sugs.map((sg,si)=>{
+            const dayIdx=days.length?t.itinerary.indexOf(days[0]):-1;
+            return`<span class="sug-chip" onclick="addSuggestion(${dayIdx},'${esc(sg)}')">${sg}</span>`;
+          }).join('')}
+        </div>`:'<div style="font-size:.8rem;color:var(--text3);font-style:italic;margin-bottom:.75rem">No suggestions yet — tap Refresh to fetch</div>'}
+      ${usedMorning.length||usedAfternoon.length?`
+        <div style="border-top:1px solid var(--border2);padding-top:.75rem;margin-top:.25rem">
+          <div class="sug-lbl" style="margin-bottom:.45rem">✅ Added to itinerary</div>
+          ${usedMorning.map(a=>`<div style="font-size:.82rem;color:var(--text2);padding:.18rem 0">🌅 ${a}</div>`).join('')}
+          ${usedAfternoon.map(a=>`<div style="font-size:.82rem;color:var(--text2);padding:.18rem 0">🌞 ${a}</div>`).join('')}
+        </div>`:''}
+    </div>`;
+  }).join('');
+}
+async function refreshActivities(stopName,lat,lon){
+  toast('Fetching activities for '+stopName+'…');
+  const t=T();if(!t)return;
+  const activities=await fetchSuggestedActivities(stopName,lat,lon);
+  t.itinerary.forEach(d=>{if(d.location===stopName&&!d.isTravel){d.suggestions=activities;}});
+  sv();renderActivitiesTab(t);renderItinerary(t);
+  toast('💡 Activities updated','ok');
+}
 function tog(id){$(id)&&$(id).classList.toggle('open');}
 function removeDay(i){if(!confirm('Remove?'))return;const t=T();t.itinerary.splice(i,1);t.itinerary.forEach((d,j)=>d.day=j+1);sv();renderItinerary(t);renderDash(t);}
 function addDay(){
@@ -1828,7 +1879,7 @@ function renderStops(t){
         </tbody>
       </table>
     <div style="font-size:.7rem;color:var(--text3);font-style:italic;margin-top:.5rem">
-      ~ = estimated from OSRM total ÷ legs. Enter km per stop for exact per-leg distances.
+      ~ = estimated. Actual km auto-fills from the map route — or type to override.
     </div>
     </div>`:''  ;
 
@@ -1933,14 +1984,29 @@ function drawMap(t,latlngs,stops){
   leafMap.fitBounds(bounds,{padding:[40,40]});
   if(latlngs.length>=2){
     const cs=latlngs.map(c=>c[1]+','+c[0]).join(';');
-    fetch(`https://router.project-osrm.org/route/v1/driving/${cs}?overview=full&geometries=geojson`)
+    fetch(`https://router.project-osrm.org/route/v1/driving/${cs}?overview=full&geometries=geojson&steps=false`)
     .then(r=>r.json()).then(d=>{
       if(d.routes&&d.routes[0]){
-        leafPolyline=L.polyline(d.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]),{color:'#b8720f',weight:3.5,opacity:.85}).addTo(leafMap);
-        const km=Math.round(d.routes[0].distance/1000);
-        if(T()){T()._routeKm=km;sv();updateFuelKm(T());}
-        // update stats display
-        renderStops(T());renderDash(T());
+        const route=d.routes[0];
+        leafPolyline=L.polyline(route.geometry.coordinates.map(c=>[c[1],c[0]]),{color:'#b8720f',weight:3.5,opacity:.85}).addTo(leafMap);
+        const totalKm=Math.round(route.distance/1000);
+        const t2=T();
+        if(t2){
+          t2._routeKm=totalKm;
+          // Store per-leg distances from OSRM legs array
+          if(route.legs&&route.legs.length){
+            route.legs.forEach((leg,i)=>{
+              // stops[i+1] is the destination of leg i (stops[0] is origin)
+              if(t2.stops[i+1]){
+                const legKm=Math.round(leg.distance/1000);
+                t2.stops[i+1]._osrmKm=legKm;
+                // Only set .km if user hasn't manually entered one
+                if(!t2.stops[i+1].km)t2.stops[i+1].km=legKm;
+              }
+            });
+          }
+          sv();updateFuelKm(t2);renderStops(t2);renderDash(t2);renderBudget(t2);
+        }
       }
     }).catch(()=>{leafPolyline=L.polyline(latlngs,{color:'#b8720f',weight:2.5,opacity:.6,dashArray:'6 4'}).addTo(leafMap);});
   }
@@ -2109,7 +2175,7 @@ function renderBudget(t){
       <div>
         <div class="bh-label">My Estimated Total</div>
         <div class="bh-amount">${fmtR(myCost)}</div>
-        <div class="bh-sub">${fmtR(fuelTotal/crew)} fuel + ${fmtR(expTotal/crew)} expenses per person</div>
+        <div class="bh-sub">My fuel share ${fmtR(fuelTotal/crew)} + my expense share ${fmtR(calcMyExpenseShare(t))}</div>
       </div>
       <div class="bh-details">
         <div class="bh-di"><div class="bh-label">Total Fuel</div><div style="font-family:'Playfair Display';font-size:1.2rem;font-weight:700;color:#f0c060">${fuelTotal>0?fmtR(fuelTotal):km===0?'Add km':'Add vehicle'}</div>${fuelL>0?`<div style="font-size:.68rem;opacity:.6;margin-top:.1rem">${fuelL.toFixed(0)}L total</div>`:''}</div>
@@ -2147,7 +2213,7 @@ function renderBudget(t){
       <button class="btn-primary" style="font-size:.68rem;padding:.3rem .72rem" onclick="openExpenseModal()">＋ Add</button>
     </div>
     <div class="my-cost-banner">
-      <div><div class="mcb-label">My Share</div><div class="mcb-amount">${fmtR(myCost)}</div></div>
+      <div><div class="mcb-label">My Expense Share</div><div class="mcb-amount">${fmtR(calcMyExpenseShare(t))}</div></div>
       <div><div class="mcb-label">Total Expenses</div><div class="mcb-amount" style="font-size:1.15rem">${fmtR(expTotal)}</div></div>
     </div>
     ${(t.expenses||[]).length===0?`<div class="empty" style="padding:1.1rem 0"><div class="ei">💰</div><div class="es">No expenses yet — add accommodation, activities, food costs</div></div>`:''}
@@ -2390,10 +2456,7 @@ function navTo(panel){
   const pe=$('panel-'+panel);if(pe)pe.classList.add('active');
   const t=T();$('tbTitle').textContent=t?t.name:'TREK';
   if(panel==='plan'){
-    setTimeout(()=>{
-      const rp=$('stp-route');
-      if(rp&&rp.style.display!=='none'){initLeaflet();if(t)refreshMap(t);if(leafMap)leafMap.invalidateSize();}
-    },80);
+    setTimeout(()=>{initLeaflet();if(t)refreshMap(t);if(leafMap)leafMap.invalidateSize();},80);
     if(t){const sel=$('na-stop');if(sel)sel.innerHTML=t.stops.filter(s=>!s.isStart&&!s.isEnd).map(s=>`<option value="${esc(s.name)}">${s.name}</option>`).join('');}
   }
   if(panel==='budget'&&t)renderBudget(t);
@@ -2405,9 +2468,11 @@ document.querySelectorAll('.ni,.bt').forEach(item=>{
 function setPlanTab(tab,el){
   document.querySelectorAll('.stab').forEach(s=>s.classList.remove('active'));
   el.classList.add('active');
-  ['route','stays','food'].forEach(t2=>{
+  ['route','stays','food','activities'].forEach(t2=>{
     const p=$('stp-'+t2);if(p)p.style.display=t2===tab?'block':'none';
   });
+  if(tab==='activities')renderActivitiesTab(T());
+  // Map always visible in plan panel, refresh when route tab shown
   if(tab==='route')setTimeout(()=>{initLeaflet();if(T())refreshMap(T());if(leafMap)leafMap.invalidateSize();},80);
 }
 function toggleMap(){
