@@ -3432,6 +3432,12 @@ function toggleSB(){$('sidebar').classList.toggle('off');}
 const SP_CLIENT_ID='ee0ad780e03b4032a7bdd5d8a4f18445';
 const SP_REDIRECT=window.location.origin+window.location.pathname;
 const SP_SCOPES='user-read-private playlist-read-private user-library-read playlist-modify-public playlist-modify-private streaming user-read-playback-state user-modify-playback-state';
+const SP_SCOPE_VER='v3'; // bump this whenever scopes change to force re-auth
+// Clear stale token if scope version changed
+if(localStorage.getItem('sp_scope_ver')!==SP_SCOPE_VER){
+  ['sp_token','sp_token_expiry','sp_verifier','sp_trip'].forEach(k=>localStorage.removeItem(k));
+  localStorage.setItem('sp_scope_ver',SP_SCOPE_VER);
+}
 const SP_TRACKS={};
 let spSearchTimer=null;
 
@@ -3619,38 +3625,43 @@ async function spCreatePlaylist(){
   if(!list.length){toast('No tracks in playlist yet','err');return;}
   const tok=spToken();
   if(!tok){toast('Connect Spotify first','err');return;}
-  toast('Creating playlist…');
+  toast('Creating playlist on Spotify…');
   try{
-    const userId=await spGetMyId();
-    if(!userId){toast('Could not get Spotify user','err');return;}
-    // Create playlist
-    const plRes=await fetch('https://api.spotify.com/v1/users/'+userId+'/playlists',{
+    // Use /v1/me/playlists — the user-scoped endpoint (users/{id}/playlists is deprecated for third-party)
+    const plRes=await fetch('https://api.spotify.com/v1/me/playlists',{
       method:'POST',
       headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},
       body:JSON.stringify({
-        name:'🚙 TREK — '+(t.name||'Expedition'),
-        description:'Created by TREK Expedition Planner · '+list.length+' tracks voted by the crew',
-        public:true
+        name:'TREK - '+(t.name||'Expedition'),
+        description:'Crew playlist from TREK Expedition Planner. '+list.length+' tracks voted by the crew.',
+        public:true,
+        collaborative:false
       })
     });
+    if(!plRes.ok){
+      const err=await plRes.json().catch(()=>({}));
+      console.error('Playlist create failed:',plRes.status,err);
+      toast('Could not create playlist ('+plRes.status+') — try reconnecting Spotify','err');
+      return;
+    }
     const pl=await plRes.json();
     if(!pl.id){toast('Could not create playlist','err');return;}
-    // Add tracks in chunks of 100
+    // Add tracks in batches of 100
     const uris=list.map(tr=>'spotify:track:'+tr.id);
     for(let i=0;i<uris.length;i+=100){
-      await fetch('https://api.spotify.com/v1/playlists/'+pl.id+'/tracks',{
+      const addRes=await fetch('https://api.spotify.com/v1/playlists/'+pl.id+'/tracks',{
         method:'POST',
         headers:{Authorization:'Bearer '+tok,'Content-Type':'application/json'},
         body:JSON.stringify({uris:uris.slice(i,i+100)})
       });
+      if(!addRes.ok)console.warn('Adding tracks batch failed:',addRes.status);
     }
-    // Store playlist URL in trip
     t.spotifyPlaylistUrl=pl.external_urls?.spotify||'https://open.spotify.com/playlist/'+pl.id;
     t.spotifyPlaylistId=pl.id;
     sv();renderSpotify(t);
-    toast('Playlist created! Opening Spotify…','ok');
+    toast('Playlist created!','ok');
     window.open(t.spotifyPlaylistUrl,'_blank');
-  }catch(e){toast('Failed to create playlist','err');console.error(e);}
+  }catch(e){toast('Failed to create playlist','err');console.error('spCreatePlaylist:',e);}
 }
 
 function spOpenTrack(spotifyId){
@@ -3687,6 +3698,11 @@ window.onSpotifyWebPlaybackSDKReady=()=>{
   });
   spPlayer.addListener('authentication_error',({message})=>{
     console.warn('Spotify auth error:',message);
+    // Token invalid — clear it so user is prompted to reconnect
+    localStorage.removeItem('sp_token');
+    localStorage.removeItem('sp_token_expiry');
+    toast('Spotify token expired — please reconnect','err');
+    const t=T();if(t)renderSpotify(t);
   });
   spPlayer.addListener('account_error',({message})=>{
     console.warn('Spotify account error (Premium required):',message);
