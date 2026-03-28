@@ -792,6 +792,17 @@ if('serviceWorker' in navigator){
         <input type="file" id="photoFile" multiple accept="image/*" onchange="photoUpload(event)">
         <div class="gal-grid" id="galGrid"></div>
       </div>
+      <!-- SPOTIFY PLAYLIST -->
+      <div class="card card-pad" id="spotifyCard" style="margin-top:1.1rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem;flex-wrap:wrap;gap:.5rem">
+          <div>
+            <div style="font-family:'DM Serif Display';font-size:1.1rem">🎵 Expedition Playlist</div>
+            <div style="font-size:.75rem;color:var(--text3);margin-top:.1rem">Shared Spotify playlist for the crew</div>
+          </div>
+          <button class="btn-secondary" style="font-size:.7rem" onclick="openSpotifyModal()">⚙ Set Playlist</button>
+        </div>
+        <div id="spotifyContent"></div>
+      </div>
       <!-- SUMMARY SHEET -->
       <div class="card card-pad" id="summarySheet" style="margin-top:1.1rem">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
@@ -997,6 +1008,17 @@ if('serviceWorker' in navigator){
   <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addCatMod')">Cancel</button><button class="btn-primary" onclick="addCategory()">＋ Add</button></div>
 </div></div>
 
+<!-- SPOTIFY MODAL -->
+<div class="overlay" id="spotifyMod">
+<div class="modal" style="position:relative">
+  <button class="modal-close" onclick="closeModal('spotifyMod')">✕</button>
+  <div class="modal-title">🎵 Set Expedition Playlist</div>
+  <p style="font-size:.83rem;color:var(--text3);margin-bottom:1rem">Paste a Spotify playlist URL or embed link. The playlist will be shared with all crew members.</p>
+  <div class="fi"><label>Spotify Playlist URL</label><input type="url" id="spotify-url" placeholder="https://open.spotify.com/playlist/..." style="font-size:.85rem"></div>
+  <div style="font-size:.72rem;color:var(--text3);margin-bottom:.85rem">📱 Tip: In Spotify, open a playlist → Share → Copy Link</div>
+  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('spotifyMod')">Cancel</button><button class="btn-primary" onclick="saveSpotify()">Save Playlist</button></div>
+</div></div>
+
 <script>
 
 function openJoinTrip(){
@@ -1012,13 +1034,14 @@ async function loadTripVehicles(){
   let trip=Object.values(DB.trips).find(t=>t.inviteCode===code);
   if(!trip&&FB_READY){
     try{
-      const snap=await fbDb.collection('trips').where('inviteCode','==',code).limit(1).get();
-      if(!snap.empty)trip={...snap.docs[0].data(),id:snap.docs[0].id};
+      // Try invite_codes lookup first (no index needed)
+      const ld=await fbDb.collection('invite_codes').doc(code).get();
+      if(ld.exists){const td=await fbDb.collection('trips').doc(ld.data().tripId).get();if(td.exists)trip={...td.data(),id:td.id};}
     }catch(e){
       try{
-        const ld=await fbDb.collection('invite_codes').doc(code).get();
-        if(ld.exists){const td=await fbDb.collection('trips').doc(ld.data().tripId).get();if(td.exists)trip={...td.data(),id:td.id};}
-      }catch(e2){}
+        const snap=await fbDb.collection('trips').where('inviteCode','==',code).limit(1).get();
+        if(!snap.empty)trip={...snap.docs[0].data(),id:snap.docs[0].id};
+      }catch(e2){console.warn('loadTripVehicles:',e2.message);}
     }
   }
   const vehs=(trip&&trip.vehicles)||[];
@@ -1051,23 +1074,24 @@ async function joinTrip(){
   // 2. Search Firebase — try two strategies
   if(!foundTrip&&FB_READY){
     try{
-      // Strategy A: query by inviteCode field (needs Firestore index)
-      const snap=await fbDb.collection('trips').where('inviteCode','==',code).limit(1).get();
-      if(!snap.empty){
-        const doc=snap.docs[0];
-        foundTrip={...doc.data(),id:doc.id};
-      }
-    }catch(e){
-      console.warn('Firestore inviteCode query failed (may need index):', e.message);
-      // Strategy B: look up via invite_codes lookup collection
+      // Strategy A: look up invite_codes document (no index needed, just doc read)
       try{
         const lookupDoc=await fbDb.collection('invite_codes').doc(code).get();
         if(lookupDoc.exists){
           const tripId=lookupDoc.data().tripId;
           const tripDoc=await fbDb.collection('trips').doc(tripId).get();
-          if(tripDoc.exists)foundTrip={...tripDoc.data(),id:tripDoc.id};
+          if(tripDoc.exists){foundTrip={...tripDoc.data(),id:tripDoc.id};console.log('Found via invite_codes lookup');}
         }
-      }catch(e2){console.warn('Invite code lookup failed:',e2.message);}
+      }catch(e2){console.warn('invite_codes lookup failed:',e2.message);}
+      // Strategy B: query by inviteCode field (may need Firestore index)
+      if(!foundTrip){
+        try{
+          const snap=await fbDb.collection('trips').where('inviteCode','==',code).limit(1).get();
+          if(!snap.empty){const doc=snap.docs[0];foundTrip={...doc.data(),id:doc.id};console.log('Found via query');}
+        }catch(e3){console.warn('inviteCode query failed:',e3.message);}
+      }
+    }catch(e){
+      console.warn('Join trip search error:',e.message);
     }
   }
 
@@ -1148,6 +1172,8 @@ function initFirebase(){
     fbApp=firebase.initializeApp(FIREBASE_CONFIG);
     fbAuth=firebase.auth();
     fbDb=firebase.firestore();
+    // Use africa-south1 region for best performance from SA
+    fbDb.settings({ignoreUndefinedProperties:true});
     FB_READY=true;
     console.log('TREK: Firebase connected ✓');
     return true;
@@ -1463,16 +1489,21 @@ function createTrip(){
 
   DB.trips[id]=t; DB.cur=id;
   syncFromStops(t); sv(); closeModal('newTripMod'); rebuildSel(); renderAll(); startCD(); renderBudget(t);
+  // Write invite code lookup immediately so others can join
+  if(FB_READY&&t.inviteCode){
+    fbDb.collection('invite_codes').doc(t.inviteCode).set({tripId:t.id,tripName:t.name,_owner:ME.id}).catch(()=>{});
+  }
   // Background: init map hidden + run OSRM so fuel calculates immediately
   setTimeout(()=>{
     const cur=T();if(!cur)return;
-    // Init leaflet (uses hidden map container) and fetch OSRM distances
     if(!leafReady){initLeaflet();}
     if(cur.stops.length>=2)refreshMap(cur);
-    // Auto-fetch activities for all overnight stops (staggered)
-    cur.stops.filter(s=>!s.isStart&&!s.isEnd&&parseInt(s.nights)>0).forEach((s,idx)=>{
-      setTimeout(()=>suggestActivitiesForStop(s.name,s.lat,s.lon),(idx+1)*1500);
-    });
+    // Auto-fetch activities — overnight stops only, never start or end
+    cur.stops
+      .filter(s=>!s.isStart&&!s.isEnd&&parseInt(s.nights)>0&&s.lat&&s.lon)
+      .forEach((s,idx)=>{
+        setTimeout(()=>suggestActivitiesForStop(s.name,s.lat,s.lon,s),(idx+1)*2000);
+      });
   },600);
   // Auto-fetch activities for all overnight stops
   setTimeout(()=>{
@@ -2186,8 +2217,8 @@ async function fetchSuggestedActivities(stopName,lat,lon){
   if(activityCache[cacheKey])return activityCache[cacheKey];
 
   try{
-    const tripCtx=T()?`Trip context: ${T().name||'SA/Namibia overland'}, destination: ${T().dest||'Southern Africa'}.`:'';
-    const prompt=`You are a Southern African adventure travel expert. Search the web NOW for real, current activities near "${stopName}"${lat&&lon?` (GPS: ${lat.toFixed(4)},${lon.toFixed(4)})`:''}. 
+    const tripCtx=T()?`Trip: ${T().name||'SA/Namibia overland'}.`:'';
+    const prompt=`You are a Southern African adventure travel expert. Search the web for real, CURRENT activities AT "${stopName}"${lat&&lon?` (exact GPS: ${lat.toFixed(5)},${lon.toFixed(5)})`:''}. This location is where the traveller is STAYING — activities must be AT or NEAR this specific place, not somewhere else.. 
 
 ${tripCtx}
 
@@ -2253,10 +2284,16 @@ function getOfflineSuggestions(name){
   return['Ask camp manager for todays wildlife sightings','Self-drive morning loop get park map from reception','Sunset viewpoint ask staff for best local spot','Star gazing from camp no light pollution','Early morning bird walk with binoculars'];
 }
 
-async function suggestActivitiesForStop(stopName,lat,lon){
+async function suggestActivitiesForStop(stopName,lat,lon,stopObj){
   const t=T();if(!t)return;
+  // Never suggest for start or end stop
+  const stop=stopObj||t.stops.find(s=>s.name===stopName);
+  if(stop&&(stop.isStart||stop.isEnd))return;
   const activities=await fetchSuggestedActivities(stopName,lat,lon);
-  // Apply to all itinerary days at this stop (overnight nights only)
+  if(!activities||!activities.length)return;
+  // Store on stop object directly (reliable, not dependent on itinerary matching)
+  if(stop){stop._suggestions=activities;}
+  // Also apply to itinerary days
   let changed=false;
   t.itinerary.forEach(d=>{
     if(d.location===stopName&&!d.isTravel&&(!d.suggestions||!d.suggestions.length)){
@@ -2283,9 +2320,9 @@ function renderActivitiesTab(t){
     return;
   }
   el.innerHTML=overnightStops.map(s=>{
-    // Collect all suggestions for this stop from itinerary days
+    // Use stop._suggestions as primary, fall back to itinerary days
     const days=t.itinerary.filter(d=>d.location===s.name&&!d.isTravel);
-    const sugs=days.length&&days[0].suggestions?days[0].suggestions:[];
+    const sugs=s._suggestions||(days.length&&days[0].suggestions?days[0].suggestions:[]);
     const usedMorning=days.filter(d=>d.morning).map(d=>d.morning);
     const usedAfternoon=days.filter(d=>d.afternoon).map(d=>d.afternoon);
     return`<div class="card card-pad" style="margin-bottom:1rem">
@@ -2317,6 +2354,9 @@ async function refreshActivities(stopName,lat,lon){
   toast('Fetching activities for '+stopName+'…');
   const t=T();if(!t)return;
   const activities=await fetchSuggestedActivities(stopName,lat,lon);
+  // Store on stop object
+  const stop=t.stops.find(s=>s.name===stopName&&!s.isStart&&!s.isEnd);
+  if(stop)stop._suggestions=activities;
   t.itinerary.forEach(d=>{if(d.location===stopName&&!d.isTravel){d.suggestions=activities;}});
   sv();renderActivitiesTab(t);renderItinerary(t);
   toast('💡 Activities updated','ok');
@@ -3113,6 +3153,37 @@ function renderCrew(t){
     const isMe=m.id===ME.id;
     return`<div class="cc"><div class="cr-av" style="background:${COLORS[i%COLORS.length]}">${m.initials||'?'}</div><div class="cr-nm">${m.name}${isMe?' (you)':''}</div><div class="cr-rl">${m.role||'Traveller'}</div><div class="cr-st ${isMe?'cst-self':m.status==='confirmed'?'cst-conf':'cst-pend'}">${isMe?'You':m.status==='confirmed'?'✓ Confirmed':'⏳ Awaiting'}</div></div>`;}).join('');
   renderSummarySheet(t);
+  renderSpotify(t);
+}
+function renderSpotify(t){
+  const el=$('spotifyContent');if(!el||!t)return;
+  const url=t.spotifyUrl||'';
+  if(!url){
+    el.innerHTML=`<div style="text-align:center;padding:1.25rem;color:var(--text3)">
+      <div style="font-size:1.8rem;margin-bottom:.5rem">🎵</div>
+      <div style="font-size:.85rem;font-weight:500;color:var(--text2);margin-bottom:.3rem">No playlist yet</div>
+      <div style="font-size:.78rem;">Add a Spotify playlist to share music with your crew</div>
+    </div>`;return;
+  }
+  // Convert share URL to embed URL
+  let embedUrl=url;
+  const m=url.match(/spotify\.com\/(playlist|album|track)\/([a-zA-Z0-9]+)/);
+  if(m)embedUrl=`https://open.spotify.com/embed/${m[1]}/${m[2]}?utm_source=generator&theme=0`;
+  el.innerHTML=`<iframe src="${embedUrl}" width="100%" height="352" frameborder="0" allow="autoplay;clipboard-write;encrypted-media;fullscreen;picture-in-picture" loading="lazy" style="border-radius:12px"></iframe>
+    <div style="display:flex;justify-content:center;margin-top:.65rem">
+      <a href="${url}" target="_blank" rel="noopener" style="font-size:.78rem;color:var(--sage);font-weight:600;text-decoration:none">Open in Spotify →</a>
+    </div>`;
+}
+function openSpotifyModal(){
+  const t=T();if(!t)return;
+  $('spotify-url').value=t.spotifyUrl||'';
+  openModal('spotifyMod');
+}
+function saveSpotify(){
+  const t=T();if(!t)return;
+  t.spotifyUrl=$('spotify-url').value.trim();
+  sv();renderSpotify(t);closeModal('spotifyMod');
+  toast('🎵 Playlist saved','ok');
 }
 
 function renderSummarySheet(t){
