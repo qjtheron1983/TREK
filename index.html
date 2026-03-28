@@ -765,6 +765,31 @@ if('serviceWorker' in navigator){
       <div style="margin-bottom:1.1rem"><div class="ph-title">Crew</div><div class="ph-sub">Team · Documents · Gallery</div></div>
       <div id="inviteCodeBox"></div>
       <div class="crew-grid" id="crewGrid"></div>
+
+      <!-- SPOTIFY PLAYLIST -->
+      <div class="card" style="background:#121212;border-radius:var(--rl);overflow:hidden;margin-bottom:1.1rem">
+        <div style="padding:1rem 1.1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+          <div style="display:flex;align-items:center;gap:.65rem">
+            <div style="width:34px;height:34px;background:#1DB954;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">🎵</div>
+            <div>
+              <div style="font-weight:700;font-size:.95rem;color:#fff">Expedition Playlist</div>
+              <div style="font-size:.68rem;color:#b3b3b3;margin-top:.1rem">Add &amp; vote on tracks together</div>
+            </div>
+          </div>
+          <div id="spConnectArea"></div>
+        </div>
+        <div id="spSearchArea" style="display:none;padding:0 1rem .75rem">
+          <input id="spSearchInput" placeholder="🔍 Search Spotify…"
+            style="width:100%;padding:.55rem .85rem;background:#282828;border:1.5px solid #3E3E3E;border-radius:8px;color:#fff;font-size:.85rem;outline:none"
+            oninput="spSearchDebounce(this.value)">
+          <div id="spSearchResults" style="margin-top:.4rem"></div>
+        </div>
+        <div style="padding:0 1rem .75rem">
+          <div style="font-size:.62rem;font-weight:700;color:#b3b3b3;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.4rem">Playlist</div>
+          <div id="spPlaylist"><div style="text-align:center;color:#b3b3b3;font-size:.82rem;padding:1rem;font-style:italic">No tracks yet 🎶</div></div>
+        </div>
+      </div>
+
       <div class="card card-pad" style="margin-bottom:1.1rem">
         <div style="font-family:'Playfair Display';font-size:1.1rem;margin-bottom:.9rem">📨 Invite Member</div>
         <div class="form-row">
@@ -3175,6 +3200,7 @@ function renderCrew(t){
     const isMe=m.id===ME.id;
     return`<div class="cc"><div class="cr-av" style="background:${COLORS[i%COLORS.length]}">${m.initials||'?'}</div><div class="cr-nm">${m.name}${isMe?' (you)':''}</div><div class="cr-rl">${m.role||'Traveller'}</div><div class="cr-st ${isMe?'cst-self':m.status==='confirmed'?'cst-conf':'cst-pend'}">${isMe?'You':m.status==='confirmed'?'✓ Confirmed':'⏳ Awaiting'}</div></div>`;}).join('');
   renderSummarySheet(t);
+  renderSpotify(t);
 }
 
 function renderSummarySheet(t){
