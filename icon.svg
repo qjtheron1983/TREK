@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2a1f0e"/>
+      <stop offset="100%" stop-color="#1a1208"/>
+    </linearGradient>
+    <linearGradient id="amber" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e09a35"/>
+      <stop offset="100%" stop-color="#b8720f"/>
+    </linearGradient>
+    <linearGradient id="needle-n" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#e09a35"/>
+      <stop offset="100%" stop-color="#c17f24"/>
+    </linearGradient>
+    <linearGradient id="needle-s" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#5a4020"/>
+      <stop offset="100%" stop-color="#3a2a10"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background rounded rect -->
+  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
+
+  <!-- Subtle texture dots -->
+  <circle cx="80" cy="80" r="1.5" fill="rgba(193,127,36,.15)"/>
+  <circle cx="160" cy="60" r="1" fill="rgba(193,127,36,.1)"/>
+  <circle cx="432" cy="432" r="1.5" fill="rgba(193,127,36,.15)"/>
+  <circle cx="350" cy="450" r="1" fill="rgba(193,127,36,.1)"/>
+
+  <!-- Outer ring -->
+  <circle cx="256" cy="256" r="200" fill="none" stroke="rgba(193,127,36,.25)" stroke-width="1.5"/>
+  <!-- Middle ring -->
+  <circle cx="256" cy="256" r="172" fill="none" stroke="rgba(193,127,36,.12)" stroke-width="1"/>
+
+  <!-- Cardinal tick marks N/S/E/W -->
+  <line x1="256" y1="56" x2="256" y2="80" stroke="#c17f24" stroke-width="3" stroke-linecap="round"/>
+  <line x1="256" y1="432" x2="256" y2="456" stroke="rgba(193,127,36,.4)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="56" y1="256" x2="80" y2="256" stroke="rgba(193,127,36,.4)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="432" y1="256" x2="456" y2="256" stroke="rgba(193,127,36,.4)" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Intercardinal small ticks -->
+  <line x1="113" y1="113" x2="127" y2="127" stroke="rgba(193,127,36,.2)" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="399" y1="113" x2="385" y2="127" stroke="rgba(193,127,36,.2)" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="113" y1="399" x2="127" y2="385" stroke="rgba(193,127,36,.2)" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="399" y1="399" x2="385" y2="385" stroke="rgba(193,127,36,.2)" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- N label -->
+  <text x="256" y="50" text-anchor="middle" font-family="Georgia,serif" font-size="28" font-weight="700" fill="#c17f24" letter-spacing="2">N</text>
+
+  <!-- Compass needle — North (amber) -->
+  <polygon points="256,96 244,262 256,250 268,262" fill="url(#needle-n)" filter="url(#glow)"/>
+  <!-- Compass needle — South (dark) -->
+  <polygon points="256,416 244,250 256,262 268,250" fill="url(#needle-s)"/>
+
+  <!-- Center cap -->
+  <circle cx="256" cy="256" r="14" fill="url(#amber)"/>
+  <circle cx="256" cy="256" r="7" fill="#1a1208"/>
+  <circle cx="256" cy="256" r="3" fill="#c17f24"/>
+
+  <!-- Rose petals (8-point star) -->
+  <path d="M256,180 L263,248 L270,180 L263,256 Z" fill="rgba(193,127,36,.08)"/>
+  <path d="M256,332 L249,264 L242,332 L249,256 Z" fill="rgba(193,127,36,.05)"/>
+  <path d="M180,256 L248,249 L180,242 L256,249 Z" fill="rgba(193,127,36,.05)"/>
+  <path d="M332,256 L264,263 L332,270 L256,263 Z" fill="rgba(193,127,36,.05)"/>
+
+  <!-- TREK wordmark at bottom -->
+  <text x="256" y="460" text-anchor="middle" font-family="Georgia,serif" font-size="52" font-weight="900" fill="#f2e8d9" letter-spacing="10">TREK</text>
+
+  <!-- Forgebit micro label -->
+  <text x="256" y="488" text-anchor="middle" font-family="monospace" font-size="12" fill="rgba(193,127,36,.5)" letter-spacing="3">FORGEBIT</text>
+</svg>

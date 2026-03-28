@@ -1,18 +1,26 @@
 {
   "name": "TREK — Expedition Planner",
   "short_name": "TREK",
-  "description": "Plan your overland expedition. Itinerary, route, accommodation, packing, crew & more.",
-  "start_url": "/",
+  "description": "Plan your overland expedition. Route, accommodation, packing, crew, food & fuel — by Forgebit.",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#0f0c07",
-  "theme_color": "#0f0c07",
+  "background_color": "#1a1208",
+  "theme_color": "#f7f2eb",
   "orientation": "any",
+  "categories": ["travel", "lifestyle", "productivity"],
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%230f0c07'/%3E%3Ctext y='140' x='24' font-size='130' font-family='serif'%3E✦%3C/text%3E%3C/svg%3E",
-      "sizes": "192x192",
+      "src": "icon.svg",
+      "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
     }
   ]
 }

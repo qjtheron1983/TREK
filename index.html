@@ -432,6 +432,8 @@ h1,h2,h3,.serif{font-family:'Playfair Display',Georgia,serif;}
 .day-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);margin-bottom:.75rem;overflow:hidden;box-shadow:0 1px 3px var(--shadow);transition:box-shadow .2s;}
 .day-card:hover{box-shadow:0 3px 10px var(--shadow-md);}
 .day-card.from-route{border-left:3px solid var(--sage);}
+.day-card.travel-day{border-left:3px solid var(--sky);background:rgba(30,111,165,.02);}
+.day-card.travel-day{border-left:3px solid var(--sky);background:rgba(30,111,165,.02);}
 .dh{display:flex;align-items:center;gap:.85rem;padding:.88rem 1.1rem;cursor:pointer;background:var(--bg2);}
 .dn{font-family:'Playfair Display';font-size:1.35rem;font-weight:700;color:var(--amber);min-width:40px;}
 .di{flex:1;}
@@ -1484,15 +1486,27 @@ function renderItinerary(t){
   const endNm=t.stops.length>1?t.stops[t.stops.length-1].name:null;
   const visItin=t.itinerary.filter(d=>d.location!==startNm&&d.location!==endNm);
   if(!visItin.length){el.innerHTML=`<div class="empty"><div class="ei">📅</div><div class="et">No days yet</div><div class="es">Add route stops with nights — days auto-populate. Or click "+ Add Day".</div></div>`;return;}
-  el.innerHTML=visItin.map((d)=>{const i=t.itinerary.indexOf(d);return`
-    <div class="day-card ${d.fromRoute?'from-route':''}">
+  // Build night counter — only count non-travel overnight days
+  let nightCounter=0;
+  el.innerHTML=visItin.map((d)=>{
+    const i=t.itinerary.indexOf(d);
+    let dayLabel,dayLabelColor;
+    if(d.isTravel){
+      dayLabel='🚗';dayLabelColor='var(--sky)';
+    } else {
+      nightCounter++;
+      dayLabel='N'+nightCounter;dayLabelColor='var(--amber)';
+    }
+    return`
+    <div class="day-card ${d.fromRoute?'from-route':''}${d.isTravel?' travel-day':''}">
       <div class="dh" onclick="tog('dbd${i}')">
-        <div class="dn">D${d.day}</div>
+        <div class="dn" style="color:${dayLabelColor};font-size:${d.isTravel?'1rem':'1.35rem'}">${dayLabel}</div>
         <div class="di">
-          <div class="dd">${fmtDate(d.date)}${d.fromRoute?' · <span style="font-size:.62rem;background:var(--sage-bg);color:var(--sage);padding:1px 6px;border-radius:10px;font-weight:600">route</span>':''}</div>
+          <div class="dd">${fmtDate(d.date)}${d.isTravel?' · <span style="font-size:.62rem;background:var(--sky-bg);color:var(--sky);padding:1px 6px;border-radius:10px;font-weight:600">drive day</span>':d.fromRoute?' · <span style="font-size:.62rem;background:var(--sage-bg);color:var(--sage);padding:1px 6px;border-radius:10px;font-weight:600">auto</span>':''}</div>
           <div class="dl">${d.location}</div>
           <div class="dtg"><span class="tag t-${d.type||'camp'}">${d.type||'camp'}</span>${d.km?`<span class="tag t-drive">🚗 ${d.km}km</span>`:''}</div>
         </div>
+        ${d.suggestions&&d.suggestions.length?`<span title="Activities suggested" style="font-size:.7rem;color:var(--sage)">💡</span>`:''}
         <button class="btn-ghost" onclick="event.stopPropagation();removeDay(${i})">✕</button>
       </div>
       <div class="dbd" id="dbd${i}">
@@ -1501,10 +1515,99 @@ function renderItinerary(t){
         <div><div class="dst">🌞 Afternoon</div><div class="dsx">${d.afternoon||'—'}</div><input class="dinp" value="${esc(d.afternoon||'')}" placeholder="Add afternoon activity…" onchange="udF(${i},'afternoon',this.value)"></div>
         ${d.km?`<div class="dv-badge"><div class="dv-i"><span>Distance</span><span>${d.km} km</span></div><div class="dv-i"><span>Drive</span><span>${d.driveTime||'—'}</span></div></div>`:''}
         ${d.notes?`<div style="grid-column:1/-1;font-size:.8rem;color:var(--text3);font-style:italic;padding-top:.4rem">📝 ${d.notes}</div>`:''}
+        ${d.suggestions&&d.suggestions.length?`<div style="grid-column:1/-1;margin-top:.5rem">
+          <div style="font-size:.65rem;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem">💡 Suggested Activities</div>
+          <div style="display:flex;flex-wrap:wrap;gap:.35rem">
+            ${d.suggestions.map((s,si)=>`<span onclick="addSuggestion(${i},'${esc(s)}')" title="Click to add to morning activity" style="background:var(--sage-bg);border:1px solid rgba(61,100,53,.25);color:var(--sage);padding:.2rem .55rem;border-radius:20px;font-size:.75rem;cursor:pointer;transition:all .18s" onmouseover="this.style.background='var(--sage)';this.style.color='#fff'" onmouseout="this.style.background='var(--sage-bg)';this.style.color='var(--sage)'">${s}</span>`).join('')}
+          </div>
+          <div style="font-size:.68rem;color:var(--text3);margin-top:.35rem">Click an activity to add it to the morning slot</div>
+        </div>`:''}
       </div>
-    </div>`}).join('');
+    </div>`;}).join('');
 }
 function udF(i,f,v){const t=T();t.itinerary[i][f]=v;t.itinerary[i].fromRoute=false;sv();renderDash(t);}
+
+function addSuggestion(dayIdx,activity){
+  const t=T();if(!t)return;
+  const d=t.itinerary[dayIdx];
+  if(!d)return;
+  // Add to morning if empty, else afternoon
+  if(!d.morning){d.morning=activity;}
+  else if(!d.afternoon){d.afternoon=activity;}
+  else{d.morning=d.morning+(d.morning?', ':'')+activity;}
+  d.fromRoute=false;
+  sv();renderItinerary(t);renderDash(t);
+  toast('✓ Added: '+activity,'ok');
+}
+
+// ── SUGGESTED ACTIVITIES ENGINE ──
+// Uses Claude API in background to suggest activities for each stop
+const activityCache={};
+
+async function fetchSuggestedActivities(stopName,lat,lon){
+  const cacheKey=stopName.toLowerCase().replace(/\s+/g,'_');
+  if(activityCache[cacheKey])return activityCache[cacheKey];
+
+  try{
+    const prompt=`You are a South African and Namibian travel expert. For the location "${stopName}"${lat&&lon?' (coordinates: '+lat.toFixed(3)+','+lon.toFixed(3)+')':''}, suggest 6-8 specific, real activities, attractions or experiences a 4x4 overland traveller would enjoy. Focus on: game drives, hikes, scenic viewpoints, historical sites, 4x4 tracks, swimming holes, local food experiences, photography spots.
+
+Return ONLY a JSON array of short activity strings (5-8 words each), no explanations, no markdown. Example format:
+["Sunrise drive to Dune 45","Walk the Dead Vlei salt pan","Sossusvlei 4x4 track at dawn","Sesriem Canyon sunset walk","Elim Dune short hike"]`;
+
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:400,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||'[]';
+    const cleaned=text.replace(/```json|```/g,'').trim();
+    const activities=JSON.parse(cleaned);
+    if(Array.isArray(activities)&&activities.length){
+      activityCache[cacheKey]=activities;
+      return activities;
+    }
+  }catch(e){
+    // Fallback: curated offline suggestions based on keywords
+    return getOfflineSuggestions(stopName);
+  }
+  return getOfflineSuggestions(stopName);
+}
+
+function getOfflineSuggestions(name){
+  const n=name.toLowerCase();
+  // SA/Namibia context-aware offline fallbacks
+  if(n.includes('sossusvlei')||n.includes('sesriem')){return['Sunrise drive to Dune 45','Walk the Dead Vlei salt pan','Sossusvlei 4x4 dunes at dawn','Sesriem Canyon sunset walk','Elim Dune short hike','Star gazing — zero light pollution'];}
+  if(n.includes('etosha')){return['Dawn game drive at water hole','Okaukuejo floodlit waterhole at night','Halali to Namutoni drive','Self-drive loop around Etosha pan','Rhino spotting at Okondeka','Elephant herds at sunset'];}
+  if(n.includes('swakopmund')||n.includes('swakop')){return['Quad biking on Dorob dunes','Daredevil Adventures skydive','Swartkoppies desert drive','Seal colony at Cape Cross','Desolation Valley 4x4 track','Seafood dinner on The Strand'];}
+  if(n.includes('kgalagadi')||n.includes('kalahari')){return['Lion tracking at dawn','Twee Rivieren to Mata Mata drive','Gemsbok and springbok herds','Sociable weaver nest viewpoint','Nossob dry river bed drive','Star gazing — darkest sky reserve'];}
+  if(n.includes('fish river')||n.includes('ai-ais')){return['Fish River Canyon viewpoint hike','Hobas lookout at sunrise','Hellskloof Pass 4x4 route','Hot springs at Ai-Ais','Canyon rim walk','Sunset from southern viewpoint'];}
+  if(n.includes('augrabies')){return['Augrabies waterfall viewpoint','Klipspringer hiking trail','Orange River sunset canoe','4x4 Dassie trail','Kokerboom forest walk','Rock art near park entrance'];}
+  if(n.includes('cape town')||n.includes('kaapstad')){return['Table Mountain cable car','Chapman's Peak coastal drive','Boulders Beach penguins','V&A Waterfront lunch','Cape Point 4x4 route','Signal Hill sunset'];}
+  if(n.includes('namibia')||n.includes('skeleton coast')){return['Shipwreck discovery walk','Seal colonies at Cape Cross','Desolation desert 4x4 track','Fishing in Namibian surf','Coastal dunes exploration','Benguela fog mist photography'];}
+  if(n.includes('kruger')){return['Sunrise game drive','Self-drive big 5 loop','Sunset sundowners in bush','Guided bush walk','Night drive with ranger','Bird watching at waterhole'];}
+  if(n.includes('drakensberg')){return['Amphitheatre hike to base','Tugela Falls viewpoint','Horse riding in foothills','San rock art cave trail','Cathedral Peak day hike','Fly fishing in mountain stream'];}
+  // Generic SA/Namibia overland fallbacks
+  return['Sunrise 4x4 exploration','Game viewing from vehicle','Sunset braai at camp','Local nature walk','Star gazing — Southern Cross viewing','Photography of wildlife/landscape','Chat to local camp staff about hidden spots'];
+}
+
+async function suggestActivitiesForStop(stopName,lat,lon){
+  const t=T();if(!t)return;
+  const activities=await fetchSuggestedActivities(stopName,lat,lon);
+  // Apply to all itinerary days at this stop (overnight nights only)
+  let changed=false;
+  t.itinerary.forEach(d=>{
+    if(d.location===stopName&&!d.isTravel&&(!d.suggestions||!d.suggestions.length)){
+      d.suggestions=activities;
+      changed=true;
+    }
+  });
+  if(changed){sv();renderItinerary(t);toast('💡 Activities suggested for '+stopName,'ok');}
+}
 function tog(id){$(id)&&$(id).classList.toggle('open');}
 function removeDay(i){if(!confirm('Remove?'))return;const t=T();t.itinerary.splice(i,1);t.itinerary.forEach((d,j)=>d.day=j+1);sv();renderItinerary(t);renderDash(t);}
 function addDay(){
@@ -1605,6 +1708,14 @@ function addStop(){
   ['rs-nights','rs-km','rs-notes'].forEach(id=>$(id).value='');
   $('rSearch').value='';$('rPills').innerHTML='';rStopSelected=null;
   toast('🧭 Stop added','ok');
+  // Fetch suggested activities in background for overnight stops
+  if(nights>0&&!t.stops[t.stops.length-1].isEnd){
+    setTimeout(()=>suggestActivitiesForStop(name,lat,lon),800);
+  }
+  // Fetch suggested activities in background for overnight stops
+  if(nights>0&&!stop.isEnd){
+    setTimeout(()=>suggestActivitiesForStop(name,lat,lon),500);
+  }
 }
 function removeStop(i){
   const t=T();t.stops.splice(i,1);
