@@ -1375,16 +1375,6 @@ function doLogout(){
 //  LAUNCH
 // ══════════════════════════════════════════════════════════════
 window.addEventListener('load',()=>{
-  // Handle Spotify callback immediately — before Firebase auth clears sessionStorage
-  if(new URLSearchParams(location.search).get('state')==='trek_spotify'){
-    ld(); initFirebase();
-    // Wait for auth then handle callback
-    const _spInterval=setInterval(()=>{
-      if(ME){clearInterval(_spInterval);spHandleCallback();}
-    },200);
-    setTimeout(()=>clearInterval(_spInterval),8000);
-    return;
-  }
   ld();
   initFirebase();
 
@@ -1437,17 +1427,6 @@ window.addEventListener('load',()=>{
 });
 
 function launchApp(){
-  // Handle Spotify OAuth callback first
-  if(new URLSearchParams(location.search).get('state')==='trek_spotify'){
-    $('authScreen').classList.add('hidden');
-    $('app').classList.add('visible');
-    $('sbAvatar').textContent=ME.initials;
-    $('sbAvatar').style.background=ME.avatar||COLORS[0];
-    $('sbUname').textContent=ME.name;
-    rebuildSel(); renderAll(); startCD();
-    spHandleCallback();
-    return;
-  }
   $('authScreen').classList.add('hidden');
   if(!FB_READY)$('fbSetupBanner').style.display='block';
   $('app').classList.add('visible');
@@ -1455,7 +1434,16 @@ function launchApp(){
   $('sbAvatar').style.background=ME.avatar||COLORS[0];
   $('sbUname').textContent=ME.name;
   rebuildSel(); renderAll(); startCD();
-  // Background map init so OSRM runs and fuel shows on dashboard
+  // Handle Spotify callback after normal launch
+  if(new URLSearchParams(location.search).get('state')==='trek_spotify'){
+    setTimeout(()=>{
+      spHandleCallback().then(ok=>{
+        if(ok){navTo('crew');}
+      });
+    },300);
+    return;
+  }
+  // Background map init
   const t=T();
   if(t&&t.stops.length>=2){
     setTimeout(()=>{
@@ -3440,7 +3428,7 @@ async function spInit(){
 async function spHandleCallback(){
   const p=new URLSearchParams(location.search);
   if(p.get('state')!=='trek_spotify'||!p.get('code'))return false;
-  // Clean URL immediately
+  // Clean URL immediately so it doesn't fire again on next reload
   history.replaceState({},'',location.pathname);
   const verifier=localStorage.getItem('sp_verifier');
   if(!verifier){toast('Spotify auth error — please try again','err');return false;}
