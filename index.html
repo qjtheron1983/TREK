@@ -386,9 +386,13 @@ body{background:var(--bg);color:var(--text);font-family:'Playfair Display',Georg
 /* Suggestions chips */
 .sug-chips{grid-column:1/-1;margin-top:.4rem;}
 .sug-lbl{font-size:.62rem;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;}
-.sug-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;}
+.sug-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;}
 @media(max-width:600px){.sug-row{grid-template-columns:repeat(2,1fr);}}
-.sug-chip{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:.55rem .5rem;border-radius:10px;font-size:.7rem;cursor:pointer;transition:all .16s;line-height:1.35;text-align:center;display:flex;align-items:center;justify-content:center;min-height:3rem;}
+.sug-chip{background:linear-gradient(160deg,var(--surface2) 0%,var(--surface) 100%);border:1px solid var(--border);color:var(--text2);padding:.65rem .6rem;border-radius:12px;font-size:.7rem;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s,color .15s;line-height:1.35;text-align:left;display:flex;flex-direction:column;gap:.25rem;min-height:4.5rem;box-shadow:0 4px 8px rgba(0,0,0,.28),0 1px 3px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.06);}
+.sug-chip:hover,.sug-chip:active{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.38),0 2px 6px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.09);border-color:var(--amber-bd);color:var(--amber);}
+.sug-chip-name{font-weight:700;font-size:.72rem;color:var(--text);line-height:1.25;}
+.sug-chip:hover .sug-chip-name,.sug-chip:active .sug-chip-name{color:var(--amber);}
+.sug-chip-desc{font-size:.64rem;color:var(--text3);line-height:1.3;}
 .sug-chip:hover,.sug-chip:active{background:var(--amber);border-color:var(--amber);color:#fff;}
 .sug-hint{font-size:.65rem;color:var(--text3);margin-top:.3rem;}
 
@@ -3696,7 +3700,7 @@ function renderItinerary(t){
         ${d.notes?`<div style="grid-column:1/-1;font-size:.8rem;color:var(--text3);font-style:italic;padding-top:.4rem">📝 ${d.notes}</div>`:''}
         ${d.suggestions&&d.suggestions.length?`<div class="sug-chips">
           <div class="sug-lbl">💡 Suggested Activities</div>
-          <div class="sug-row">${d.suggestions.map(s=>`<span class="sug-chip" data-activity="${esc(s)}" data-dayidx="${i}" onclick="showActivityDetail(this)">${s}</span>`).join('')}</div>
+          <div class="sug-row">${d.suggestions.map(s=>{const[nm,...rest]=s.split(' — ');const desc=rest.join(' — ').replace(/\s*\(\d+km away\)/,'').trim();return`<span class="sug-chip" data-activity="${esc(s)}" data-dayidx="${i}" onclick="showActivityDetail(this)"><span class="sug-chip-name">${esc(nm.trim())}</span>${desc?`<span class="sug-chip-desc">${esc(desc)}</span>`:''}</span>`;}).join('')}</div>
           <div class="sug-hint">Tap any activity to add to morning or afternoon</div>
         </div>`:''}
       </div>
@@ -4095,7 +4099,7 @@ function renderActivitiesTab(t){
       sugs.length?`
         <div class="sug-lbl" style="margin-bottom:.5rem">💡 Suggested — tap to add to itinerary</div>
         <div class="sug-row" style="margin-bottom:${usedMorning.length||usedAfternoon.length?'.85rem':'0'}">
-          ${sugs.map(sg=>`<span class="sug-chip" data-activity="${esc(sg)}" data-stop="${esc(s.name)}" onclick="showActivityDetail(this)">${sg}</span>`).join('')}
+          ${sugs.map(sg=>{const[nm,...rest]=sg.split(' — ');const desc=rest.join(' — ').replace(/\s*\(\d+km away\)/,'').trim();return`<span class="sug-chip" data-activity="${esc(sg)}" data-stop="${esc(s.name)}" onclick="showActivityDetail(this)"><span class="sug-chip-name">${esc(nm.trim())}</span>${desc?`<span class="sug-chip-desc">${esc(desc)}</span>`:''}</span>`;}).join('')}
         </div>`:'<div style="font-size:.8rem;color:var(--text3);font-style:italic;margin-bottom:.75rem">No suggestions yet — tap ↻ to fetch</div>'}
       ${usedMorning.length||usedAfternoon.length?`
         <div style="border-top:1px solid var(--border2);padding-top:.75rem;margin-top:.25rem">
