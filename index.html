@@ -386,13 +386,28 @@ body{background:var(--bg);color:var(--text);font-family:'Playfair Display',Georg
 /* Suggestions chips */
 .sug-chips{grid-column:1/-1;margin-top:.4rem;}
 .sug-lbl{font-size:.62rem;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;}
-.sug-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;}
+.sug-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.55rem;}
 @media(max-width:600px){.sug-row{grid-template-columns:repeat(2,1fr);}}
-.sug-chip{background:linear-gradient(160deg,var(--surface2) 0%,var(--surface) 100%);border:1px solid var(--border);color:var(--text2);padding:.65rem .6rem;border-radius:12px;font-size:.7rem;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s,color .15s;line-height:1.35;text-align:left;display:flex;flex-direction:column;gap:.25rem;min-height:4.5rem;box-shadow:0 4px 8px rgba(0,0,0,.28),0 1px 3px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.06);}
-.sug-chip:hover,.sug-chip:active{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.38),0 2px 6px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.09);border-color:var(--amber-bd);color:var(--amber);}
-.sug-chip-name{font-weight:700;font-size:.72rem;color:var(--text);line-height:1.25;}
-.sug-chip:hover .sug-chip-name,.sug-chip:active .sug-chip-name{color:var(--amber);}
-.sug-chip-desc{font-size:.64rem;color:var(--text3);line-height:1.3;}
+.sug-chip{
+  background:linear-gradient(150deg,var(--surface2) 0%,var(--bg2) 100%);
+  border:1px solid rgba(212,168,83,.28);
+  box-shadow:0 0 0 1px rgba(212,168,83,.08),0 0 10px rgba(212,168,83,.12),0 4px 16px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.06);
+  color:var(--text2);padding:.7rem .65rem .6rem;border-radius:12px;font-size:.7rem;cursor:pointer;
+  transition:transform .18s,box-shadow .18s,border-color .18s;
+  line-height:1.35;text-align:left;display:flex;flex-direction:column;gap:.3rem;min-height:5.5rem;
+  position:relative;overflow:hidden;
+}
+.sug-chip::before{content:'';position:absolute;inset:0;border-radius:12px;background:linear-gradient(135deg,rgba(212,168,83,.06) 0%,transparent 60%);pointer-events:none;}
+.sug-chip:hover,.sug-chip:active{
+  transform:translateY(-3px);
+  border-color:rgba(212,168,83,.7);
+  box-shadow:0 0 0 1px rgba(212,168,83,.3),0 0 18px rgba(212,168,83,.35),0 0 36px rgba(212,168,83,.12),0 8px 24px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1);
+}
+.sug-chip-icon{font-size:.9rem;line-height:1;margin-bottom:.05rem;}
+.sug-chip-name{font-weight:700;font-size:.74rem;color:var(--text);line-height:1.25;font-family:'Nunito',sans-serif;}
+.sug-chip:hover .sug-chip-name,.sug-chip:active .sug-chip-name{color:var(--al);}
+.sug-chip-desc{font-size:.63rem;color:var(--text3);line-height:1.3;flex:1;}
+.sug-chip-dist{font-size:.6rem;font-family:'Space Mono',monospace;color:var(--amber);font-weight:700;margin-top:auto;padding-top:.15rem;letter-spacing:.02em;}
 .sug-chip:hover,.sug-chip:active{background:var(--amber);border-color:var(--amber);color:#fff;}
 .sug-hint{font-size:.65rem;color:var(--text3);margin-top:.3rem;}
 
@@ -3700,7 +3715,7 @@ function renderItinerary(t){
         ${d.notes?`<div style="grid-column:1/-1;font-size:.8rem;color:var(--text3);font-style:italic;padding-top:.4rem">📝 ${d.notes}</div>`:''}
         ${d.suggestions&&d.suggestions.length?`<div class="sug-chips">
           <div class="sug-lbl">💡 Suggested Activities</div>
-          <div class="sug-row">${d.suggestions.map(s=>{const[nm,...rest]=s.split(' — ');const desc=rest.join(' — ').replace(/\s*\(\d+km away\)/,'').trim();return`<span class="sug-chip" data-activity="${esc(s)}" data-dayidx="${i}" onclick="showActivityDetail(this)"><span class="sug-chip-name">${esc(nm.trim())}</span>${desc?`<span class="sug-chip-desc">${esc(desc)}</span>`:''}</span>`;}).join('')}</div>
+          <div class="sug-row">${d.suggestions.map(s=>{const dm=s.match(/\((\d+)km away\)$/);const dist=dm?dm[1]+'km away':null;const clean=s.replace(/\s*\(\d+km away\)$/,'');const[nm,...rest]=clean.split(' — ');const desc=rest.join(' — ').trim();return`<span class="sug-chip" data-activity="${esc(s)}" data-dayidx="${i}" onclick="showActivityDetail(this)"><span class="sug-chip-name">${esc(nm.trim())}</span>${desc?`<span class="sug-chip-desc">${esc(desc)}</span>`:''} ${dist?`<span class="sug-chip-dist">📍 ${esc(dist)}</span>`:''}</span>`;}).join('')}</div>
           <div class="sug-hint">Tap any activity to add to morning or afternoon</div>
         </div>`:''}
       </div>
@@ -3834,18 +3849,52 @@ async function loadAttractions(){
 }
 
 const ACT_TYPE_LABEL={
-  attraction:'tourist attraction',viewpoint:'scenic viewpoint',museum:'museum',
-  theme_park:'theme park',zoo:'wildlife park',aquarium:'aquarium',artwork:'public artwork',
-  gallery:'gallery',monument:'historic monument',ruins:'ruins',
-  archaeological_site:'archaeological site',memorial:'memorial',castle:'fort/castle',
-  fort:'fort',wreck:'shipwreck',peak:'mountain peak',waterfall:'waterfall',
-  hot_spring:'hot spring',cave_entrance:'cave',arch:'natural arch',
-  nature_reserve:'nature reserve',park:'reserve/park',gorge:'canyon/gorge',
-  beach:'beach',camp_site:'campsite',hotel:'lodge',guest_house:'guesthouse',
-  wine:'wine estate',winery:'wine estate',rock_art:'rock art site',
-  wetland:'wetland/pan',dam:'dam/reservoir',rock:'rock formation',
-  island:'island',vineyard:'wine estate',cliff:'cliff/escarpment',
-  cave:'cave system',dune:'sand dunes',hot_springs:'hot springs'
+  attraction:'Tourist attraction',viewpoint:'Scenic viewpoint',museum:'Museum & heritage',
+  theme_park:'Theme park',zoo:'Wildlife park',aquarium:'Aquarium',artwork:'Public artwork',
+  gallery:'Art gallery',monument:'Historic monument',ruins:'Historic ruins',
+  archaeological_site:'Archaeological site',memorial:'Memorial',castle:'Fort / castle',
+  fort:'Historic fort',wreck:'Historic wreck',peak:'Mountain peak',waterfall:'Waterfall',
+  hot_spring:'Natural hot spring',cave_entrance:'Cave system',arch:'Natural rock arch',
+  nature_reserve:'Nature reserve',park:'Game reserve / park',gorge:'Canyon & gorge',
+  beach:'Beach',camp_site:'Campsite',hotel:'Lodge / hotel',guest_house:'Guesthouse',
+  wine:'Wine estate',winery:'Wine estate',rock_art:'Rock art site',
+  wetland:'Wetland & pan',dam:'Dam & reservoir',rock:'Rock formation',
+  island:'Island',vineyard:'Wine estate',cliff:'Cliff & escarpment',
+  cave:'Cave system',dune:'Sand dunes',hot_springs:'Natural hot springs'
+};
+const ACT_TYPE_HINT={
+  viewpoint:'Stop here for panoramic views of the surrounding landscape',
+  peak:'Hike to the summit for 360° views — check difficulty before you go',
+  waterfall:'Waterfall accessible on foot — swimming may be possible',
+  nature_reserve:'Protected wildlife and nature area — self-drive or guided walks',
+  park:'Game reserve — self-drive recommended, check gate times',
+  ruins:'Historic ruins worth exploring — bring a camera',
+  museum:'Local museum and heritage site — guided tours usually available',
+  cave_entrance:'Cave system — guided tours typically available at the entrance',
+  cave:'Cave system — guided tours typically available at the entrance',
+  arch:'Natural rock arch formation — short walk from the road',
+  hot_spring:'Natural thermal pools — popular for a soak after a long drive',
+  hot_springs:'Natural thermal pools — popular for a soak after a long drive',
+  gorge:'Canyon landscape — viewpoints accessible by vehicle or short walk',
+  beach:'Beach access — check 4x4 requirements for driving on the sand',
+  wreck:'Historic wreck — interesting photographic and historical stop',
+  archaeological_site:'Ancient site with archaeological significance',
+  rock_art:'San rock art site — treat with respect, no touching',
+  monument:'Historic landmark or memorial worth a stop',
+  camp_site:'Established campsite in the area',
+  dam:'Dam or reservoir — popular for fishing and birdwatching',
+  wetland:'Wetland and pan area — excellent for waterbirds and waders',
+  dune:'Sand dunes — 4x4 access, check conditions before attempting',
+  attraction:'Tourist attraction in the area — check opening times'
+};
+const ACT_TYPE_ICON={
+  viewpoint:'🔭',peak:'⛰️',waterfall:'💦',nature_reserve:'🌿',park:'🦁',
+  ruins:'🏛️',museum:'🏛️',cave_entrance:'🕳️',cave:'🕳️',arch:'🌉',
+  hot_spring:'♨️',hot_springs:'♨️',gorge:'🏔️',beach:'🏖️',wreck:'⚓',
+  archaeological_site:'🏺',rock_art:'🪨',monument:'🗿',camp_site:'🏕️',
+  dam:'💧',wetland:'🦢',dune:'🏜️',attraction:'⭐',fort:'🏰',castle:'🏰',
+  artwork:'🎨',gallery:'🖼️',zoo:'🦒',winery:'🍷',wine:'🍷',vineyard:'🍷',
+  island:'🏝️',memorial:'🕊️',theme_park:'🎡',aquarium:'🐟'
 };
 
 function queryLocalAttractions(lat,lon,radiusKm=75){
@@ -3857,9 +3906,8 @@ function queryLocalAttractions(lat,lon,radiusKm=75){
   }
   results.sort((a,b)=>a.dist-b.dist);
   return results.slice(0,10).map(a=>{
-    const label=ACT_TYPE_LABEL[a.t]||a.t||'';
-    const desc=a.d?` — ${a.d}`:(label?` — ${label}`:'');
-    return `${a.n}${desc} (${Math.round(a.dist)}km away)`;
+    const desc=a.d||ACT_TYPE_HINT[a.t]||ACT_TYPE_LABEL[a.t]||'';
+    return `${a.n} — ${desc} (${Math.round(a.dist)}km away)`;
   });
 }
 
@@ -4099,7 +4147,7 @@ function renderActivitiesTab(t){
       sugs.length?`
         <div class="sug-lbl" style="margin-bottom:.5rem">💡 Suggested — tap to add to itinerary</div>
         <div class="sug-row" style="margin-bottom:${usedMorning.length||usedAfternoon.length?'.85rem':'0'}">
-          ${sugs.map(sg=>{const[nm,...rest]=sg.split(' — ');const desc=rest.join(' — ').replace(/\s*\(\d+km away\)/,'').trim();return`<span class="sug-chip" data-activity="${esc(sg)}" data-stop="${esc(s.name)}" onclick="showActivityDetail(this)"><span class="sug-chip-name">${esc(nm.trim())}</span>${desc?`<span class="sug-chip-desc">${esc(desc)}</span>`:''}</span>`;}).join('')}
+          ${sugs.map(sg=>{const dm=sg.match(/\((\d+)km away\)$/);const dist=dm?dm[1]+'km away':null;const clean=sg.replace(/\s*\(\d+km away\)$/,'');const[nm,...rest]=clean.split(' — ');const desc=rest.join(' — ').trim();return`<span class="sug-chip" data-activity="${esc(sg)}" data-stop="${esc(s.name)}" onclick="showActivityDetail(this)"><span class="sug-chip-name">${esc(nm.trim())}</span>${desc?`<span class="sug-chip-desc">${esc(desc)}</span>`:''} ${dist?`<span class="sug-chip-dist">📍 ${esc(dist)}</span>`:''}</span>`;}).join('')}
         </div>`:'<div style="font-size:.8rem;color:var(--text3);font-style:italic;margin-bottom:.75rem">No suggestions yet — tap ↻ to fetch</div>'}
       ${usedMorning.length||usedAfternoon.length?`
         <div style="border-top:1px solid var(--border2);padding-top:.75rem;margin-top:.25rem">
