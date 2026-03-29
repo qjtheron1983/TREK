@@ -3512,31 +3512,45 @@ function ps(q,resId){
   el.classList.add('open');el.innerHTML='<div class="ps-loading">Searching…</div>';
   clearTimeout(psTimer);
   psTimer=setTimeout(()=>{
-    // Use viewbox biased to SA/Namibia + broader Africa, and countrycodes for common searches
-    const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=8&addressdetails=1&namedetails=1&accept-language=en&viewbox=10,-35,40,-15&bounded=0`;
-    fetch(url,{headers:{'User-Agent':'TREKForgebit/4','Accept-Language':'en'}})
-    .then(r=>r.json())
-    .then(data=>{
-      if(!data.length){
-        // Fallback: try without viewbox
-        return fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=8&addressdetails=1&namedetails=1&accept-language=en`,{headers:{'User-Agent':'TREKForgebit/4','Accept-Language':'en'}}).then(r=>r.json());
-      }
-      return data;
-    })
-    .then(data=>{
-      if(!data.length){el.innerHTML='<div class="ps-loading">No results — try adding "South Africa" or "Namibia"</div>';return;}
-      el.innerHTML=data.map(p=>{
+    const nomUrl=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=8&addressdetails=1&namedetails=1&accept-language=en&viewbox=10,-35,40,-15&bounded=0`;
+    const photonUrl=`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=8&lang=en&bbox=10,-35,40,-15`;
+    const nomFetch=fetch(nomUrl,{headers:{'User-Agent':'TREKForgebit/4'}}).then(r=>r.json()).catch(()=>[]);
+    const photonFetch=fetch(photonUrl).then(r=>r.json()).then(d=>{
+      // Normalise Photon GeoJSON → same shape as Nominatim
+      return(d.features||[]).map(f=>{
+        const p=f.properties||{};
+        const name=p.name||p.street||'';
+        if(!name)return null;
+        const sub=[p.city||p.town||p.village,p.state,p.country].filter(Boolean).join(', ');
+        return{lat:f.geometry.coordinates[1],lon:f.geometry.coordinates[0],
+          _name:name,_sub:sub,_cls:p.osm_key||'',_type:p.osm_value||''};
+      }).filter(Boolean);
+    }).catch(()=>[]);
+    Promise.all([nomFetch,photonFetch]).then(([nomData,photonData])=>{
+      // Merge: Nominatim first, then Photon entries not already in results (dedupe by name+~coords)
+      const seen=new Set();
+      const rows=[];
+      nomData.forEach(p=>{
         const name=p.namedetails?.name||p.display_name.split(',')[0];
-        const parts=p.display_name.split(',');
-        const sub=parts.slice(1,4).join(', ').trim();
-        const ic=placeIc(p.class,p.type);
-        return`<div class="ps-item" data-lat="${p.lat}" data-lon="${p.lon}" data-name="${esc(name)}" onclick="selPlace(this,'${resId}')">
+        const key=name.toLowerCase();
+        if(seen.has(key))return; seen.add(key);
+        const sub=p.display_name.split(',').slice(1,4).join(', ').trim();
+        rows.push({lat:p.lat,lon:p.lon,name,sub,cls:p.class,type:p.type});
+      });
+      photonData.forEach(p=>{
+        const key=p._name.toLowerCase();
+        if(seen.has(key))return; seen.add(key);
+        rows.push({lat:p.lat,lon:p.lon,name:p._name,sub:p._sub,cls:p._cls,type:p._type});
+      });
+      if(!rows.length){el.innerHTML='<div class="ps-loading">No results — try adding the country name</div>';return;}
+      el.innerHTML=rows.slice(0,10).map(r=>{
+        const ic=placeIc(r.cls,r.type);
+        return`<div class="ps-item" data-lat="${r.lat}" data-lon="${r.lon}" data-name="${esc(r.name)}" onclick="selPlace(this,'${resId}')">
           <span class="ps-ic">${ic}</span>
-          <div><div>${esc(name)}</div><div class="ps-sub">${esc(sub)}</div></div>
+          <div><div>${esc(r.name)}</div><div class="ps-sub">${esc(r.sub)}</div></div>
         </div>`;
       }).join('');
-    })
-    .catch(()=>{el.innerHTML='<div class="ps-loading">Search unavailable — check connection</div>';});
+    }).catch(()=>{el.innerHTML='<div class="ps-loading">Search unavailable — check connection</div>';});
   },350);
 }
 function psk(e,resId){if(e.key==='Escape')$(resId).classList.remove('open');}
