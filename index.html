@@ -4361,6 +4361,7 @@ function drawMap(t,latlngs,stops){
     const osrmTimer=setTimeout(()=>osrmCtrl.abort(),10000);
     fetch(`https://router.project-osrm.org/route/v1/driving/${cs}?overview=full&geometries=geojson&steps=false`,{signal:osrmCtrl.signal})
     .then(r=>r.json()).then(d=>{clearTimeout(osrmTimer);
+      if(T()?.id!==t.id)return; // trip changed while OSRM was fetching — discard stale result
       if(d.routes&&d.routes[0]){
         const route=d.routes[0];
         leafPolyline=L.polyline(route.geometry.coordinates.map(c=>[c[1],c[0]]),{color:'#f8a818',weight:4,opacity:.9}).addTo(leafMap);
@@ -4383,7 +4384,7 @@ function drawMap(t,latlngs,stops){
           sv();updateFuelKm(t2);renderStops(t2);renderDash(t2);renderBudget(t2);
         }
       }
-    }).catch(()=>{clearTimeout(osrmTimer);leafPolyline=L.polyline(latlngs,{color:'#f8a818',weight:3,opacity:.65,dashArray:'8 5'}).addTo(leafMap);});
+    }).catch(()=>{clearTimeout(osrmTimer);if(T()?.id===t.id)leafPolyline=L.polyline(latlngs,{color:'#f8a818',weight:3,opacity:.65,dashArray:'8 5'}).addTo(leafMap);});
   }
 }
 
