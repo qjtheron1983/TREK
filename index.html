@@ -386,8 +386,8 @@ body{background:var(--bg);color:var(--text);font-family:'Playfair Display',Georg
 /* Suggestions chips */
 .sug-chips{grid-column:1/-1;margin-top:.4rem;}
 .sug-lbl{font-size:.62rem;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;}
-.sug-row{display:flex;flex-wrap:wrap;gap:.28rem;}
-.sug-chip{background:var(--sage-bg);border:1px solid var(--sage-bd);color:var(--sage);padding:.2rem .52rem;border-radius:20px;font-size:.73rem;cursor:pointer;transition:all .16s;}
+.sug-row{display:grid;grid-template-columns:repeat(2,1fr);gap:.28rem;}
+.sug-chip{background:var(--sage-bg);border:1px solid var(--sage-bd);color:var(--sage);padding:.3rem .6rem;border-radius:8px;font-size:.73rem;cursor:pointer;transition:all .16s;line-height:1.35;}
 .sug-chip:hover,.sug-chip:active{background:var(--amber);border-color:var(--amber);color:#fff;}
 .sug-hint{font-size:.65rem;color:var(--text3);margin-top:.3rem;}
 
