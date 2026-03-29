@@ -4134,8 +4134,8 @@ function renderActivitiesTab(t){
     return`<div class="card card-pad" style="margin-bottom:1rem">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem">
         <div>
-          <div style="font-size:.92rem;font-weight:700;color:var(--text)">📍 ${s.name}</div>
-          <div style="font-size:.72rem;color:var(--text3);margin-top:.12rem">${s.nights} night${s.nights!==1?'s':''}</div>
+          <div style="font-size:1.75rem;font-weight:900;color:var(--text);font-family:'Playfair Display',serif;letter-spacing:-.01em;line-height:1.15">📍 ${s.name}</div>
+          <div style="font-size:.75rem;color:var(--text3);margin-top:.2rem">${s.nights} night${s.nights!==1?'s':''}</div>
         </div>
         <button class="btn-secondary" style="font-size:.68rem;padding:.3rem .72rem" onclick="refreshActivities('${esc(s.name)}',${s.lat||0},${s.lon||0})">↻ Reload</button>
       </div>
