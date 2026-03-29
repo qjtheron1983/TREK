@@ -3716,8 +3716,8 @@ async function showActivityDetail(el){
   $('actDetailImgWrap').style.display='none';
   $('actDetailWiki').style.display='none';
   // External links (always available)
-  const googleQ=encodeURIComponent(`${placeName}${locName?' '+locName:''}`);
-  const mapsQ=encodeURIComponent(placeName+(locName?' near '+locName:''));
+  const googleQ=encodeURIComponent(placeName);
+  const mapsQ=encodeURIComponent(placeName);
   const linkStyle='display:inline-flex;align-items:center;gap:.35rem;padding:.38rem .75rem;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:.78rem;text-decoration:none;font-weight:600';
   $('actDetailDesc').innerHTML=`<div style="display:flex;gap:.5rem;flex-wrap:wrap">
     <a href="https://www.google.com/search?q=${googleQ}&tbm=isch" target="_blank" rel="noopener" style="${linkStyle}">🖼️ Photos</a>
