@@ -5499,7 +5499,12 @@ async function spAdd(track){
 async function spVote(id,dir){
   const t=T();if(!t)return;
   const tr=(t.playlist||[]).find(p=>p.id===id);if(!tr)return;
-  tr.votes=(tr.votes||0)+dir;
+  if(!tr.userVotes)tr.userVotes={};
+  const prev=tr.userVotes[ME.id]||0;
+  if(prev===dir){toast('Already voted','ok');return;}
+  tr.userVotes[ME.id]=dir;
+  // Recalculate total from all user votes
+  tr.votes=Object.values(tr.userVotes).reduce((s,v)=>s+v,0);
   sv();spRenderPlaylist(t);
 }
 
@@ -5540,9 +5545,10 @@ function spRenderPlaylist(t){
       }
     };
     const actions=document.createElement('div');actions.style.cssText='display:flex;align-items:center;gap:.25rem;flex-shrink:0';
-    const btnD=document.createElement('button');btnD.textContent='👎';btnD.style.cssText='background:transparent;border:none;color:#b3b3b3;cursor:pointer;font-size:.85rem;padding:2px';btnD.onclick=()=>spVote(tr.id,-1);
+    const myVote=(tr.userVotes&&tr.userVotes[ME.id])||0;
+    const btnD=document.createElement('button');btnD.textContent='👎';btnD.style.cssText=`background:transparent;border:none;cursor:pointer;font-size:.85rem;padding:2px;opacity:${myVote===-1?'1':'.45'};transform:${myVote===-1?'scale(1.2)':'none'}`;btnD.onclick=()=>spVote(tr.id,-1);
     const votes=document.createElement('span');votes.style.cssText='color:#1DB954;font-weight:800;font-size:.75rem;min-width:18px;text-align:center';votes.textContent=tr.votes||0;
-    const btnU=document.createElement('button');btnU.textContent='👍';btnU.style.cssText='background:transparent;border:none;color:#1DB954;cursor:pointer;font-size:.85rem;padding:2px';btnU.onclick=()=>spVote(tr.id,1);
+    const btnU=document.createElement('button');btnU.textContent='👍';btnU.style.cssText=`background:transparent;border:none;cursor:pointer;font-size:.85rem;padding:2px;opacity:${myVote===1?'1':'.45'};transform:${myVote===1?'scale(1.2)':'none'}`;btnU.onclick=()=>spVote(tr.id,1);
     actions.appendChild(playBtn);actions.appendChild(btnD);actions.appendChild(votes);actions.appendChild(btnU);
     if(tr.addedBy===ME.id){const del=document.createElement('button');del.textContent='✕';del.style.cssText='background:transparent;border:none;color:#535353;cursor:pointer;font-size:.7rem;padding:2px 4px';del.onclick=()=>spRemove(tr.id);actions.appendChild(del);}
     row.appendChild(num);row.appendChild(thumb);row.appendChild(info);row.appendChild(actions);
