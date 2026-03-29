@@ -5502,8 +5502,12 @@ async function spVote(id,dir){
   if(!tr.userVotes)tr.userVotes={};
   const prev=tr.userVotes[ME.id]||0;
   if(prev===dir){toast('Already voted','ok');return;}
-  tr.userVotes[ME.id]=dir;
-  // Recalculate total from all user votes
+  if(prev!==0){
+    // Opposite clicked — cancel existing vote rather than switching
+    delete tr.userVotes[ME.id];
+  } else {
+    tr.userVotes[ME.id]=dir;
+  }
   tr.votes=Object.values(tr.userVotes).reduce((s,v)=>s+v,0);
   sv();spRenderPlaylist(t);
 }
