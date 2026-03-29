@@ -29,14 +29,14 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 :root{
-  --bg:#f7f2eb;--bg2:#eee8dd;--surface:#fff;--border:#ddd4c0;--border2:#e8dfd0;
-  --text:#1c1612;--text2:#4a3f30;--text3:#7a6e5f;
-  --amber:#b8720f;--al:#c9921a;--amber-bg:rgba(184,114,15,.1);--amber-bd:rgba(184,114,15,.25);
-  --sage:#3d6435;--sage-bg:rgba(61,100,53,.1);--sage-bd:rgba(61,100,53,.25);
-  --rust:#8b3222;--rust-bg:rgba(139,50,34,.08);
-  --sky:#1e6fa5;--sky-bg:rgba(30,111,165,.1);--sky-bd:rgba(30,111,165,.25);
-  --fire:#c94b1a;
-  --sh:rgba(28,22,18,.08);--shm:rgba(28,22,18,.14);
+  --bg:#151e19;--bg2:#1d2922;--surface:#263429;--border:#354840;--border2:#435850;
+  --text:#f5f0e8;--text2:#c0bab2;--text3:#808878;
+  --amber:#f8a818;--al:#ffc030;--amber-bg:rgba(248,168,24,.14);--amber-bd:rgba(248,168,24,.32);
+  --sage:#52b870;--sage-bg:rgba(82,184,112,.14);--sage-bd:rgba(82,184,112,.32);
+  --rust:#d84e38;--rust-bg:rgba(216,78,56,.13);
+  --sky:#46a8d8;--sky-bg:rgba(70,168,216,.13);--sky-bd:rgba(70,168,216,.32);
+  --fire:#f07228;
+  --sh:rgba(0,0,0,.22);--shm:rgba(0,0,0,.42);
   --r:10px;--rl:16px;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -161,7 +161,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .card-pad{padding:1.2rem;}
 
 /* MODAL */
-.overlay{position:fixed;inset:0;z-index:500;background:rgba(28,22,18,.42);backdrop-filter:blur(5px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;padding:0;}
+.overlay{position:fixed;inset:0;z-index:1500;background:rgba(10,14,12,.65);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s;padding:0;}
 .overlay.open{opacity:1;pointer-events:all;}
 .modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl) var(--rl) 0 0;padding:1.6rem 1.6rem calc(1.6rem + env(safe-area-inset-bottom));width:100%;max-width:580px;max-height:92vh;overflow-y:auto;transform:translateY(24px);transition:transform .25s;position:relative;}
 .overlay.open .modal{transform:none;}
@@ -303,6 +303,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .stab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px var(--sh);}
 .stpane{display:none;}
 .stpane.on{display:block;}
+#itinChevron.open{transform:rotate(180deg);}
 
 /* DAYS / ITINERARY */
 .day-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);margin-bottom:.7rem;overflow:hidden;box-shadow:0 1px 3px var(--sh);}
@@ -574,7 +575,153 @@ input[type=file]{display:none;}
   .overlay{align-items:center;}
   .modal{border-radius:var(--rl);max-width:560px;}
 }
-.COLORS{--c0:linear-gradient(135deg,#b8720f,#8b3222);--c1:linear-gradient(135deg,#3d6435,#1e6fa5);--c2:linear-gradient(135deg,#7a6e5f,#b8720f);--c3:linear-gradient(135deg,#8b3222,#c94b1a);--c4:linear-gradient(135deg,#1e6fa5,#3d6435);--c5:linear-gradient(135deg,#b8720f,#3d6435);}
+.COLORS{--c0:linear-gradient(135deg,#f8a818,#d84e38);--c1:linear-gradient(135deg,#52b870,#46a8d8);--c2:linear-gradient(135deg,#a8a49e,#f8a818);--c3:linear-gradient(135deg,#d84e38,#f07228);--c4:linear-gradient(135deg,#46a8d8,#52b870);--c5:linear-gradient(135deg,#f8a818,#52b870);}
+
+/* ══ EXCITEMENT LAYER ══ */
+/* Gradient primary button */
+.btn-primary{background:linear-gradient(135deg,var(--amber),var(--fire));box-shadow:0 2px 10px rgba(248,168,24,.28);}
+.btn-primary:hover{background:linear-gradient(135deg,var(--al),var(--amber));transform:translateY(-2px);box-shadow:0 5px 22px rgba(248,168,24,.45);}
+/* Active nav glow */
+.ni.active{background:linear-gradient(90deg,rgba(248,168,24,.15),transparent);text-shadow:0 0 18px rgba(248,168,24,.45);}
+/* Gradient logo text */
+.llogo,.sb-logo{background:linear-gradient(135deg,var(--al) 20%,var(--amber) 60%,var(--fire) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+/* Richer hero gradients */
+.dash-hero{background:linear-gradient(135deg,#1c3020 0%,#2a1808 50%,#182818 100%);}
+.budget-hero{background:linear-gradient(135deg,#1c1006 0%,#281a08 50%,#182010 100%);box-shadow:0 6px 30px rgba(0,0,0,.5);}
+/* Glowing stat / KPI numbers */
+.stat-n,.bi-kpi-n{text-shadow:0 0 18px rgba(248,168,24,.35);}
+.bh-amount,.cost-amount,.mcb-amount{text-shadow:0 0 22px rgba(248,168,24,.4);}
+/* Card hover amber glow */
+.card:hover{box-shadow:0 5px 22px var(--shm),0 0 0 1px var(--amber-bd);}
+.ac-card:hover{box-shadow:0 6px 28px var(--shm),0 0 0 1px var(--amber-bd);}
+/* Active subtab */
+.stab.active{background:linear-gradient(135deg,var(--surface),var(--bg));border:1px solid var(--amber-bd);color:var(--amber);}
+/* FAB gradient glow */
+#fab{background:linear-gradient(135deg,var(--amber),var(--fire));box-shadow:0 4px 22px rgba(248,168,24,.55);}
+/* Invite code glow */
+.icb-code{text-shadow:0 0 18px rgba(248,168,24,.45);}
+.invite-code-box{background:linear-gradient(135deg,var(--amber-bg),rgba(70,168,216,.08));}
+/* Bottom tab active icon glow */
+.bt.active .bt-ic{filter:drop-shadow(0 0 5px rgba(248,168,24,.65));}
+/* Progress bar richer gradient */
+.prog-fill{background:linear-gradient(90deg,var(--sky),var(--sage),var(--amber),var(--fire));}
+/* Loader ring glow */
+.lring{box-shadow:0 0 12px rgba(248,168,24,.35);}
+/* Stop pills */
+.sp{background:linear-gradient(135deg,var(--amber-bg),rgba(70,168,216,.07));}
+/* Section headers */
+.ph-title{background:linear-gradient(135deg,var(--text),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+/* Auth card */
+.auth-card{box-shadow:0 8px 40px rgba(0,0,0,.6),0 0 0 1px var(--border2);}
+/* Budget bar */
+.budget-hero .bh-amount{color:#ffd060;}
+
+/* ── LEAFLET Z-INDEX FIX — modals always on top ── */
+.leaflet-pane,.leaflet-control-container{z-index:1 !important;}
+.leaflet-top,.leaflet-bottom{z-index:2 !important;}
+
+/* ── MOBILE-FIRST KICK-ASS ── */
+/* Press states — snappy touch feedback */
+.btn-primary:active{transform:scale(.94)!important;opacity:.88;}
+.btn-secondary:active,.btn-danger:active{transform:scale(.95)!important;}
+.ni:active,.bt:active{opacity:.7;transform:scale(.97);}
+.pack-item{transition:transform .12s,background .12s;}
+.pack-item:active{transform:translateX(5px);background:var(--amber-bg);}
+.sug-chip:active{transform:scale(.93);}
+.ac-card:active{transform:translateY(-1px) scale(.99);}
+.day-card:active,.cost-card:active{opacity:.9;}
+/* Card entrance stagger */
+@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.pack-cat{animation:cardIn .32s ease both;}
+.pack-cat:nth-child(2){animation-delay:.05s}.pack-cat:nth-child(3){animation-delay:.1s}.pack-cat:nth-child(4){animation-delay:.15s}.pack-cat:nth-child(5){animation-delay:.2s}.pack-cat:nth-child(6){animation-delay:.25s}
+.stat{animation:cardIn .3s ease both;}
+.stat:nth-child(2){animation-delay:.04s}.stat:nth-child(3){animation-delay:.08s}.stat:nth-child(4){animation-delay:.12s}.stat:nth-child(5){animation-delay:.16s}.stat:nth-child(6){animation-delay:.2s}
+.cc{animation:cardIn .32s ease both;}
+.cc:nth-child(2){animation-delay:.06s}.cc:nth-child(3){animation-delay:.12s}.cc:nth-child(4){animation-delay:.18s}
+/* Empty state animations */
+.empty .ei{animation:lfi .5s ease both;}.empty .et{animation:lfi .5s .1s ease both;}.empty .es{animation:lfi .5s .2s ease both;}
+/* iOS momentum + smooth scroll */
+.panel,.modal{-webkit-overflow-scrolling:touch;scroll-behavior:smooth;}
+/* Improved panel entrance */
+@keyframes pIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* Active bottom tab glow */
+.bt.active{background:rgba(248,168,24,.07);}
+.bt.active .bt-lb{color:var(--amber);font-weight:700;}
+/* Subtabs pill style */
+.subtabs{border:1px solid var(--border2);}
+/* Hero panel titles */
+.ph-title{font-size:1.7rem;}
+/* Bigger readable stop names */
+.sr-nm{font-size:.92rem;font-weight:700;}
+/* Day card header glow when open */
+.day-card.from-route .dh{background:linear-gradient(90deg,rgba(82,184,112,.08),var(--bg2));}
+.day-card.travel-day .dh{background:linear-gradient(90deg,rgba(70,168,216,.08),var(--bg2));}
+/* Invite code box — extra punch */
+.invite-code-box{box-shadow:0 2px 16px rgba(248,168,24,.12);}
+/* Stats highlight */
+.stat{transition:transform .15s,box-shadow .15s;}
+.stat:hover{transform:translateY(-2px);box-shadow:0 4px 16px var(--shm);}
+/* Pack item done state */
+.pack-item.done{background:rgba(82,184,112,.05);}
+/* FAB pulse animation */
+@keyframes fabPulse{0%,100%{box-shadow:0 4px 22px rgba(248,168,24,.55)}50%{box-shadow:0 4px 32px rgba(248,168,24,.8)}}
+#fab{animation:fabPulse 3s ease infinite;}
+#fab:active{transform:scale(.9)!important;animation:none;}
+/* Mobile panel padding */
+@media(max-width:768px){
+  .panel{padding:.85rem .85rem 2.5rem;}
+  .ph-title{font-size:1.45rem;}
+  .btn-primary{min-height:42px;}
+  .stab{padding:.48rem .7rem;font-size:.7rem;}
+  .sr-nm{font-size:.9rem;}
+  .pack-cat{border-radius:14px;}
+  .dash-hero{border-radius:14px;}
+  .budget-hero{border-radius:14px;}
+}
+
+/* ── TOPBAR BRAND ── */
+.topbar-brand{display:flex;flex-direction:column;gap:.05rem;flex:1;min-width:0;cursor:pointer;}
+.tb-logo{font-family:'Playfair Display';font-size:.95rem;font-weight:900;letter-spacing:.12em;background:linear-gradient(135deg,var(--al),var(--amber),var(--fire));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;}
+.tb-trip-name{font-size:.72rem;color:var(--text2);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* Show mob menu btn only on mobile */
+.mob-menu-btn{display:none!important;}
+@media(max-width:768px){.mob-menu-btn{display:flex!important;}}
+
+/* ── MOBILE DRAWER ── */
+#mobileDrawer{position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .24s;-webkit-tap-highlight-color:transparent;}
+#mobileDrawer.open{opacity:1;pointer-events:all;}
+.mob-panel{position:absolute;left:0;top:0;bottom:0;width:min(82vw,296px);background:var(--surface);border-right:1px solid var(--border2);box-shadow:8px 0 32px rgba(0,0,0,.45);transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);overflow-y:auto;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);}
+#mobileDrawer.open .mob-panel{transform:translateX(0);}
+.mob-head{padding:1.25rem 1.2rem 1rem;border-bottom:1px solid var(--border2);}
+.mob-logo{font-family:'Playfair Display';font-size:2.1rem;font-weight:900;letter-spacing:.14em;background:linear-gradient(135deg,var(--al) 20%,var(--amber) 60%,var(--fire) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;}
+.mob-sub{font-size:.48rem;color:var(--text3);letter-spacing:.24em;font-family:'Space Mono';text-transform:uppercase;margin-top:.12rem;}
+.mob-fb{font-size:.42rem;color:var(--amber);letter-spacing:.14em;font-family:'Space Mono';text-transform:uppercase;margin-top:.06rem;}
+.mob-user{display:flex;align-items:center;gap:.7rem;padding:.8rem 1.2rem;border-bottom:1px solid var(--border2);}
+.mob-uname{font-size:.88rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mob-logout{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.85rem;padding:.2rem;transition:color .15s;}
+.mob-logout:hover{color:var(--rust);}
+.mob-trips{padding:.85rem 1.2rem;border-bottom:1px solid var(--border2);}
+.mob-trips label{font-size:.6rem;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:.35rem;}
+.mob-actions{padding:.6rem .8rem .4rem;}
+.mob-foot{margin-top:auto;padding:.6rem 1.2rem .8rem;font-size:.44rem;color:var(--text3);letter-spacing:.1em;font-family:'Space Mono';text-transform:uppercase;text-align:center;border-top:1px solid var(--border2);}
+
+/* ── TOWING TOGGLE (per leg) ── */
+.tow-btn{background:var(--bg2);border:1px solid var(--border);color:var(--text3);padding:.15rem .45rem;border-radius:12px;font-size:.6rem;cursor:pointer;transition:all .16s;white-space:nowrap;}
+.tow-btn.tow-on{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber);font-weight:700;}
+
+/* ── ATTENDEE TOGGLE PILLS ── */
+.att-btn{padding:.28rem .7rem;border-radius:20px;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .16s;border:1.5px solid var(--amber-bd);background:var(--amber-bg);color:var(--amber);}
+.att-btn.att-off{background:var(--bg2);border-color:var(--border);color:var(--text3);}
+.attendee-pill{width:32px;height:32px;border-radius:50%;font-size:.68rem;font-weight:700;cursor:pointer;transition:all .16s;border:2px solid var(--border);background:var(--bg2);color:var(--text3);display:inline-flex;align-items:center;justify-content:center;}
+.attendee-pill.att-on{background:var(--amber-bg);border-color:var(--amber-bd);color:var(--amber);}
+
+/* ── VEHICLE PASSENGER PILL ── */
+.veh-pax{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.35rem;}
+.veh-pax-pill{font-size:.62rem;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--sky-bg);color:var(--sky);border:1px solid var(--sky-bd);}
+.veh-pax-pill.me{background:var(--amber-bg);color:var(--amber);border-color:var(--amber-bd);}
+.jt-vmode-card{cursor:pointer;user-select:none;border-radius:var(--r);padding:.85rem;text-align:center;transition:all .16s;}
+.jt-vehicle-choice{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:.75rem 1rem;cursor:pointer;transition:all .16s;display:flex;align-items:center;gap:.75rem;}
+.jt-vehicle-choice:hover,.jt-vehicle-choice.selected{border-color:var(--amber);background:var(--amber-bg);}
 </style>
 </head>
 <body class="COLORS">
@@ -653,10 +800,10 @@ if('serviceWorker' in navigator){
     <nav class="sb-nav">
       <div class="ni active" data-panel="overview"><span class="ni-ic">🗺️</span>Overview</div>
       <div class="ni" data-panel="plan"><span class="ni-ic">🧭</span>Plan</div>
-      <div class="ni" data-panel="days"><span class="ni-ic">📅</span>Days</div>
       <div class="ni" data-panel="budget"><span class="ni-ic">⛽</span>Budget</div>
       <div class="ni" data-panel="pack"><span class="ni-ic">🎒</span>Pack<span class="ni-badge" id="packBadge" style="display:none">!</span></div>
       <div class="ni" data-panel="crew"><span class="ni-ic">👥</span>Crew</div>
+      <div class="ni" data-panel="playlist"><span class="ni-ic">🎵</span>Playlist</div>
     </nav>
     <div class="sb-cd">
       <span class="cd-lbl">Departure in</span>
@@ -672,11 +819,14 @@ if('serviceWorker' in navigator){
   <!-- MAIN -->
   <main id="main">
     <div class="topbar">
-      <div class="tb-title" id="tbTitle">✦ TREK</div>
-      <div style="margin-left:auto;display:flex;gap:.4rem;align-items:center">
-        <select id="tripSelMob" class="sb-sel" style="max-width:120px;font-size:.72rem;padding:.28rem .5rem;display:none" onchange="switchTrip(this.value)"></select>
-        <button class="btn-sm" onclick="shareTrip()">⬆</button>
-        <button class="btn-sm" onclick="exportTrip()">⬇</button>
+      <button class="menu-btn mob-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu" style="flex-shrink:0">☰</button>
+      <div class="topbar-brand" onclick="navTo('overview')">
+        <div class="tb-logo">✦ TREK</div>
+        <div class="tb-trip-name" id="tbTitle">—</div>
+      </div>
+      <div style="display:flex;gap:.35rem;align-items:center;flex-shrink:0">
+        <button class="btn-sm" onclick="shareTrip()" title="Share">⬆</button>
+        <button class="btn-sm" onclick="exportTrip()" title="Export">⬇</button>
       </div>
     </div>
     <!-- OVERVIEW -->
@@ -702,6 +852,24 @@ if('serviceWorker' in navigator){
 
         <div class="rsr" id="routeStats"></div>
         <div class="stop-list" id="stopList"></div>
+        <!-- Itinerary accordion -->
+        <div id="itinAccordion" style="margin-top:1.25rem;border:1px solid var(--border2);border-radius:var(--r);overflow:hidden">
+          <div onclick="toggleItinAccordion()" style="display:flex;align-items:center;justify-content:space-between;padding:.85rem 1rem;cursor:pointer;background:var(--bg2);user-select:none">
+            <div style="display:flex;align-items:center;gap:.55rem">
+              <span style="font-size:.95rem">📅</span>
+              <span style="font-size:.82rem;font-weight:700;color:var(--text)">Itinerary</span>
+              <span id="itinAccordionCount" style="font-size:.65rem;color:var(--text3)"></span>
+            </div>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <button class="btn-primary" style="font-size:.62rem;padding:.28rem .65rem" onclick="event.stopPropagation();openModal('addDayMod')">＋ Day</button>
+              <span id="itinChevron" style="color:var(--text3);font-size:.75rem;transition:transform .2s">▼</span>
+            </div>
+          </div>
+          <div id="itinAccordionBody" style="display:none;padding:.85rem">
+            <div style="font-size:.75rem;color:var(--text3);margin-bottom:.75rem">Day-by-day · auto-synced from your route</div>
+            <div id="itinList"></div>
+          </div>
+        </div>
       </div>
       <!-- Stays -->
       <div class="stpane" id="stp-stays">
@@ -722,14 +890,6 @@ if('serviceWorker' in navigator){
         <div id="activitiesContent"></div>
       </div>
     </section>
-    <!-- DAYS -->
-    <section class="panel" id="panel-days">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;flex-wrap:wrap;gap:.6rem">
-        <div><div class="ph-title">Days</div><div class="ph-sub">Your expedition — nights, drives & activities</div></div>
-        <button class="btn-primary" onclick="openModal('addDayMod')">＋ Day</button>
-      </div>
-      <div id="itinList"></div>
-    </section>
     <!-- BUDGET -->
     <section class="panel" id="panel-budget">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.5rem">
@@ -748,9 +908,10 @@ if('serviceWorker' in navigator){
     <section class="panel" id="panel-pack">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
         <div><div class="ph-title">Packing</div><div class="ph-sub">Communal · Personal</div></div>
-        <div style="display:flex;gap:.4rem">
-          <button class="btn-secondary" onclick="resetPacking()" style="font-size:.7rem">↺</button>
-          <button class="btn-primary" onclick="openModal('addCatMod')">＋ Category</button>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+          <button class="btn-secondary" onclick="resetPacking()" style="font-size:.7rem;padding:.38rem .6rem" title="Reset all checked items">↺</button>
+          <button class="btn-secondary" onclick="openDefaultCats()" style="font-size:.72rem">📦 Defaults</button>
+          <button class="btn-primary" onclick="openModal('addCatMod')" style="font-size:.72rem">＋ Custom</button>
         </div>
       </div>
       <div class="pp-top"><span class="pp-n" id="ppN">0</span><span class="pp-t" id="ppT">/ 0 items</span><span class="pp-p" id="ppP">0%</span></div>
@@ -766,60 +927,6 @@ if('serviceWorker' in navigator){
       <div style="margin-bottom:1.1rem"><div class="ph-title">Crew</div><div class="ph-sub">Team · Documents · Gallery</div></div>
       <div id="inviteCodeBox"></div>
       <div class="crew-grid" id="crewGrid"></div>
-
-      <!-- SPOTIFY PLAYLIST -->
-      <div class="card" style="background:#121212;border-radius:var(--rl);overflow:hidden;margin-bottom:1.1rem">
-        <div style="padding:1rem 1.1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
-          <div style="display:flex;align-items:center;gap:.65rem">
-            <div style="width:34px;height:34px;background:#1DB954;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">🎵</div>
-            <div>
-              <div style="font-weight:700;font-size:.95rem;color:#fff">Expedition Playlist</div>
-              <div style="font-size:.68rem;color:#b3b3b3;margin-top:.1rem">Add &amp; vote on tracks together</div>
-            </div>
-          </div>
-          <div id="spConnectArea"></div>
-        </div>
-        <div id="spSearchArea" style="display:none;padding:0 1rem .75rem">
-          <input id="spSearchInput" placeholder="🔍 Search Spotify…"
-            style="width:100%;padding:.55rem .85rem;background:#282828;border:1.5px solid #3E3E3E;border-radius:8px;color:#fff;font-size:.85rem;outline:none"
-            oninput="spSearchDebounce(this.value)">
-          <div id="spSearchResults" style="margin-top:.4rem"></div>
-        </div>
-        <div style="padding:0 1rem .75rem">
-          <div id="spPlaylistActions" style="margin-bottom:.5rem"></div>
-          <div style="font-size:.62rem;font-weight:700;color:#b3b3b3;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.4rem">Playlist</div>
-          <div id="spPlaylist"><div style="text-align:center;color:#b3b3b3;font-size:.82rem;padding:1rem;font-style:italic">No tracks yet 🎶</div></div>
-        </div>
-        <!-- NOW PLAYING BAR -->
-        <div id="spNowPlaying" style="display:none;background:#000;border-top:1px solid #282828;padding:.65rem 1rem">
-          <div style="display:flex;align-items:center;gap:.75rem">
-            <div id="spNpThumb" style="width:40px;height:40px;border-radius:4px;background:#282828;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🎵</div>
-            <div style="flex:1;overflow:hidden">
-              <div id="spNpTitle" style="font-size:.82rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
-              <div id="spNpArtist" style="font-size:.68rem;color:#b3b3b3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0">
-              <button onclick="spPrev()" style="background:transparent;border:none;color:#b3b3b3;cursor:pointer;font-size:1.1rem;padding:4px" title="Previous">⏮</button>
-              <button id="spPlayBtn" onclick="spToggle()" style="background:#1DB954;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center" title="Play/Pause">▶</button>
-              <button onclick="spNext()" style="background:transparent;border:none;color:#b3b3b3;cursor:pointer;font-size:1.1rem;padding:4px" title="Next">⏭</button>
-            </div>
-          </div>
-          <!-- Progress bar -->
-          <div id="spProgress" style="margin-top:.5rem;cursor:pointer" onclick="spSeek(event)">
-            <div style="background:#535353;border-radius:2px;height:3px;position:relative">
-              <div id="spProgressFill" style="background:#1DB954;height:100%;border-radius:2px;width:0%;transition:width .5s linear"></div>
-            </div>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-top:.2rem">
-            <span id="spPosLbl" style="font-size:.58rem;color:#b3b3b3">0:00</span>
-            <span id="spDurLbl" style="font-size:.58rem;color:#b3b3b3">0:00</span>
-          </div>
-        </div>
-        <div id="spPremiumMsg" style="display:none;background:#1a1a1a;border-top:1px solid #282828;padding:.65rem 1rem;text-align:center">
-          <div style="font-size:.75rem;color:#b3b3b3">In-app playback requires <strong style="color:#fff">Spotify Premium</strong></div>
-          <div style="font-size:.68rem;color:#535353;margin-top:.2rem">Tap any track to open in Spotify app</div>
-        </div>
-      </div>
 
       <div class="card card-pad" style="margin-bottom:1.1rem">
         <div style="font-family:'Playfair Display';font-size:1.1rem;margin-bottom:.9rem">📨 Invite Member</div>
@@ -855,19 +962,101 @@ if('serviceWorker' in navigator){
         <div id="summaryContent"></div>
       </div>
     </section>
+
+    <!-- PLAYLIST -->
+    <section class="panel" id="panel-playlist">
+      <div style="margin-bottom:1.1rem"><div class="ph-title">Playlist</div><div class="ph-sub">Trip soundtrack · Add &amp; vote on tracks together</div></div>
+      <div class="card" style="background:#121212;border-radius:var(--rl);overflow:hidden;margin-bottom:1.1rem">
+        <div style="padding:1rem 1.1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+          <div style="display:flex;align-items:center;gap:.65rem">
+            <div style="width:38px;height:38px;background:#1DB954;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🎵</div>
+            <div>
+              <div style="font-weight:700;font-size:1rem;color:#fff">Expedition Playlist</div>
+              <div style="font-size:.7rem;color:#b3b3b3;margin-top:.1rem">Powered by Spotify</div>
+            </div>
+          </div>
+          <div id="spConnectArea"></div>
+        </div>
+        <div id="spSearchArea" style="display:none;padding:0 1rem .75rem">
+          <input id="spSearchInput" placeholder="🔍 Search Spotify…"
+            style="width:100%;padding:.55rem .85rem;background:#282828;border:1.5px solid #3E3E3E;border-radius:8px;color:#fff;font-size:.85rem;outline:none"
+            oninput="spSearchDebounce(this.value)">
+          <div id="spSearchResults" style="margin-top:.4rem"></div>
+        </div>
+        <div style="padding:0 1rem .75rem">
+          <div id="spPlaylistActions" style="margin-bottom:.5rem"></div>
+          <div style="font-size:.62rem;font-weight:700;color:#b3b3b3;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:.4rem">Playlist</div>
+          <div id="spPlaylist"><div style="text-align:center;color:#b3b3b3;font-size:.82rem;padding:1.5rem;font-style:italic">No tracks yet 🎶</div></div>
+        </div>
+        <!-- NOW PLAYING BAR -->
+        <div id="spNowPlaying" style="display:none;background:#000;border-top:1px solid #282828;padding:.65rem 1rem">
+          <div style="display:flex;align-items:center;gap:.75rem">
+            <div id="spNpThumb" style="width:40px;height:40px;border-radius:4px;background:#282828;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.1rem">🎵</div>
+            <div style="flex:1;overflow:hidden">
+              <div id="spNpTitle" style="font-size:.82rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+              <div id="spNpArtist" style="font-size:.68rem;color:#b3b3b3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">—</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.5rem;flex-shrink:0">
+              <button onclick="spPrev()" style="background:transparent;border:none;color:#b3b3b3;cursor:pointer;font-size:1.1rem;padding:4px" title="Previous">⏮</button>
+              <button id="spPlayBtn" onclick="spToggle()" style="background:#1DB954;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center" title="Play/Pause">▶</button>
+              <button onclick="spNext()" style="background:transparent;border:none;color:#b3b3b3;cursor:pointer;font-size:1.1rem;padding:4px" title="Next">⏭</button>
+            </div>
+          </div>
+          <div id="spProgress" style="margin-top:.5rem;cursor:pointer" onclick="spSeek(event)">
+            <div style="background:#535353;border-radius:2px;height:3px;position:relative">
+              <div id="spProgressFill" style="background:#1DB954;height:100%;border-radius:2px;width:0%;transition:width .5s linear"></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:.2rem">
+            <span id="spPosLbl" style="font-size:.58rem;color:#b3b3b3">0:00</span>
+            <span id="spDurLbl" style="font-size:.58rem;color:#b3b3b3">0:00</span>
+          </div>
+        </div>
+        <div id="spPremiumMsg" style="display:none;background:#1a1a1a;border-top:1px solid #282828;padding:.65rem 1rem;text-align:center">
+          <div style="font-size:.75rem;color:#b3b3b3">In-app playback requires <strong style="color:#fff">Spotify Premium</strong></div>
+          <div style="font-size:.68rem;color:#535353;margin-top:.2rem">Tap any track to open in Spotify app</div>
+        </div>
+      </div>
+    </section>
   </main>
 </div>
 <!-- BOTTOM TAB BAR -->
 <nav id="bottomTabs">
   <button class="bt active" data-panel="overview"><div class="bt-ic">🗺️</div><div class="bt-lb">Home</div></button>
   <button class="bt" data-panel="plan"><div class="bt-ic">🧭</div><div class="bt-lb">Plan</div></button>
-  <button class="bt" data-panel="days"><div class="bt-ic">📅</div><div class="bt-lb">Days</div></button>
   <button class="bt" data-panel="budget"><div class="bt-ic">⛽</div><div class="bt-lb">Budget</div></button>
   <button class="bt" data-panel="pack" style="position:relative"><div class="bt-ic">🎒</div><div class="bt-lb">Pack</div><div class="bt-badge" id="packBadgeMob" style="display:none">!</div></button>
   <button class="bt" data-panel="crew"><div class="bt-ic">👥</div><div class="bt-lb">Crew</div></button>
+  <button class="bt" data-panel="playlist"><div class="bt-ic">🎵</div><div class="bt-lb">Music</div></button>
 </nav>
 <!-- FAB: mobile floating action button -->
 <button id="fab" onclick="fabAction()" aria-label="New Expedition">＋</button>
+
+<!-- MOBILE SLIDE-OUT DRAWER -->
+<div id="mobileDrawer" onclick="closeMobileMenu()">
+<div class="mob-panel" onclick="event.stopPropagation()">
+  <div class="mob-head">
+    <div class="mob-logo">✦ TREK</div>
+    <div class="mob-sub">Expedition Planner</div>
+    <div class="mob-fb">A Forgebit Product</div>
+  </div>
+  <div class="mob-user">
+    <div class="sb-av" id="mobAvatar" style="width:34px;height:34px;font-size:.9rem;flex-shrink:0">?</div>
+    <div class="mob-uname" id="mobUname">—</div>
+    <button class="mob-logout" onclick="doLogout()" title="Sign out">⎋</button>
+  </div>
+  <div class="mob-trips">
+    <label>Current Trip</label>
+    <select id="tripSelDrawer" class="sb-sel" onchange="switchTrip(this.value);closeMobileMenu()"></select>
+  </div>
+  <div class="mob-actions">
+    <button class="btn-trip btn-new" style="width:100%;margin-bottom:.35rem;text-align:left" onclick="openNewTripModal();closeMobileMenu()">＋ New Expedition</button>
+    <button class="btn-trip btn-join" style="width:100%;margin-bottom:.35rem;text-align:left" onclick="openJoinTrip();closeMobileMenu()">🔗 Join a Trip</button>
+    <button class="btn-trip btn-del" style="width:100%;text-align:left" onclick="deleteCurrentTrip();closeMobileMenu()">🗑 Delete Trip</button>
+  </div>
+  <div class="mob-foot">Forgebit · TREK v5</div>
+</div>
+</div>
 <!-- MODALS -->
 <!-- NEW TRIP WIZARD -->
 <div class="overlay" id="newTripMod">
@@ -914,13 +1103,44 @@ if('serviceWorker' in navigator){
 <div class="modal" style="position:relative">
   <button class="modal-close" onclick="closeModal('joinTripMod')">✕</button>
   <div class="modal-title">🔗 Join an Expedition</div>
-  <p style="font-size:.83rem;color:var(--text3);margin-bottom:1.1rem">Enter the invite code from your trip organiser, then add your vehicle.</p>
-  <div class="fi"><label>Invite Code</label><input type="text" id="jt-code" placeholder="AB12CD" style="text-transform:uppercase;letter-spacing:.2em;font-family:'Space Mono';font-size:1.05rem" oninput="this.value=this.value.toUpperCase()"></div>
-  <div style="border-top:1px solid var(--border2);margin:.9rem 0 1rem"></div>
-  <div style="font-size:.78rem;font-weight:700;color:var(--text2);margin-bottom:.85rem">🚗 My Vehicle</div>
-  <div class="form-row"><div class="fg"><label>Vehicle Name</label><input type="text" id="jt-vname" placeholder="Ranger / Prado…"></div><div class="fg"><label>Fuel Type</label><select id="jt-ftype"><option>Diesel</option><option>Petrol 95</option><option>Petrol 93</option></select></div></div>
-  <div class="form-row"><div class="fg"><label>Consumption (L/100km)</label><input type="number" id="jt-cons" placeholder="12.5" step="0.1" value="12.5"></div><div class="fg"><label>Tank (L)</label><input type="number" id="jt-tank" placeholder="80" value="80"></div></div>
-  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('joinTripMod')">Cancel</button><button class="btn-primary" onclick="joinTrip()">Join →</button></div>
+  <!-- Step 1: Enter code -->
+  <div id="jt-step1">
+    <p style="font-size:.83rem;color:var(--text3);margin-bottom:1.1rem">Enter the invite code from your trip organiser.</p>
+    <div class="fi"><label>Invite Code</label><input type="text" id="jt-code" placeholder="AB12CD" style="text-transform:uppercase;letter-spacing:.2em;font-family:'Space Mono';font-size:1.05rem" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('joinTripMod')">Cancel</button><button class="btn-primary" onclick="jtLookUp()">Look Up →</button></div>
+  </div>
+  <!-- Step 2: Vehicle mode -->
+  <div id="jt-step2" style="display:none">
+    <div id="jt-trip-preview" style="background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--r);padding:.75rem 1rem;margin-bottom:1rem;font-size:.88rem;font-weight:600;color:var(--amber)"></div>
+    <div style="font-size:.78rem;font-weight:700;color:var(--text2);margin-bottom:.75rem">🚗 Vehicle</div>
+    <div style="display:flex;gap:.65rem;margin-bottom:1rem">
+      <label style="flex:1;cursor:pointer">
+        <input type="radio" name="jt-vmode" value="own" checked onchange="jtToggleVMode()" style="display:none">
+        <div class="jt-vmode-card" id="jt-own-card" style="border:2px solid var(--amber);background:var(--amber-bg)">
+          <div style="font-size:1.3rem;margin-bottom:.25rem">🚗</div>
+          <div style="font-size:.8rem;font-weight:700;color:var(--text)">Own Vehicle</div>
+          <div style="font-size:.68rem;color:var(--text3);margin-top:.1rem">I'm bringing my car</div>
+        </div>
+      </label>
+      <label style="flex:1;cursor:pointer">
+        <input type="radio" name="jt-vmode" value="join" onchange="jtToggleVMode()" style="display:none">
+        <div class="jt-vmode-card" id="jt-join-card" style="border:2px solid var(--border2);background:var(--surface)">
+          <div style="font-size:1.3rem;margin-bottom:.25rem">👥</div>
+          <div style="font-size:.8rem;font-weight:700;color:var(--text)">Join a Vehicle</div>
+          <div style="font-size:.68rem;color:var(--text3);margin-top:.1rem">Ride with another crew</div>
+        </div>
+      </label>
+    </div>
+    <div id="jt-own-fields">
+      <div class="form-row"><div class="fg"><label>Vehicle Name</label><input type="text" id="jt-vname" placeholder="Ranger / Prado…"></div><div class="fg"><label>Fuel Type</label><select id="jt-ftype"><option>Diesel</option><option>Petrol 95</option><option>Petrol 93</option></select></div></div>
+      <div class="form-row"><div class="fg"><label>Consumption (L/100km)</label><input type="number" id="jt-cons" placeholder="12.5" step="0.1" value="12.5"></div><div class="fg"><label>Tank (L)</label><input type="number" id="jt-tank" placeholder="80" value="80"></div></div>
+    </div>
+    <div id="jt-join-fields" style="display:none">
+      <div style="font-size:.73rem;color:var(--text3);margin-bottom:.6rem">Select the vehicle you'll travel in — the owner will be notified to approve:</div>
+      <div id="jt-vehicle-list" style="display:flex;flex-direction:column;gap:.45rem;max-height:200px;overflow-y:auto"></div>
+    </div>
+    <div class="modal-footer"><button class="btn-secondary" onclick="jtBack()">← Back</button><button class="btn-primary" onclick="joinTrip()">Join →</button></div>
+  </div>
 </div></div>
 <!-- ADD STOP -->
 <div class="overlay" id="addStopMod">
@@ -969,10 +1189,20 @@ if('serviceWorker' in navigator){
 <div class="overlay" id="addVehMod">
 <div class="modal" style="position:relative">
   <button class="modal-close" onclick="closeModal('addVehMod')">✕</button>
-  <div class="modal-title">Add Vehicle</div>
+  <div class="modal-title">🚗 Add Vehicle</div>
   <div class="form-row"><div class="fg"><label>Vehicle Name</label><input type="text" id="nv-nm" placeholder="Hilux GD-6"></div><div class="fg"><label>Fuel Type</label><select id="nv-ft"><option>Diesel</option><option>Petrol 95</option><option>Petrol 93</option></select></div></div>
-  <div class="form-row"><div class="fg"><label>Consumption (L/100km)</label><input type="number" id="nv-co" placeholder="12.5" step="0.1"></div><div class="fg"><label>Tank (L)</label><input type="number" id="nv-tk" placeholder="80"></div></div>
-  <div class="form-row"><div class="fg"><label>Driver</label><input type="text" id="nv-dr" placeholder="Driver name"></div></div>
+  <div class="form-row">
+    <div class="fg"><label>Normal consumption (L/100km)</label><input type="number" id="nv-co" placeholder="12.5" step="0.1"></div>
+    <div class="fg"><label>Tank size (L)</label><input type="number" id="nv-tk" placeholder="80"></div>
+  </div>
+  <div class="form-row">
+    <div class="fg"><label>Towing consumption (L/100km) <span style="font-size:.6rem;color:var(--text3);font-weight:400">— optional</span></label><input type="number" id="nv-tcons" placeholder="18.5 when towing" step="0.1"></div>
+    <div class="fg"><label>Driver name</label><input type="text" id="nv-dr" placeholder="Driver name"></div>
+  </div>
+  <div style="margin-bottom:.85rem">
+    <label style="font-size:.65rem;font-weight:600;color:var(--text2);letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:.4rem">👥 Who's in this car?</label>
+    <div id="nv-passengers" style="display:flex;flex-direction:column;gap:.32rem;background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:.55rem .75rem;max-height:160px;overflow-y:auto"></div>
+  </div>
   <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addVehMod')">Cancel</button><button class="btn-primary" onclick="addVehicle()">＋ Add</button></div>
 </div></div>
 <!-- ADD EXPENSE -->
@@ -1041,119 +1271,151 @@ if('serviceWorker' in navigator){
   <div class="form-row"><div class="fg"><label>Type</label><select id="nc-tp"><option value="communal">🌍 Communal (everyone sees)</option><option value="personal">👤 Personal (only me)</option></select></div><div class="fg"><label>First Item</label><input type="text" id="nc-it" placeholder="First aid kit"></div></div>
   <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addCatMod')">Cancel</button><button class="btn-primary" onclick="addCategory()">＋ Add</button></div>
 </div></div>
+<!-- PACK DEFAULTS PICKER -->
+<div class="overlay" id="addDefaultsMod">
+<div class="modal" style="position:relative">
+  <button class="modal-close" onclick="closeModal('addDefaultsMod')">✕</button>
+  <div class="modal-title">📦 Ready-made Pack Lists</div>
+  <div style="font-size:.8rem;color:var(--text3);margin-bottom:1rem">Select the categories you want — all items included, edit them after</div>
+  <div id="defaultCatsList" style="max-height:52vh;overflow-y:auto;margin:0 -1.6rem;padding:0 1.6rem"></div>
+  <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addDefaultsMod')">Cancel</button><button class="btn-primary" onclick="addDefaultCats()">＋ Add Selected</button></div>
+</div></div>
 
 <script>
 
 function openJoinTrip(){
+  _jtFoundTrip=null; _jtSelectedVehicleIdx=null;
   $('jt-code').value='';
+  $('jt-step1').style.display='block';
+  $('jt-step2').style.display='none';
   openModal('joinTripMod');
 }
-async function joinTrip(){
+async function jtLookUp(){
   const code=$('jt-code').value.trim().toUpperCase();
   if(!code){toast('Enter an invite code','err');return;}
   if(code.length<4){toast('Code too short','err');return;}
   toast('Searching…');
-  console.log('[JOIN] Starting join with code:',code,'FB_READY:',FB_READY,'ME:',ME?.id);
-  
-  // 1. Check locally first
   let foundTrip=Object.values(DB.trips).find(t=>t.inviteCode===code);
-  if(foundTrip)console.log('[JOIN] Found locally:',foundTrip.id);
-
-  // 2. Firebase search
   if(!foundTrip&&FB_READY){
-    // Strategy A: invite_codes lookup
     try{
-      console.log('[JOIN] Trying invite_codes/'+code);
       const ld=await fbDb.collection('invite_codes').doc(code).get();
-      console.log('[JOIN] invite_codes exists:',ld.exists,'data:',ld.exists?JSON.stringify(ld.data()).slice(0,100):'none');
       if(ld.exists){
         const data=ld.data();
-        if(data.tripSnapshot){
-          const t=JSON.parse(data.tripSnapshot);
-          t.id=data.tripId;
-          foundTrip=t;
-          console.log('[JOIN] Strategy A success via snapshot, tripId:',data.tripId);
-        } else if(data.tripId){
-          console.log('[JOIN] No snapshot, trying direct read of trips/'+data.tripId);
-          try{
-            const tripDoc=await fbDb.collection('trips').doc(data.tripId).get();
-            console.log('[JOIN] trips doc exists:',tripDoc.exists);
-            if(tripDoc.exists)foundTrip={...tripDoc.data(),id:tripDoc.id};
-          }catch(e2){console.error('[JOIN] trips direct read failed:',e2.code,e2.message);}
-        }
+        if(data.tripSnapshot){const t=JSON.parse(data.tripSnapshot);t.id=data.tripId;foundTrip=t;}
+        else if(data.tripId){const td=await fbDb.collection('trips').doc(data.tripId).get().catch(()=>null);if(td&&td.exists)foundTrip={...td.data(),id:td.id};}
       }
-    }catch(e){console.error('[JOIN] Strategy A failed:',e.code,e.message);}
-    
-    // Strategy B: where query
-    if(!foundTrip){
-      try{
-        console.log('[JOIN] Trying where inviteCode=='+code);
-        const snap=await fbDb.collection('trips').where('inviteCode','==',code).limit(1).get();
-        console.log('[JOIN] Strategy B results:',snap.size);
-        if(!snap.empty){const doc=snap.docs[0];foundTrip={...doc.data(),id:doc.id};}
-      }catch(e){console.error('[JOIN] Strategy B failed:',e.code,e.message);}
-    }
+    }catch(e){}
+    if(!foundTrip){try{const s=await fbDb.collection('trips').where('inviteCode','==',code).limit(1).get();if(!s.empty){const d=s.docs[0];foundTrip={...d.data(),id:d.id};}}catch(e){}}
   }
-  
-  console.log('[JOIN] foundTrip:',foundTrip?foundTrip.id:'NOT FOUND');
   if(!foundTrip){
-    if(!FB_READY)toast('No Firebase connection — make sure you are signed in','err');
-    else toast('Code "'+code+'" not found — check code and try again','err');
+    toast(FB_READY?'Code "'+code+'" not found — check and try again':'No Firebase connection','err');
     return;
   }
-  // Check if already a member
+  _jtFoundTrip=foundTrip;
+  $('jt-trip-preview').textContent='🗺️ '+foundTrip.name+(foundTrip.dest?' — '+foundTrip.dest:'');
+  // Populate vehicle list
+  const vList=$('jt-vehicle-list');
+  const vehicles=foundTrip.vehicles||[];
+  if(vehicles.length){
+    vList.innerHTML=vehicles.map((v,i)=>{
+      const driver=v.driver||(foundTrip.crew||[]).find(c=>c.id===v.uid)?.name||'—';
+      return`<div class="jt-vehicle-choice" data-vidx="${i}" onclick="jtSelectVehicle(this,${i})">
+        <div style="font-size:1.2rem;flex-shrink:0">🚗</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.86rem;font-weight:700;color:var(--text)">${esc(v.name||'Vehicle '+(i+1))}</div>
+          <div style="font-size:.7rem;color:var(--text3)">${v.fuelType||'Diesel'} · Driver: ${esc(driver)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    vList.innerHTML='<div style="font-size:.8rem;color:var(--text3);font-style:italic;padding:.5rem 0">No vehicles yet — use Own Vehicle</div>';
+  }
+  $('jt-step1').style.display='none';
+  $('jt-step2').style.display='block';
+  document.querySelector('input[name=jt-vmode][value=own]').checked=true;
+  jtToggleVMode();
+}
+function jtBack(){
+  $('jt-step1').style.display='block';
+  $('jt-step2').style.display='none';
+  _jtFoundTrip=null; _jtSelectedVehicleIdx=null;
+}
+function jtToggleVMode(){
+  const mode=document.querySelector('input[name=jt-vmode]:checked')?.value||'own';
+  $('jt-own-fields').style.display=mode==='own'?'block':'none';
+  $('jt-join-fields').style.display=mode==='join'?'block':'none';
+  $('jt-own-card').style.borderColor=mode==='own'?'var(--amber)':'var(--border2)';
+  $('jt-own-card').style.background=mode==='own'?'var(--amber-bg)':'var(--surface)';
+  $('jt-join-card').style.borderColor=mode==='join'?'var(--amber)':'var(--border2)';
+  $('jt-join-card').style.background=mode==='join'?'var(--amber-bg)':'var(--surface)';
+}
+function jtSelectVehicle(el,idx){
+  document.querySelectorAll('.jt-vehicle-choice').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  _jtSelectedVehicleIdx=idx;
+}
+async function joinTrip(){
+  const foundTrip=_jtFoundTrip;
+  if(!foundTrip){toast('Please look up a code first','err');return;}
+  const vehicleMode=document.querySelector('input[name=jt-vmode]:checked')?.value||'own';
+  if(vehicleMode==='join'&&_jtSelectedVehicleIdx===null){toast('Select a vehicle to join','err');return;}
+
+  // Add ME to crew locally
   const alreadyMember=foundTrip.crew&&foundTrip.crew.some(c=>c.id===ME.id||c.email===ME.email);
   if(!alreadyMember){
-    // Add ME to crew
     foundTrip.crew=foundTrip.crew||[];
-    foundTrip.crew.push({...ME,role:'Traveller',status:'confirmed',vehicle:$('jt-vname').value.trim()});
+    foundTrip.crew.push({...ME,role:'Traveller',status:'confirmed'});
     foundTrip._crewIds=[...new Set([...(foundTrip._crewIds||[]),ME.id])];
   }
-  // Add vehicle
-  const vname=($('jt-vname').value.trim())||ME.name+"'s vehicle";
-  const cons=parseFloat($('jt-cons').value)||12.5;
-  if(!foundTrip.vehicles)foundTrip.vehicles=[];
-  const hasMyVeh=foundTrip.vehicles.some(v=>v.uid===ME.id);
-  if(!hasMyVeh){
-    foundTrip.vehicles.push({name:vname,fuelType:$('jt-ftype').value,consumption:cons,tank:Number($('jt-tank').value)||80,driver:ME.name,uid:ME.id});
+  // Own vehicle: add locally; Join vehicle: defer to organiser approval
+  if(vehicleMode==='own'){
+    const vname=($('jt-vname').value.trim())||ME.name+"'s vehicle";
+    const cons=parseFloat($('jt-cons').value)||12.5;
+    foundTrip.vehicles=foundTrip.vehicles||[];
+    if(!foundTrip.vehicles.some(v=>v.uid===ME.id)){
+      foundTrip.vehicles.push({name:vname,fuelType:$('jt-ftype').value,consumption:cons,
+        tank:Number($('jt-tank').value)||80,driver:ME.name,uid:ME.id,passengers:[ME.id]});
+    }
   }
   if(!foundTrip._owner)foundTrip._owner=foundTrip.createdBy||ME.id;
   DB.trips[foundTrip.id]=foundTrip;
   DB.cur=foundTrip.id;
-  // DO NOT call sv() — joiner cannot write this trip to Firebase (permission denied)
-  // Save locally only using the correct SK key
   try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
 
   if(FB_READY){
-    // Write a join_request — joiner CAN write this, organiser reads it on next load
     const joinReq={
-      tripId:foundTrip.id,
-      tripName:foundTrip.name||'',
-      userId:ME.id,
-      userName:ME.name||'',
-      userEmail:ME.email||'',
-      userInitials:ME.initials||'',
-      userAvatar:ME.avatar||'',
-      vehicleName:$('jt-vname').value.trim()||ME.name+"'s vehicle",
-      fuelType:$('jt-ftype').value||'Diesel',
-      consumption:parseFloat($('jt-cons').value)||12.5,
-      tank:Number($('jt-tank').value)||80,
-      status:'pending',
+      tripId:foundTrip.id,tripName:foundTrip.name||'',
+      userId:ME.id,userName:ME.name||'',userEmail:ME.email||'',
+      userInitials:ME.initials||'',userAvatar:ME.avatar||'',
+      vehicleMode,status:'pending',
       createdAt:firebase.firestore.FieldValue.serverTimestamp()
     };
+    if(vehicleMode==='own'){
+      joinReq.vehicleName=$('jt-vname').value.trim()||ME.name+"'s vehicle";
+      joinReq.fuelType=$('jt-ftype').value||'Diesel';
+      joinReq.consumption=parseFloat($('jt-cons').value)||12.5;
+      joinReq.tank=Number($('jt-tank').value)||80;
+    } else {
+      joinReq.requestedVehicleIdx=_jtSelectedVehicleIdx;
+      const sv2=foundTrip.vehicles[_jtSelectedVehicleIdx];
+      joinReq.requestedVehicleOwnerId=sv2?.uid||null;
+      joinReq.requestedVehicleName=sv2?.name||'Vehicle';
+    }
     fbDb.collection('join_requests').doc(foundTrip.id+'_'+ME.id).set(joinReq)
       .then(()=>console.log('[JOIN] join_request written'))
       .catch(e=>console.error('[JOIN] join_request failed:',e));
-    // Also record this tripId in the user's own doc so it loads on refresh
     fbDb.collection('users').doc(ME.id).set(
-      {joinedTrips:firebase.firestore.FieldValue.arrayUnion(foundTrip.id)},
-      {merge:true}
-    ).catch(e=>console.warn('[JOIN] user joinedTrips write failed:',e));
+      {joinedTrips:firebase.firestore.FieldValue.arrayUnion(foundTrip.id)},{merge:true}
+    ).catch(()=>{});
   }
 
   rebuildSel(); renderAll(); startCD();
+  if(FB_READY){setupJoinRequestListener();setupTripListeners();}
   closeModal('joinTripMod');
-  toast('🎉 Joined '+foundTrip.name+'! The organiser will see you when they next open the app.','ok');
+  const msg=vehicleMode==='join'
+    ?'🎉 Joined '+foundTrip.name+'! Vehicle request sent — waiting for approval.'
+    :'🎉 Joined '+foundTrip.name+'!';
+  toast(msg,'ok');
 }
 
 
@@ -1172,6 +1434,10 @@ const FIREBASE_CONFIG = {
 };
 
 let fbApp=null, fbAuth=null, fbDb=null, FB_READY=false;
+let _joinReqUnsubscribes=[];
+let _tripListenerUnsubscribes=[];
+let _jtFoundTrip=null, _jtSelectedVehicleIdx=null;
+let _lastRenderTs=0, _lastVisibilityLoadTs=0;
 function initFirebase(){
   try{
     if(FIREBASE_CONFIG.apiKey==='YOUR_API_KEY'){
@@ -1293,17 +1559,25 @@ async function loadFromFirebase(uid){
             }
             // Add to _crewIds
             t._crewIds=[...new Set([...(t._crewIds||[]),jr.userId])];
-            // Add vehicle
+            // Add vehicle based on mode
             t.vehicles=t.vehicles||[];
-            if(!t.vehicles.some(v=>v.uid===jr.userId)){
-              t.vehicles.push({
-                name:jr.vehicleName||jr.userName+"'s vehicle",
-                fuelType:jr.fuelType||'Diesel',
-                consumption:jr.consumption||12.5,
-                tank:jr.tank||80,
-                driver:jr.userName,
-                uid:jr.userId
-              });
+            if(jr.vehicleMode==='join'){
+              // Rider joining an existing vehicle — add to passengers + store pending request
+              if(jr.requestedVehicleIdx!==undefined&&t.vehicles[jr.requestedVehicleIdx]){
+                const v=t.vehicles[jr.requestedVehicleIdx];
+                v.passengers=v.passengers||[v.uid||''];
+                if(!v.passengers.includes(jr.userId))v.passengers.push(jr.userId);
+              }
+              t.pendingVehicleRequests=t.pendingVehicleRequests||[];
+              if(!t.pendingVehicleRequests.some(r=>r.userId===jr.userId)){
+                t.pendingVehicleRequests.push({userId:jr.userId,userName:jr.userName,
+                  vehicleIdx:jr.requestedVehicleIdx,vehicleName:jr.requestedVehicleName||'Vehicle',
+                  requestId:jr.tripId+'_'+jr.userId});
+              }
+            } else if(!t.vehicles.some(v=>v.uid===jr.userId)){
+              t.vehicles.push({name:jr.vehicleName||jr.userName+"'s vehicle",
+                fuelType:jr.fuelType||'Diesel',consumption:jr.consumption||12.5,
+                tank:jr.tank||80,driver:jr.userName,uid:jr.userId,passengers:[jr.userId]});
             }
             // Write updated trip back to Firebase (organiser has permission)
             await fbDb.collection('trips').doc(jr.tripId).set(
@@ -1322,6 +1596,107 @@ async function loadFromFirebase(uid){
 
     localStorage.setItem(SK,JSON.stringify(DB));
   }catch(e){console.warn('Firestore read:',e);}
+}
+function setupJoinRequestListener(){
+  // Tear down any existing listeners
+  _joinReqUnsubscribes.forEach(u=>u());
+  _joinReqUnsubscribes=[];
+  if(!FB_READY||!ME)return;
+  const myTripIds=Object.keys(DB.trips).filter(id=>DB.trips[id]._owner===ME.id);
+  if(!myTripIds.length)return;
+  // Firestore 'in' supports max 10 items per query
+  const chunks=[];
+  for(let i=0;i<myTripIds.length;i+=10)chunks.push(myTripIds.slice(i,i+10));
+  chunks.forEach(chunk=>{
+    const unsub=fbDb.collection('join_requests')
+      .where('tripId','in',chunk)
+      .where('status','==','pending')
+      .onSnapshot(async snap=>{
+        if(snap.empty)return;
+        let anyAdded=false;
+        for(const jrDoc of snap.docs){
+          const jr=jrDoc.data();
+          const t=DB.trips[jr.tripId];
+          if(!t||jr.userId===ME.id)continue;
+          if(t.crew.some(c=>c.id===jr.userId)){
+            // Already in crew — just mark accepted if still pending
+            fbDb.collection('join_requests').doc(jrDoc.id).update({status:'accepted'}).catch(()=>{});
+            continue;
+          }
+          // Add to crew
+          t.crew.push({
+            id:jr.userId,name:jr.userName,email:jr.userEmail||'',
+            initials:jr.userInitials||jr.userName.slice(0,2).toUpperCase(),
+            avatar:jr.userAvatar||COLORS[t.crew.length%6],
+            role:'Traveller',status:'confirmed',isOrganiser:false
+          });
+          t._crewIds=[...new Set([...(t._crewIds||[]),jr.userId])];
+          t.vehicles=t.vehicles||[];
+          if(jr.vehicleMode==='join'){
+            if(jr.requestedVehicleIdx!==undefined&&t.vehicles[jr.requestedVehicleIdx]){
+              const v=t.vehicles[jr.requestedVehicleIdx];
+              v.passengers=v.passengers||[v.uid||''];
+              if(!v.passengers.includes(jr.userId))v.passengers.push(jr.userId);
+            }
+            t.pendingVehicleRequests=t.pendingVehicleRequests||[];
+            if(!t.pendingVehicleRequests.some(r=>r.userId===jr.userId)){
+              t.pendingVehicleRequests.push({userId:jr.userId,userName:jr.userName,
+                vehicleIdx:jr.requestedVehicleIdx,vehicleName:jr.requestedVehicleName||'Vehicle',
+                requestId:jrDoc.id});
+            }
+          } else if(!t.vehicles.some(v=>v.uid===jr.userId)){
+            t.vehicles.push({name:jr.vehicleName||jr.userName+"'s vehicle",
+              fuelType:jr.fuelType||'Diesel',consumption:jr.consumption||12.5,
+              tank:jr.tank||80,driver:jr.userName,uid:jr.userId,passengers:[jr.userId]});
+          }
+          // Persist to Firebase and mark accepted
+          fbDb.collection('trips').doc(jr.tripId).set(
+            {...t,_updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}
+          ).catch(e=>console.warn('[JOIN] live trip update:',e));
+          // Only mark accepted for own-vehicle; vehicle-join stays 'pending' until approved
+          if(jr.vehicleMode!=='join'){
+            fbDb.collection('join_requests').doc(jrDoc.id).update({status:'accepted'}).catch(()=>{});
+          }
+          anyAdded=true;
+          const joinMsg=jr.vehicleMode==='join'
+            ?'🎉 '+jr.userName+' joined! Vehicle request pending approval.'
+            :'🎉 '+jr.userName+' joined the trip!';
+          toast(joinMsg,'ok');
+          console.log('[JOIN] Live: added',jr.userName,'to trip',jr.tripId);
+        }
+        if(anyAdded){
+          sv();
+          rebuildSel();
+          // Re-render the affected trip (may not be the currently viewed one)
+          const updatedTripId=snap.docs.find(d=>d.data().tripId)?.data()?.tripId;
+          const affectedTrip=updatedTripId?DB.trips[updatedTripId]:null;
+          if(affectedTrip)renderCrew(affectedTrip);
+          const cur=T();
+          if(cur){renderDash(cur);}
+        }
+      },err=>console.warn('[JOIN] listener error:',err));
+    _joinReqUnsubscribes.push(unsub);
+  });
+}
+function setupTripListeners(){
+  _tripListenerUnsubscribes.forEach(u=>u());
+  _tripListenerUnsubscribes=[];
+  if(!FB_READY||!ME)return;
+  Object.keys(DB.trips).forEach(tripId=>{
+    const unsub=fbDb.collection('trips').doc(tripId)
+      .onSnapshot(snap=>{
+        if(!snap.exists||snap.metadata.hasPendingWrites)return;
+        // Debounce: skip if we just re-rendered within 1s
+        const now=Date.now();
+        if(now-_lastRenderTs<1000)return;
+        _lastRenderTs=now;
+        DB.trips[tripId]={...snap.data(),id:tripId};
+        try{localStorage.setItem(SK,JSON.stringify(DB));}catch(e){}
+        rebuildSel();
+        if(DB.cur===tripId)renderAll();
+      },err=>console.warn('[TRIP]',err));
+    _tripListenerUnsubscribes.push(unsub);
+  });
 }
 function T(){return DB.trips[DB.cur]||null;}
 function fmtDate(s){if(!s)return'—';try{const d=new Date(s.includes('T')?s:s+'T00:00:00');return d.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});}catch(e){return s;}}
@@ -1465,11 +1840,12 @@ function launchApp(){
   $('sbAvatar').style.background=ME.avatar||COLORS[0];
   $('sbUname').textContent=ME.name;
   rebuildSel(); renderAll(); startCD();
+  if(FB_READY){setupJoinRequestListener();setupTripListeners();}
   // Handle Spotify callback after normal launch
   if(new URLSearchParams(location.search).get('state')==='trek_spotify'){
     setTimeout(()=>{
       spHandleCallback().then(ok=>{
-        if(ok){navTo('crew');}
+        if(ok){navTo('playlist');}
       });
     },300);
     return;
@@ -1580,7 +1956,8 @@ function createTrip(){
   }];
 
   DB.trips[id]=t; DB.cur=id;
-  syncFromStops(t); sv(); closeModal('newTripMod'); rebuildSel(); renderAll(); startCD(); renderBudget(t);
+  syncFromStops(t); sv(); closeModal('newTripMod'); rebuildSel(); renderAll(); startCD(); renderBudget(t); navTo('overview');
+  if(FB_READY){setupJoinRequestListener();setupTripListeners();}
   // Background: init map hidden + run OSRM so fuel calculates immediately
   setTimeout(()=>{
     const cur=T();if(!cur)return;
@@ -1601,6 +1978,45 @@ function createTrip(){
   },1000);
   toast('🗺️ '+name+' created!','ok'); wizStops=[];
   ['wn','wd','ws','we','wnotes','wfuel','wcons','wvname','wvtank'].forEach(id2=>{if($(id2))$(id2).value='';});
+}
+function toggleMobileMenu(){
+  const d=$('mobileDrawer');
+  if(!d)return;
+  if(d.classList.contains('open')){closeMobileMenu();return;}
+  // Sync drawer with current state
+  const drawer=$('tripSelDrawer');
+  if(drawer)drawer.innerHTML=$('tripSel').innerHTML;
+  if(ME){
+    const av=$('mobAvatar');const un=$('mobUname');
+    if(av){av.textContent=ME.initials;av.style.background=ME.avatar||COLORS[0];}
+    if(un)un.textContent=ME.name;
+  }
+  d.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeMobileMenu(){
+  $('mobileDrawer')?.classList.remove('open');
+  document.body.style.overflow='';
+}
+function openAddVehicle(){
+  const t=T();if(!t){toast('Create a trip first','err');return;}
+  const container=$('nv-passengers');
+  if(container){
+    container.innerHTML=t.crew.length
+      ?t.crew.map(m=>`<label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;padding:.15rem 0">
+          <input type="checkbox" id="nvp-${m.id}" value="${m.id}" ${m.id===ME.id?'checked disabled':''}
+            style="accent-color:var(--amber);width:16px;height:16px;flex-shrink:0;cursor:pointer">
+          <span style="font-size:.85rem;color:${m.id===ME.id?'var(--amber)':'var(--text)'};font-weight:${m.id===ME.id?600:400}">${m.name}${m.id===ME.id?' (you — always included)':''}</span>
+        </label>`).join('')
+      :`<div style="font-size:.78rem;color:var(--text3);font-style:italic">Add crew first — or just save for yourself</div>`;
+  }
+  ['nv-nm','nv-co','nv-tk','nv-dr','nv-tcons'].forEach(id=>{const el=$(id);if(el)el.value='';});
+  openModal('addVehMod');
+}
+function toggleTowing(i){
+  const t=T();if(!t||!t.stops[i])return;
+  t.stops[i].towing=!t.stops[i].towing;
+  sv();renderStops(t);renderBudget(t);renderDash(t);
 }
 function rebuildSel(){
   const sel=$('tripSel'); sel.innerHTML='';
@@ -1626,18 +2042,17 @@ function rebuildSel(){
 
   deduped.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.name;if(t.id===DB.cur)o.selected=true;sel.appendChild(o);});
   if(!deduped.length)sel.innerHTML='<option value="">— No trips yet —</option>';
-  // Sync mobile topbar selector
-  const mobSel=$('tripSelMob');
-  if(mobSel){
-    mobSel.innerHTML=deduped.map(t=>`<option value="${t.id}" ${t.id===DB.cur?'selected':''}>${t.name}</option>`).join('');
-    if(!deduped.length)mobSel.innerHTML='<option>No trips</option>';
-    mobSel.style.display=deduped.length>0?'':'none';
+  // Sync mobile drawer trip selector
+  const drawerSel=$('tripSelDrawer');
+  if(drawerSel){
+    drawerSel.innerHTML=deduped.map(t=>`<option value="${t.id}" ${t.id===DB.cur?'selected':''}>${t.name}</option>`).join('');
+    if(!deduped.length)drawerSel.innerHTML='<option value="">— No trips yet —</option>';
   }
 }
 function switchTrip(id){
   if(!id||!DB.trips[id])return;
   DB.cur=id; sv(); renderAll(); startCD();
-  if(currentPanel==='route')setTimeout(()=>{initLeaflet();refreshMap(T());if(leafMap)leafMap.invalidateSize();},100);
+  if(currentPanel==='plan')setTimeout(()=>{initLeaflet();refreshMap(T());if(leafMap)leafMap.invalidateSize();},100);
 }
 function deleteCurrentTrip(){
   const t=T();if(!t){toast('No trip selected','err');return;}
@@ -1778,11 +2193,17 @@ function fabAction(){
   if(!t){openNewTripModal();return;}
   // On overview: show options; on other panels: context action
   if(currentPanel==='overview'){openNewTripModal();}
-  else if(currentPanel==='plan'){openModal('addStopMod');}
-  else if(currentPanel==='days'){openModal('addDayMod');}
+  else if(currentPanel==='plan'){
+    // FAB action depends on which sub-tab is active
+    const activeStab=document.querySelector('.stab.active');
+    const st=activeStab?.dataset?.stab||'route';
+    if(st==='itinerary')openModal('addDayMod');
+    else openModal('addStopMod');
+  }
   else if(currentPanel==='budget'){openExpenseModal();}
   else if(currentPanel==='pack'){openModal('addCatMod');}
   else if(currentPanel==='crew'){openNewTripModal();}
+  else if(currentPanel==='playlist'){navTo('playlist');const t=T();if(t)renderSpotify(t);}
   else{openNewTripModal();}
 }
 function updateFab(){
@@ -1792,7 +2213,7 @@ function updateFab(){
     fab.innerHTML='＋';fab.title='New Expedition';
     fab.classList.remove('has-trip');
   } else {
-    const icons={overview:'＋',plan:'＋ Stop',days:'＋ Day',budget:'＋ Expense',pack:'＋ Category',crew:'＋'};
+    const icons={overview:'＋',plan:'＋ Stop',budget:'＋ Expense',pack:'＋ Category',crew:'＋',playlist:'🎵'};
     const lbl=icons[currentPanel]||'＋';
     fab.innerHTML=lbl;
     fab.classList.toggle('has-trip',lbl!=='＋');
@@ -1825,6 +2246,7 @@ function renderAll(){
   renderFood(t);
   renderPacking(t);
   renderCrew(t);
+  renderSpotify(t);
   renderDocs(t);
   renderGallery(t);
   updatePackBadge(t);
@@ -1888,7 +2310,7 @@ function renderDash(t){
   </div>
   ${todoHtml}
   <div class="stats-row">
-    <div class="stat" onclick="navTo('days')" style="cursor:pointer"><div class="stat-n">${t.itinerary.filter(d=>!d.isTravel).length||0}</div><div class="stat-l">Nights</div></div>
+    <div class="stat" onclick="navTo('plan','itinerary')" style="cursor:pointer"><div class="stat-n">${t.itinerary.filter(d=>!d.isTravel).length||0}</div><div class="stat-l">Nights</div></div>
     <div class="stat" onclick="navTo('plan')" style="cursor:pointer"><div class="stat-n">${km?km.toLocaleString():'—'}</div><div class="stat-l">Total km</div></div>
     <div class="stat" onclick="navTo('budget')" style="cursor:pointer"><div class="stat-n" style="font-size:${myCost>0?'1.7rem':'.9rem'}">${myCost>0?fmtR(myCost):(hasVehicle&&!km?'⏳':'—')}</div><div class="stat-l">My Cost</div></div>
     <div class="stat" onclick="navTo('budget')" style="cursor:pointer"><div class="stat-n">${fmtR(myFuelShare)}</div><div class="stat-l">Fuel Share</div></div>
@@ -1896,7 +2318,7 @@ function renderDash(t){
     <div class="stat" onclick="navTo('pack')" style="cursor:pointer"><div class="stat-n">${pct}%</div><div class="stat-l">Packed</div></div>
   </div>
   <div class="dash-grid">
-    <div class="card dc" onclick="navTo('days')" style="cursor:pointer">
+    <div class="card dc" onclick="navTo('plan','itinerary')" style="cursor:pointer">
       <div class="dc-title">📅 Next Stop</div>
       ${upcoming?`
         <div style="font-size:.95rem;font-weight:700;color:var(--text)">${upcoming.location}</div>
@@ -1938,24 +2360,40 @@ function renderDash(t){
 }
 
 // ── Cost model ──
-// Each vehicle owner pays their OWN fuel. Shared expenses (accommodation,
-// activities, permits etc) are split by % across crew.
-// calcMyCost = MY vehicle fuel + MY share of shared expenses.
+// Fuel is a shared cost — total vehicle fuel is split equally across all crew.
+// All expenses (including fuel-category) are split by % across crew.
+// calcMyCost = my share of vehicle fuel + my share of all expenses.
 
 function calcMyVehicleFuel(t){
-  // Find vehicles owned by me and sum their fuel cost
-  const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
-  const km=t._routeKm||manKm||0;
+  // For each vehicle ME is a passenger of, split that vehicle's fuel cost among its passengers
+  // Uses per-leg towing consumption if leg has stop.towing=true and v.towingCons is set
   const price=Number(t.fuelPrice)||24.5;
-  if(!km)return 0;
-  return (t.vehicles||[])
-    .filter(v=>v.uid===ME.id)
-    .reduce((a,v)=>a+(km/100)*(Number(v.consumption)||12.5)*price, 0);
+  const legs=t.stops.slice(1);
+  const totalKm=t._routeKm||legs.reduce((a,s)=>a+Number(s.km||0),0)||0;
+  if(!totalKm)return 0;
+  let myFuel=0;
+  (t.vehicles||[]).forEach(v=>{
+    const passengers=v.passengers&&v.passengers.length?v.passengers:[v.uid||ME.id];
+    if(!passengers.includes(ME.id))return;
+    let vFuel=0;
+    if(legs.length&&legs.some(s=>Number(s.km||0)>0)){
+      // Per-leg calculation
+      legs.forEach(s=>{
+        const km=Number(s.km||s._osrmKm||0);
+        const cons=(s.towing&&v.towingCons)?Number(v.towingCons):(Number(v.consumption)||12.5);
+        vFuel+=(km/100)*cons*price;
+      });
+    } else {
+      // Fallback: total km, normal consumption
+      vFuel=(totalKm/100)*(Number(v.consumption)||12.5)*price;
+    }
+    myFuel+=vFuel/passengers.length;
+  });
+  return myFuel;
 }
 function calcMyExpenseShare(t){
-  // Only shared expenses (NOT fuel-category — fuel is handled per-vehicle)
+  // All shared expenses including fuel-category — split by configured % or equally
   return (t.expenses||[])
-    .filter(e=>e.category!=='fuel')
     .reduce((a,e)=>{
       const split=e.splits&&e.splits[ME.id];
       if(split!==undefined)return a+(Number(e.amount)*split/100);
@@ -1966,11 +2404,24 @@ function calcMyCost(t){
   return calcMyVehicleFuel(t) + calcMyExpenseShare(t);
 }
 function calcFuelEstimate(t){
-  const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
-  const km=t._routeKm||manKm||0;
+  if(!t.vehicles||!t.vehicles.length)return 0;
   const price=Number(t.fuelPrice)||24.5;
-  if(!km||!t.vehicles||!t.vehicles.length)return 0;
-  return t.vehicles.reduce((a,v)=>a+(km/100)*(Number(v.consumption)||12.5)*price,0);
+  const legs=t.stops.slice(1);
+  const totalKm=t._routeKm||legs.reduce((a,s)=>a+Number(s.km||0),0)||0;
+  if(!totalKm)return 0;
+  return t.vehicles.reduce((total,v)=>{
+    let vFuel=0;
+    if(legs.length&&legs.some(s=>Number(s.km||0)>0)){
+      legs.forEach(s=>{
+        const km=Number(s.km||s._osrmKm||0);
+        const cons=(s.towing&&v.towingCons)?Number(v.towingCons):(Number(v.consumption)||12.5);
+        vFuel+=(km/100)*cons*price;
+      });
+    } else {
+      vFuel=(totalKm/100)*(Number(v.consumption)||12.5)*price;
+    }
+    return total+vFuel;
+  },0);
 }
 function calcTotalFuel(t){return calcFuelEstimate(t);}
 
@@ -2143,6 +2594,15 @@ function ps(q,resId){
 }
 function psk(e,resId){if(e.key==='Escape')$(resId).classList.remove('open');}
 document.addEventListener('click',e=>{document.querySelectorAll('.ps-results.open').forEach(el=>{if(!el.parentElement.contains(e.target))el.classList.remove('open');});});
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'&&FB_READY&&ME){
+    const now=Date.now();
+    if(now-_lastVisibilityLoadTs>30000){
+      _lastVisibilityLoadTs=now;
+      loadFromFirebase(ME.id).then(()=>{sv();rebuildSel();renderAll();startCD();}).catch(()=>{});
+    }
+  }
+});
 function placeIc(cls,type){
   if(type==='camp_site'||cls==='tourism')return'🏕️';
   if(type==='city'||type==='town')return'🏙️';
@@ -2231,6 +2691,9 @@ function renderItinerary(t){
   const startNm=t.stops.length>0?t.stops[0].name:null;
   const endNm=t.stops.length>1?t.stops[t.stops.length-1].name:null;
   const visItin=t.itinerary.filter(d=>d.location!==startNm&&d.location!==endNm);
+  // Update accordion count badge
+  const countEl=$('itinAccordionCount');
+  if(countEl)countEl.textContent=visItin.length?`(${visItin.length} days)`:'(no days yet)';
   if(!visItin.length){el.innerHTML=`<div class="empty"><div class="ei">📅</div><div class="et">No days yet</div><div class="es">Add route stops with nights — days auto-populate. Or click "+ Add Day".</div></div>`;return;}
   // Build night counter — only count non-travel overnight days
   let nightCounter=0;
@@ -2354,19 +2817,42 @@ Return ONLY a valid JSON array of strings. No markdown, no explanation, no extra
 
 function getOfflineSuggestions(name){
   const n=name.toLowerCase();
-  // SA/Namibia context-aware offline fallbacks
-  if(n.includes('sossusvlei')||n.includes('sesriem')){return['Sunrise drive to Dune 45','Walk the Dead Vlei salt pan','Sossusvlei 4x4 dunes at dawn','Sesriem Canyon sunset walk','Elim Dune short hike','Star gazing — zero light pollution'];}
-  if(n.includes('etosha')){return['Dawn game drive at water hole','Okaukuejo floodlit waterhole at night','Halali to Namutoni drive','Self-drive loop around Etosha pan','Rhino spotting at Okondeka','Elephant herds at sunset'];}
-  if(n.includes('swakopmund')||n.includes('swakop')){return['Quad biking on Dorob dunes','Daredevil Adventures skydive','Swartkoppies desert drive','Seal colony at Cape Cross','Desolation Valley 4x4 track','Seafood dinner on The Strand'];}
-  if(n.includes('kgalagadi')||n.includes('kalahari')){return['Lion tracking at dawn','Twee Rivieren to Mata Mata drive','Gemsbok and springbok herds','Sociable weaver nest viewpoint','Nossob dry river bed drive','Star gazing — darkest sky reserve'];}
-  if(n.includes('fish river')||n.includes('ai-ais')){return['Fish River Canyon viewpoint hike','Hobas lookout at sunrise','Hellskloof Pass 4x4 route','Hot springs at Ai-Ais','Canyon rim walk','Sunset from southern viewpoint'];}
-  if(n.includes('augrabies')){return['Augrabies waterfall viewpoint','Klipspringer hiking trail','Orange River sunset canoe','4x4 Dassie trail','Kokerboom forest walk','Rock art near park entrance'];}
-  if(n.includes('cape town')||n.includes('kaapstad')){return['Table Mountain cable car','Chapman\'s Peak coastal drive','Boulders Beach penguins','V&A Waterfront lunch','Cape Point 4x4 route','Signal Hill sunset'];}
-  if(n.includes('namibia')||n.includes('skeleton coast')){return['Shipwreck discovery walk','Seal colonies at Cape Cross','Desolation desert 4x4 track','Fishing in Namibian surf','Coastal dunes exploration','Benguela fog mist photography'];}
-  if(n.includes('kruger')){return['Sunrise game drive','Self-drive big 5 loop','Sunset sundowners in bush','Guided bush walk','Night drive with ranger','Bird watching at waterhole'];}
-  if(n.includes('drakensberg')){return['Amphitheatre hike to base','Tugela Falls viewpoint','Horse riding in foothills','San rock art cave trail','Cathedral Peak day hike','Fly fishing in mountain stream'];}
-  // Generic SA/Namibia overland fallbacks
-  return['Sunrise 4x4 exploration','Game viewing from vehicle','Sunset braai at camp','Local nature walk','Star gazing — Southern Cross viewing','Photography of wildlife/landscape','Chat to local camp staff about hidden spots'];
+  if(n.includes('sossusvlei')||n.includes('sesriem')){return['Dune 45 — climb before 7am, 45km from Sesriem gate on C27 (free with park entry)','Dead Vlei salt pan — ancient camel thorns in a white clay bowl, 1km walk from 4x4 parking','Big Daddy dune — 325m climb, 2hr return, bring 2L water minimum','Sesriem Canyon at sunset — 30m deep gorge carved by Orange River, 1km loop walk','Elim Dune at dawn — accessible dune 5km from gate, half the crowds of Dune 45','Hidden Vlei walk — far fewer people than Deadvlei, 2.5km through the pans','Star gazing from NamibRand reserve border — zero light pollution, best Milky Way in southern Africa','Sossusvlei 4x4 sand road — drive the 60km loop before the gate opens at sunrise'];}
+  if(n.includes('etosha')){return['Okaukuejo floodlit waterhole at night — lions, rhino & elephant regularly, stay past 10pm','Satara-equivalent dawn drive Etosha pan edge — cat activity peaks in first hour of light','Anderson Gate to Okaukuejo — best big 5 concentrations on the central pan road','Halali waterhole 4-6pm — elephant herds arrive in the late afternoon daily','Namutoni Fort sunrise — beautiful restored German colonial fort at eastern gate','Dolomite self-drive loop — lion & cheetah territory in remote western section','Fischer\'s Pan seasonal flamingos — thousands of pink flamingos on flooded pan','Etosha pan overlook at Okaukuejo — ghost-white expanse stretches to the horizon'];}
+  if(n.includes('swakopmund')||n.includes('swakop')){return['Quad biking — Alter-Action Adventures Swakopmund (+264 64 402 096), from R650/person','Skydive over the dunes — Skydive Swakopmund (skydiveswakopmund.com), from R2400','Sandwich Harbour 4x4 — Levo Expeditions (levotouring.com), dunes drop into Atlantic Ocean','Seal colony at Cape Cross — 100 000 Cape fur seals, 120km north, smell it before you see it','Mondesa township tour — Tommy\'s Tour Operator (+264 64 403 123), authentic & insightful','Desert Explorer kayak sunset — paddle Swakop River mouth, flamingos at golden hour','The Jetty 1905 Brasserie dinner — seafood on historic jetty, book ahead (+264 64 400 088)','Desolation Valley 4x4 — self-drive 30km east through alien moonscape landscape'];}
+  if(n.includes('walvis bay')||n.includes('walvisbay')){return['Pelican feeding at the Waterfront — 8am daily, free, extremely photogenic','Lagoon kayak with dolphins — Eco Marine Kayak Tours (+264 64 203 144), from R450','Flamingo tours in the lagoon — thousands of pink flamingos year-round at the salt works','Dune 7 sand boarding — highest dune accessible near town, bring wax, free entry','Welwitschia Plains 4x4 route — see 1000+ year-old prehistoric plants, 80km circuit east','Salt pans at sunset — pink flamingos against orange sky, best light 5-7pm','Rooibank Desert drive — 30km circuit through desert plains, free roaming gemsbok','Fresh oysters at Mervis Bay stall — R150/dozen, shucked fresh from the lagoon'];}
+  if(n.includes('damaraland')||n.includes('twyfelfontein')){return['Twyfelfontein rock engravings — UNESCO World Heritage, 6000+ petroglyphs, guided tour R200','Burnt Mountain — otherworldly volcanic rock in vivid reds, blacks and purples','Organ Pipes basalt columns — 100m walk from Burnt Mountain car park, free to visit','Desert-adapted elephant tracking — Wilderness Safaris or local community guides','Petrified Forest — 260-million-year-old fossilised logs lying in open desert','Brandberg White Lady hike — 4hr return to iconic rock painting, guide compulsory','Ugab river bed 4x4 drive — dramatic canyon landscape, wild camping spots','Palmwag Concession rhino tracking — critically endangered black desert rhino'];}
+  if(n.includes('skeleton coast')||n.includes('terrace bay')||n.includes('torra bay')){return['Eduard Bohlen shipwreck — stranded 500m inland since 1909, accessible by 4x4','Seal colony at Cape Cross — 100 000+ fur seals, intense experience, 100km south','Coastal dune to surf line 4x4 — drive between towering dunes and crashing Atlantic','Surf fishing — kabeljou, steenbras and galjoen from the beach','Desert jackal & brown hyena — scavenging around seal colony, ethical distance','Oases at Hoarusib & Hoanib rivers — desert-adapted lion & giraffe territory','Shipwreck shore walk at dawn — mist photography, surreal Benguela fog','Palmwag to Skeleton Coast gravel drive — one of Namibia\'s most remote roads'];}
+  if(n.includes('kgalagadi')||n.includes('kalahari')||n.includes('twee rivieren')){return['Dawn lion tracking at Twee Rivieren — pride of 8+ patrols the Nossob riverbed','Mata Mata to Nossob drive — 180km self-drive along dry river, cheetah territory','Gemsbok herds at Rooiputs waterhole — hundreds gather in dry season (Aug-Oct)','Sociable weaver nest colony — massive communal nests on roadside, stop and observe','Dark sky star gazing — KTP is a SANBI Dark Sky Discovery Site, best in SA','Red Kalahari dune drive at sunset — vivid red sand in golden light','Auchterlonie Museum at Twee Rivieren — free, historic border post artifacts','Mokala Park rhino detour — 100km north from Twee Rivieren, white rhino & buffalo'];}
+  if(n.includes('fish river')||n.includes('ai-ais')){return['Fish River Canyon viewpoint at Hobas — 549m deep, second largest canyon in the world','Sunrise at the main lookout point — canyon glows red-orange, arrive by 6:30am','Hell\'s Corner 4x4 track — gravel road along canyon rim, extreme views','Hot springs at Ai-Ais resort — 60°C thermal pools (+264 63 297 011, R150/person)','Sulphur Springs Hell\'s Kitchen walk — 3hr loop, geothermal bubbling pools','Canyon River Camp guided walk — through private reserve with access to inner canyon','Palm Springs camp short hike — 1hr easy walk along southern rim section','Ai-Ais to Hobas road at golden hour — watch canyon light change dramatically'];}
+  if(n.includes('augrabies')){return['Main waterfall viewpoint — Orange River drops 56m into a 18km gorge, free with park entry','Klipspringer hiking trail — 39km 3-day trail, book at reception (+27 54 452 9200)','Orange River canoe day trip — Felix Unite (+27 27 761 8101) or Gravity Adventures','Dassie 4x4 trail — 58km scenic circuit, permit from reception, R220/vehicle','Kokerboom (quiver tree) walk — ancient specimens near camp, self-guided trail','Moon Rock viewpoint — 1.8 billion year old granite outcrop, panoramic Richtersveld views','Night drive — black rhino territory, guided drives from reception (R200/person)','Augrabies Falls after rain — in flood season the gorge roars with Orange River water'];}
+  if(n.includes('cape town')||n.includes('kaapstad')||n.includes('cape point')||n.includes('cape peninsula')){return['Table Mountain Cableway — book online at tablemountain.net, go early to beat queues','Chapman\'s Peak drive — 9km cliff road, R50 toll, best sunset route in the Cape','Boulders Beach penguins — R210/person, African penguins at eye level (sanparks.org)','Cape Point via Cape of Good Hope — funicular R75, lighthouse walk, dramatic cliffs','Signal Hill / Lion\'s Head full moon hike — incredible city lights, go with a group','Constantia wine route — Groot Constantia (constantia.com) oldest wine estate, 1685','Hout Bay Fish on the Rocks — best fish & chips, queue is worth it, R70/portion','Franschhoek Huguenot Pass drive — 45min from Cape Town, stunning mountain scenery'];}
+  if(n.includes('hermanus')){return['Cliff path whale walk — 12km path along cliff, best Aug-Nov Southern Right season','Walker Bay boat tour — up-close whale encounters (Aug-Dec), R1200/person','Grotto Beach drive — blue flag beach, 10km from town, access via Voëlklip','Hemel-en-Aarde wine valley — Hamilton Russell Vineyards, 19km, pinot noir & chardonnay','Fernkloof Nature Reserve — 60km of fynbos trails, 1400 plant species, free','Bientang\'s Cave Restaurant — dinner in a cave above the ocean, book months ahead','Stanford village — quaint 1800s village 15min east, Oak & Vine lunch, R43 craft beer','Old Harbour Museum — free, carved whale bones, historic whaling equipment'];}
+  if(n.includes('garden route')||n.includes('knysna')||n.includes('george')||n.includes('wilderness')||n.includes('plettenberg')||n.includes('tsitsikamma')){return['Knysna Heads viewpoint — dramatic estuary entrance between sandstone cliffs','Bloukrans Bridge bungee — 216m, world\'s highest commercial bungee (facevolunteers.com R1250)','Tsitsikamma suspension bridge — 77m above Storms River mouth, 1hr walk return','Potholes trail Storms River — 5km through dense indigenous yellowwood forest','Knysna Elephant Park — R810/person, guided walk with elephants (knysnaelephantpark.co.za)','Monkeyland free-roaming primate sanctuary — R230, 1hr guided forest walk','Garden Route paraglide — Wilderness Dunes launch site, beach landing','Outeniqua Choo-Tjoe steam train — George to Mossel Bay, booking via Transnet'];}
+  if(n.includes('kruger')){return['Satara region dawn drive — lion pride territory, best big cat area in the whole park','Lower Sabie hippo pools — morning hippo counts, resident pod at S114 causeway','Guided wilderness trail from Skukuza — 3hr armed ranger walk, book 6mo in advance','Night drive from main camp — R300/person, hornbills roosting, nocturnal predators','Berg-en-Dal white rhino territory — southern Kruger, highest white rhino concentration','Letaba Elephant Museum — free with camp entry, skulls of the Magnificent Seven tuskers','Olifants River viewpoint deck — panoramic hippo and elephant view, bring binoculars','Phalaborwa to Letaba road — remote, 40km, low traffic, authentic untouched bush'];}
+  if(n.includes('drakensberg')||n.includes('berg')||n.includes('cathedral peak')||n.includes('champagne castle')||n.includes('royal natal')){return['Amphitheatre hike from Sentinel — 4hr return, base of Tugela Falls (second highest waterfall)','Cathedral Peak summit — 7hr return, requires fitness, panoramic Berg views','Rainbow Gorge — 2hr easy fern gorge walk from Inkosana Lodge, family-friendly','Monk\'s Cowl to Sphinx Peak — 5hr moderate hike, dramatic Champagne Castle backdrop','Horseback riding in foothills — Khotso Horse Trails (+27 36 468 1005), from R650','San rock art at Game Pass Shelter — 3hr guided walk, Didima Camp (+27 36 488 8000)','Trout fly fishing — Crystalbrook Farm (+27 36 468 1234), equipment hire available','Royal Natal sundowner terrace — Thendele Camp cliff-edge sunset, book dinner ahead'];}
+  if(n.includes('hluhluwe')||n.includes('imfolozi')||n.includes('st lucia')||n.includes('isimangaliso')){return['Hluhluwe dam sunrise drive — hippo pool, crocs and waterbirds in first light','White rhino tracking on foot — iMfolozi wilderness trail, 4-day guided, limited spaces','Guided night drive from Hilltop — R350/person, predator and nocturnal animal focus','St Lucia estuary boat cruise — hippo and croc tour, R170/person, departs 8:30am','Hippo highlight trail from St Lucia — 1.5hr easy coastal forest and beach walk','Sodwana Bay coral reef diving — 1hr north, Mozambique border zone, pristine reefs','uMkhuze Fig Forest boardwalk — ancient sycamore figs, Pel\'s fishing owl territory','Mkuze Pan hide — waterhole hide open dawn to dusk, incredible bird diversity'];}
+  if(n.includes('okavango')||n.includes('moremi')||n.includes('botswana')||n.includes('maun')){return['Okavango Delta mokoro trip — traditional dugout canoe through lily pads and papyrus','Moremi Game Reserve 4x4 self-drive — Chief\'s Island area, wild dog dens','Chobe River sunset boat cruise — elephants swimming, hippo pods, from R850/person','Savuti marsh lion territory — dry season concentrations in Chobe National Park','Linyanti wild dog dens — December-August, highly endangered African wild dogs','Gweta quad bikes on Makgadikgadi Salt Pan — flat white expanse to horizon','Nxai Pan meerkats at dawn — guide meets you at 5:30am, meerkat habituated groups','Planet Baobab detour — ancient baobab grove, overnight camping, en route to Maun'];}
+  if(n.includes('victoria falls')||n.includes('vic falls')||n.includes('livingstone')){return['Main Falls walkway Zimbabwe side — see all five waterfalls (Rainforest Trail, R400/person)','Bungee jump Victoria Falls Bridge — 111m drop, Shearwater (+263 13 40006), R3500','White water rafting grade 5 Zambezi — Shearwater or Wildside, full day R2000/person','Devil\'s Pool swim — on the actual edge of the falls, Sep-Dec only, Zambia side','Elephant back safari — Wild Horizons (+263 11 207 1605), 3hr morning ride','Sunset boat cruise — Talon\'s deck boat, hippo, croc and sundowner gin & tonic','Livingstone Island breakfast — Zambia side, sit beside the falls (book via Tongabezi)','Boma cultural dinner Zimbabwe — traditional drumming, food stations, face painting'];}
+  if(n.includes('windhoek')){return['Christuskirche & Independence Memorial Museum — free city walk, colonial architecture','Namibia Craft Centre — best curated local crafts (40 Tal Street), open Mon-Sat','Joe\'s Beerhouse dinner — Namibian game steaks, legendary atmosphere (+264 61 232 457)','Daan Viljoen Game Reserve — 20min from city centre, self-drive kudu and zebra','Avis Dam short hike — 1hr loop, flamingos and herons, free entry, near suburb','Katutura township cultural tour — authentic living history, Penduka women\'s crafts','Namibia Breweries Windhoek Lager tour — book via (namibiabreweries.com)','Heja Game Lodge sundowner — 15min from city, giraffe and zebra at the waterhole'];}
+  if(n.includes('johannesburg')||n.includes('joburg')||n.includes('soweto')||n.includes('sandton')){return['Apartheid Museum — half-day minimum, deeply moving, R195/person (apartheidmuseum.org)','Soweto bicycle tour — Lebo\'s Soweto Backpackers (+27 11 936 3444), from R350','Vilakazi Street — Nelson Mandela & Desmond Tutu both lived here, free to walk','Constitution Hill Old Fort Prison — R85/person, fascinating history of struggle era','Maboneng Precinct — street art, Arts on Main, trendy Sunday market','Lion & Safari Park Hartebeespoort — lion cub interaction and wild dog viewing, 1hr north','Gold Reef City gold pour — 2hr south, actual gold mine shaft tour (goldreefcity.co.za)','Cradle of Humankind World Heritage — Sterkfontein Caves tours, 1hr northwest of city'];}
+  if(n.includes('pilanesberg')){return['Mankwe Dam game drive at dawn — resident lion pride drinks here regularly','Manyane Gate self-drive — hippo pool visible from tarmac road, 5km inside gate','Night game drive — R395/person, book at Bakgatla or Manyane camp reception','Buffalo Thorn 4x4 route — southern section only, rhino and cheetah territory','Kwa Maritane lookout deck — elevated 360° panorama over the entire park','Hot air balloon over park — Air Trackers (+27 14 552 5020), 1hr flight from R3500','Bakgatla Gate morning bird walk — guide available at gate from 6am','Sun City resort day visit — 15min from park gates, Valley of the Waves waterpark'];}
+  if(n.includes('cederberg')||n.includes('citrusdal')||n.includes('clanwilliam')){return['Wolfberg Arch hike — 4hr return to iconic natural quartzite arch, permit via CapeNature','Wolfberg Cracks scramble — narrow slot canyon route, adventurous 2hr scramble','Dwarsrivier rock art — San paintings on farm, guided tour R150 (Algeria area)','Sneeuberg peak hike — highest in Cederberg at 2026m, 6hr return, serious fitness','Algeria campsite swimming holes — ice-cold mountain stream pools, free with camping','Wupperthal mission village — historic Moravian village, rooibos tea at the bakery','Cederberg Winery tasting — R50/person, Shiraz & Bukettraube, book ahead','Dark sky astrophotography — one of SA\'s clearest skies outside Karoo'];}
+  if(n.includes('grotto bay')||n.includes('tiger reef')||n.includes('langebaan')){return['Tiger Reef beach 4x4 — access at low tide only, check tides before you go','Langebaan lagoon kitesurfing — Cape Sport Centre (+27 22 772 1114), lessons available','West Coast National Park flower drive — Aug-Oct daisy bloom, R200/person entry','Paternoster village lunch — Noisy Oyster or Voorstrandt on the beach (book ahead)','Postberg flower reserve — limited seasonal entry, magnificent namaqualand blooms','Strandveld hiking trail — 2-day West Coast National Park, overnight at Langebaan hut','Jacobsbaai rock fishing — yellowtail, harders and steenbras from the point','Geelbek bird hide — West Coast National Park, flamingos and African spoonbills'];}
+  if(n.includes('richtersveld')||n.includes('alexander bay')||n.includes('sendelingsdrift')){return['Richtersveld Transfrontier Park 4x4 — black-rated tracks, permit from SANParks required','De Hoop River Pool — deepest ravine in SA, 3hr challenging trail from Sendelingsdrift','Orange River canoe — Gravity Adventures 4-day self-guided trip (R4500 all inclusive)','Sendelingsdrift border pontoon — cross Orange River to Namibia on the floating pontoon','Succulent Karoo walking — September-October, unique halfmens (Pachypodium) plants','Camp Rooiberg night sky — barely any light pollution, spectacular Milky Way arm','Helskloof Pass 4x4 — extreme black-rated track, permit at Richtersveld office','Springbok Namaqua National Park detour — 60km north, flower capital of the world'];}
+  if(n.includes('bazaruto')||n.includes('vilanculos')||n.includes('inhambane')||n.includes('mozambique')){return['Bazaruto Archipelago dhow snorkel — half-day trip, pristine coral gardens','Dugong snorkelling — rare marine mammal, best chance at Bangué Island','Horse riding along Vilanculos beach — multiple beach operators, R300/hour','Deep sea fishing — sailfish and marlin, Vilanculos Dhow Safari charter','Benguerra Island day trip — pristine sandbanks, dhow sailing included','Local Monday market Vilanculos — authentic produce market, peri-peri prawns at R120','Snorkelling Two Mile Reef — world-class coral, 30min by dhow from Vilanculos beach','Flamingo watching at Vilanculos estuary — dawn counts in the hundreds'];}
+  // Generic Southern African overland fallbacks — still location-aware
+  const region=n.includes('namibia')||n.includes('windhoek')||n.includes('namibi')?'Namibia':n.includes('botswana')||n.includes('gaborone')?'Botswana':n.includes('zimb')||n.includes('harare')?'Zimbabwe':'Southern Africa';
+  return[
+    'Ask your camp host for the best local hidden spots — they always know the secret places',
+    'Sunrise 4x4 exploration — first hour of light transforms the landscape, get out early',
+    'Sundowner braai from high ground — find an elevated spot and watch the sky turn',
+    `Star gazing — ${region} skies away from cities are exceptional, Milky Way arm clearly visible`,
+    'Dawn wildlife photography from vehicle — golden hour light, animals most active',
+    'Visit the nearest local market — real food, real crafts, meet the community',
+    'Explore nearest river or waterhole at dusk — elephant and predator activity peaks',
+    'Ask the nearest lodge about guided walks — many offer free or cheap walks to guests'
+  ];
 }
 
 async function suggestActivitiesForStop(stopName,lat,lon){
@@ -2535,7 +3021,7 @@ function renderStops(t){
         </div>
         <div class="sr-mt">
           ${i===0?'<span style="color:var(--sage);font-weight:600;font-size:.7rem">Start — no nights</span>':i===n-1?'<span style="color:var(--rust);font-weight:600;font-size:.7rem">End — no nights</span>':`<span>${s.nights} night${s.nights!==1?'s':''}</span>`}
-          ${i>0?`<div class="sr-km-row"><input class="sr-km-inp" type="number" min="0" placeholder="km" value="${s.km||s._estKm||''}" title="Drive km to reach this stop" oninput="updStopKm(${i},this.value)" onclick="event.stopPropagation()"><span style="font-size:.65rem;color:var(--text3)">km${s._estKm&&!s.km?' (est.)':''}</span></div>`:''}
+          ${i>0?`<div class="sr-km-row"><input class="sr-km-inp" type="number" min="0" placeholder="km" value="${s.km||s._estKm||''}" title="Drive km to reach this stop" oninput="updStopKm(${i},this.value)" onclick="event.stopPropagation()"><span style="font-size:.65rem;color:var(--text3)">km${s._estKm&&!s.km?' (est.)':''}</span><button type="button" class="tow-btn ${s.towing?'tow-on':''}" onclick="event.stopPropagation();toggleTowing(${i})" title="Toggle towing on this leg">🚐${s.towing?' towing':''}</button></div>`:''}
           ${s.notes?`<div style="font-size:.68rem;color:var(--text3);margin-top:.1rem">${s.notes}</div>`:''}
         </div>
       </div>
@@ -2662,7 +3148,7 @@ function drawMap(t,latlngs,stops){
   const n=latlngs.length;const bounds=[];
   latlngs.forEach((c,i)=>{
     const s=stops[i];const isStart=i===0;const isEnd=i===n-1&&n>1;
-    const col=isStart?'#3d6435':isEnd?'#8b3222':'#b8720f';
+    const col=isStart?'#52b870':isEnd?'#d84e38':'#f8a818';
     const lbl=isStart?'🚩':isEnd?'🏁':String(i+1);
     const icon=L.divIcon({className:'',html:`<div style="width:32px;height:32px;border-radius:50%;background:${col};border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:${isStart||isEnd?'14px':'11px'};font-weight:700;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3)">${lbl}</div>`,iconSize:[32,32],iconAnchor:[16,16],popupAnchor:[0,-18]});
     const m=L.marker(c,{icon}).addTo(leafMap);
@@ -2676,7 +3162,7 @@ function drawMap(t,latlngs,stops){
     .then(r=>r.json()).then(d=>{
       if(d.routes&&d.routes[0]){
         const route=d.routes[0];
-        leafPolyline=L.polyline(route.geometry.coordinates.map(c=>[c[1],c[0]]),{color:'#b8720f',weight:3.5,opacity:.85}).addTo(leafMap);
+        leafPolyline=L.polyline(route.geometry.coordinates.map(c=>[c[1],c[0]]),{color:'#f8a818',weight:4,opacity:.9}).addTo(leafMap);
         const totalKm=Math.round(route.distance/1000);
         const t2=T();
         if(t2){
@@ -2696,7 +3182,7 @@ function drawMap(t,latlngs,stops){
           sv();updateFuelKm(t2);renderStops(t2);renderDash(t2);renderBudget(t2);
         }
       }
-    }).catch(()=>{leafPolyline=L.polyline(latlngs,{color:'#b8720f',weight:2.5,opacity:.6,dashArray:'6 4'}).addTo(leafMap);});
+    }).catch(()=>{leafPolyline=L.polyline(latlngs,{color:'#f8a818',weight:3,opacity:.65,dashArray:'8 5'}).addTo(leafMap);});
   }
 }
 
@@ -2752,40 +3238,72 @@ function renderAccom(t){
       </div>
     </div>`).join('');
 }
-function buildAccomSplitRows(t){
+function buildAccomSplitRows(t,attending){
   const sr=$('na-splitrows');if(!sr||!t)return;
   if(!t.crew||!t.crew.length){sr.style.display='none';sr.innerHTML='';return;}
-  const eq=Math.round(100/t.crew.length);
-  sr.innerHTML=t.crew.map((m,i)=>{
-    const pct=i<t.crew.length-1?eq:(100-(eq*(t.crew.length-1)));
-    return`<div class="split-row">
-      <div style="flex:1;font-size:.82rem">${m.name}${m.id===ME.id?' (you)':''}</div>
-      <input class="split-pct" type="number" min="0" max="100" value="${pct}" id="nas-${m.id}" oninput="updateAccomSplitAmounts()">
-      <span style="font-size:.7rem;color:var(--text3)">%</span>
-      <div class="split-amt" id="nasa-${m.id}" style="min-width:55px;text-align:right;font-size:.78rem;font-weight:600;color:var(--sage)">R0</div>
-    </div>`;
+  // attending = set of member IDs staying; defaults to all
+  if(!attending)attending=new Set(t.crew.map(m=>m.id));
+  const staying=t.crew.filter(m=>attending.has(m.id));
+  const n=staying.length||1;
+  const eq=Math.round(100/n);
+  // Attendee pill row
+  const pillHtml=t.crew.map(m=>{
+    const on=attending.has(m.id);
+    return`<button type="button" class="attendee-pill ${on?'att-on':''}" onclick="toggleAccomAttendee('${m.id}')" title="${m.name}">${m.initials||m.name.slice(0,2)}</button>`;
   }).join('');
+  sr.innerHTML=`
+    <div style="margin-bottom:.65rem">
+      <div style="font-size:.72rem;color:var(--text3);margin-bottom:.35rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Who's staying here?</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.3rem">${pillHtml}</div>
+    </div>
+    ${staying.length?staying.map((m,i)=>{
+      const pct=i<staying.length-1?eq:(100-(eq*(staying.length-1)));
+      return`<div class="split-row">
+        <div style="flex:1;font-size:.82rem">${m.name}${m.id===ME.id?' (you)':''}</div>
+        <input class="split-pct" type="number" min="0" max="100" value="${pct}" id="nas-${m.id}" oninput="updateAccomSplitAmounts()">
+        <span style="font-size:.7rem;color:var(--text3)">%</span>
+        <div class="split-amt" id="nasa-${m.id}" style="min-width:55px;text-align:right;font-size:.78rem;font-weight:600;color:var(--sage)">R0</div>
+      </div>`;
+    }).join(''):'<div style="font-size:.78rem;color:var(--text3);font-style:italic;padding:.3rem 0">No one selected — pick who is staying</div>'}`;
+}
+// Store current accom attendees for modal lifecycle
+let _accomAttendees=null;
+function openAccomAttendeeSet(t){
+  if(!_accomAttendees)_accomAttendees=new Set((t.crew||[]).map(m=>m.id));
+  return _accomAttendees;
+}
+function toggleAccomAttendee(uid){
+  const t=T();if(!t)return;
+  if(!_accomAttendees)_accomAttendees=new Set(t.crew.map(m=>m.id));
+  if(_accomAttendees.has(uid))_accomAttendees.delete(uid);
+  else _accomAttendees.add(uid);
+  buildAccomSplitRows(t,_accomAttendees);
+  updateAccomSplitAmounts();
 }
 function updateAccomSplitAmounts(){
   const t=T();if(!t)return;
   const amt=parseFloat($('na-cost').value)||0;
   const sr=$('na-splitrows');
-  if(sr)sr.style.display=amt>0?'block':'none';
+  if(sr)sr.style.display='block';
+  // Only update rows for attending members (rows that exist in DOM)
   t.crew.forEach(m=>{
-    const pct=parseFloat($('nas-'+m.id)?.value)||0;
+    const inp=$('nas-'+m.id);if(!inp)return;
+    const pct=parseFloat(inp.value)||0;
     const el=$('nasa-'+m.id);if(el)el.textContent=fmtR(amt*pct/100);
   });
 }
 function openAccomForStop(stopName){openAccomModal(stopName,null);}
 function openAccomModal(stopName,editId){
   const t=T();if(!t)return;
+  // Reset attendees to all crew on fresh open
+  _accomAttendees=new Set((t.crew||[]).map(m=>m.id));
   // Populate stop selector
   const sel=$('na-stop');
   if(sel)sel.innerHTML=t.stops.filter(s=>!s.isStart&&!s.isEnd).map(s=>`<option value="${esc(s.name)}" ${s.name===(stopName||'')?'selected':''}>${s.name}</option>`).join('');
   // Always populate paid-by from current crew
   const paid=$('na-costpaid');
   if(paid)paid.innerHTML=t.crew.map(m=>`<option value="${m.id}" ${m.id===ME.id?'selected':''}>${m.name}${m.id===ME.id?' (you)':''}</option>`).join('');
-  buildAccomSplitRows(t);
+  buildAccomSplitRows(t,_accomAttendees);
   if(editId){
     const a=t.accommodation.find(x=>x.id===editId);
     if(a){
@@ -2892,7 +3410,7 @@ function renderBudget(t){
   const myFuel=calcMyVehicleFuel(t);
   const myExpShare=calcMyExpenseShare(t);
   const myCost=myFuel+myExpShare;
-  const sharedExps=(t.expenses||[]).filter(e=>e.category!=='fuel');
+  const sharedExps=t.expenses||[];
   const sharedTotal=sharedExps.reduce((a,e)=>a+Number(e.amount),0);
 
   // ── Settings bar ──
@@ -2921,8 +3439,8 @@ function renderBudget(t){
         <div class="bh-label">My Estimated Total</div>
         <div class="bh-amount">${fmtR(myCost)}</div>
         <div class="bh-sub" style="margin-top:.3rem;display:flex;flex-direction:column;gap:.18rem">
-          <span>⛽ My vehicle fuel: <strong>${fmtR(myFuel)}</strong></span>
-          <span>💳 Shared expense share: <strong>${fmtR(myExpShare)}</strong></span>
+          <span>⛽ Vehicle fuel share: <strong>${fmtR(myFuel)}</strong></span>
+          <span>💳 Expense share: <strong>${fmtR(myExpShare)}</strong></span>
         </div>
       </div>
       <div class="bh-details">
@@ -2941,23 +3459,39 @@ function renderBudget(t){
   const fc=$('fuelContent');
   if(fc){
     const vhtml=(t.vehicles||[]).map((v,i)=>{
-      const L=km>0?(km/100)*(Number(v.consumption)||12.5):0;
+      // Per-leg fuel calculation with towing awareness
+      const legs=t.stops.slice(1);
+      let L=0;
+      if(legs.length&&legs.some(s=>Number(s.km||0)>0)){
+        legs.forEach(s=>{
+          const legKm=Number(s.km||s._osrmKm||0);
+          const cons=(s.towing&&v.towingCons)?Number(v.towingCons):(Number(v.consumption)||12.5);
+          L+=(legKm/100)*cons;
+        });
+      } else if(km>0){
+        L=(km/100)*(Number(v.consumption)||12.5);
+      }
       const cost=L*price;
       const fills=v.tank?Math.ceil(L/v.tank):0;
-      const owner=t.crew.find(m=>m.id===v.uid);
-      const isMe=v.uid===ME.id;
+      const passengers=v.passengers&&v.passengers.length?v.passengers:[v.uid||ME.id];
+      const passengerNames=passengers.map(uid=>t.crew.find(m=>m.id===uid)?.name||'?');
+      const isMe=passengers.includes(ME.id);
+      const myShare=passengers.length>0?cost/passengers.length:cost;
+      const hasTowing=v.towingCons&&t.stops.slice(1).some(s=>s.towing);
       return`<div class="fv-card ${isMe?'fv-mine':''}">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem">
-          <div>
+          <div style="flex:1;min-width:0">
             <div class="fv-name">🚗 ${v.name||'Vehicle'}</div>
-            <div class="fv-meta">${v.fuelType||'Diesel'} · ${v.consumption}L/100km · ${v.tank}L tank</div>
-            <div style="font-size:.72rem;margin-top:.2rem;color:${isMe?'var(--amber)':'var(--text3)'}">
-              ${isMe?'👤 Your vehicle':'👤 '+(owner?.name||'Crew')}
+            <div class="fv-meta">${v.fuelType||'Diesel'} · ${v.consumption}L/100km${v.towingCons?` · ${v.towingCons}L towing`:''} · ${v.tank}L tank</div>
+            <div style="display:flex;flex-wrap:wrap;gap:.22rem;margin-top:.3rem">
+              ${passengerNames.map(n=>`<span style="font-size:.66rem;padding:.1rem .38rem;border-radius:20px;background:${n===ME.name?'var(--amber-bg)':'var(--surface)'};color:${n===ME.name?'var(--amber)':'var(--text3)'};border:1px solid ${n===ME.name?'var(--amber-bd)':'var(--border)'}">${n}</span>`).join('')}
             </div>
+            ${hasTowing?`<div style="font-size:.65rem;color:var(--fire);margin-top:.2rem">🚐 towing leg(s) calculated at ${v.towingCons}L/100km</div>`:''}
           </div>
-          <div style="text-align:right">
-            <div class="fv-cost">${km>0?fmtR(cost):'—'}</div>
-            <div style="font-size:.68rem;color:var(--text3);margin-top:.08rem">${km>0?L.toFixed(0)+'L · ~'+fills+' fills':km===0?'awaiting km':''}</div>
+          <div style="text-align:right;flex-shrink:0">
+            <div class="fv-cost">${km>0||L>0?fmtR(cost):'—'}</div>
+            ${passengers.length>1?`<div style="font-size:.7rem;color:var(--amber);font-weight:600;margin-top:.08rem">${fmtR(myShare)}/person</div>`:''}
+            <div style="font-size:.68rem;color:var(--text3);margin-top:.06rem">${L>0?L.toFixed(0)+'L · ~'+fills+' fills':km===0?'awaiting km':''}</div>
           </div>
         </div>
         <button class="btn-danger" style="margin-top:.55rem;font-size:.62rem" onclick="removeVeh(${i})">Remove</button>
@@ -2971,7 +3505,7 @@ function renderBudget(t){
       </div>
       ${(t.vehicles||[]).length?`
       <div style="background:var(--sky-bg);border:1px solid var(--sky-bd);border-radius:8px;padding:.6rem .85rem;margin-bottom:.85rem;font-size:.8rem;color:var(--sky)">
-        💡 Each vehicle owner pays their own fuel. Add a vehicle per crew member to track everyone's cost.
+        💡 Each vehicle's fuel is split among its passengers. Toggle towing on individual legs for accurate caravan estimates.
       </div>
       <div class="veh-grid">${vhtml}</div>`:`
       <div class="empty" style="padding:1.25rem 0">
@@ -2993,7 +3527,7 @@ function renderBudget(t){
     <div class="section-hd" style="margin-top:1.5rem;margin-bottom:.75rem">
       <div>
         <div style="font-size:.82rem;font-weight:700;color:var(--text2)">💳 Shared Expenses</div>
-        <div style="font-size:.7rem;color:var(--text3);margin-top:.1rem">Accommodation, activities, permits — split across crew</div>
+        <div style="font-size:.7rem;color:var(--text3);margin-top:.1rem">Fuel, accommodation, activities, permits — split across crew</div>
       </div>
       <button class="btn-primary" style="font-size:.68rem;padding:.3rem .72rem" onclick="openExpenseModal()">＋ Add</button>
     </div>
@@ -3066,9 +3600,17 @@ function addVehicle(){
   const t=T();if(!t){toast('Create a trip first','err');return;}
   const name=$('nv-nm').value.trim();if(!name){toast('Enter vehicle name','err');return;}
   const cons=parseFloat($('nv-co').value);if(!cons){toast('Enter consumption','err');return;}
-  t.vehicles.push({name,fuelType:$('nv-ft').value,consumption:cons,tank:Number($('nv-tk').value)||80,driver:$('nv-dr').value.trim(),uid:ME.id});
+  // Collect passengers from checkboxes (always include self)
+  const passengers=[ME.id];
+  t.crew.forEach(m=>{
+    if(m.id===ME.id)return;
+    const cb=$('nvp-'+m.id);
+    if(cb&&cb.checked)passengers.push(m.id);
+  });
+  const towingCons=parseFloat($('nv-tcons').value)||null;
+  t.vehicles.push({name,fuelType:$('nv-ft').value,consumption:cons,tank:Number($('nv-tk').value)||80,driver:$('nv-dr').value.trim(),uid:ME.id,passengers,towingCons});
   sv();renderBudget(t);renderDash(t);closeModal('addVehMod');
-  ['nv-nm','nv-co','nv-tk','nv-dr'].forEach(id=>$(id).value='');
+  ['nv-nm','nv-co','nv-tk','nv-dr','nv-tcons'].forEach(id=>{const el=$(id);if(el)el.value='';});
   toast('🚗 Vehicle added','ok');
 }
 function removeVeh(i){T().vehicles.splice(i,1);sv();renderBudget(T());renderDash(T());}
@@ -3166,7 +3708,7 @@ function renderPacking(t){
   const pct=total?Math.round(packed/total*100):0;
   $('ppN').textContent=packed;$('ppT').textContent='/ '+total+' items';$('ppP').textContent=pct+'%';$('ppBar').style.width=pct+'%';
   const grid=$('packGrid');
-  if(!cats.length){grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="ei">🎒</div><div class="et">No ${packTab} categories yet</div><div class="es">Click "+ Category" to add one${packTab==='personal'?' — personal items are only visible to you':''}</div></div>`;return;}
+  if(!cats.length){grid.innerHTML=`<div class="empty" style="grid-column:1/-1;padding:2rem 1rem"><div class="ei">🎒</div><div class="et">No ${packTab==='personal'?'personal':'communal'} categories yet</div><div class="es" style="margin-top:.5rem">Hit <strong style="color:var(--amber)">📦 Defaults</strong> to load ready-made lists, or <strong style="color:var(--amber)">＋ Custom</strong> to create your own${packTab==='personal'?'<br><span style="font-size:.72rem;color:var(--text3)">Personal items are only visible to you</span>':''}</div></div>`;return;}
   grid.innerHTML=cats.map((cat,ci)=>{
     const cIdx=t.packing.indexOf(cat);
     return`<div class="pack-cat">
@@ -3196,6 +3738,40 @@ function addCategory(){
   ['nc-nm','nc-ic','nc-it'].forEach(id=>$(id).value='');
   toast('✓ Category added','ok');
 }
+function openDefaultCats(){
+  const t=T();if(!t){toast('Create a trip first','err');return;}
+  const defaults=getDefaultPackingList(ME.id);
+  const existing=new Set(t.packing.map(c=>c.cat));
+  $('defaultCatsList').innerHTML=defaults.map((cat,i)=>{
+    const already=existing.has(cat.cat);
+    return`<label style="display:flex;align-items:center;gap:.8rem;padding:.65rem .2rem;border-bottom:1px solid var(--border2);cursor:${already?'default':'pointer'};${already?'opacity:.55':''}">
+      <input type="checkbox" id="dcat${i}" ${already?'disabled checked':''} style="accent-color:var(--amber);width:18px;height:18px;flex-shrink:0;cursor:${already?'default':'pointer'}">
+      <span style="font-size:1.2rem;flex-shrink:0">${cat.icon}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.88rem;font-weight:600;color:var(--text)">${cat.cat}</div>
+        <div style="font-size:.68rem;color:var(--text3);margin-top:.08rem">${cat.items.length} items · ${cat.type==='personal'?'👤 personal':'🌍 communal'}</div>
+      </div>
+      ${already?`<span style="font-size:.6rem;color:var(--sage);font-weight:700;flex-shrink:0;background:var(--sage-bg);padding:2px 7px;border-radius:10px">✓ added</span>`:''}
+    </label>`;
+  }).join('');
+  openModal('addDefaultsMod');
+}
+function addDefaultCats(){
+  const t=T();if(!t)return;
+  const defaults=getDefaultPackingList(ME.id);
+  const existing=new Set(t.packing.map(c=>c.cat));
+  let count=0;
+  defaults.forEach((cat,i)=>{
+    const cb=$('dcat'+i);
+    if(cb&&cb.checked&&!cb.disabled&&!existing.has(cat.cat)){
+      t.packing.push({cat:cat.cat,icon:cat.icon,type:cat.type,uid:cat.type==='personal'?ME.id:null,items:cat.items.map(it=>({text:it.text,checked:false}))});
+      count++;
+    }
+  });
+  if(!count){toast('Select at least one category','err');return;}
+  sv();renderPacking(t);updatePackBadge(t);closeModal('addDefaultsMod');
+  toast('✓ '+count+' categor'+(count===1?'y':'ies')+' added','ok');
+}
 function updatePackBadge(t){const n=t.packing.filter(c=>c.type==='communal'||c.uid===ME.id).reduce((a,c)=>a+c.items.filter(i=>!i.checked).length,0);[$('packBadge'),$('packBadgeMob')].forEach(b=>{if(b){b.textContent=n;b.style.display=n>0?'':'none';}});}
 function resetPacking(){if(!confirm('Reset?'))return;T().packing.forEach(c=>c.items.forEach(i=>i.checked=false));sv();renderPacking(T());updatePackBadge(T());toast('↺ Reset');}
 
@@ -3218,8 +3794,55 @@ function renderCrew(t){
   grid.innerHTML=t.crew.map((m,i)=>{
     const isMe=m.id===ME.id;
     return`<div class="cc"><div class="cr-av" style="background:${COLORS[i%COLORS.length]}">${m.initials||'?'}</div><div class="cr-nm">${m.name}${isMe?' (you)':''}</div><div class="cr-rl">${m.role||'Traveller'}</div><div class="cr-st ${isMe?'cst-self':m.status==='confirmed'?'cst-conf':'cst-pend'}">${isMe?'You':m.status==='confirmed'?'✓ Confirmed':'⏳ Awaiting'}</div></div>`;}).join('');
+  // Pending vehicle join requests for vehicles I own
+  const myVehIdxs=(t.vehicles||[]).reduce((acc,v,i)=>{if(v.uid===ME.id)acc.push(i);return acc;},[]);
+  const myPending=(t.pendingVehicleRequests||[]).filter(r=>myVehIdxs.includes(r.vehicleIdx));
+  const existingNotif=$('vehicleRequestNotif');
+  if(existingNotif)existingNotif.remove();
+  if(myPending.length){
+    const notif=document.createElement('div');
+    notif.id='vehicleRequestNotif';
+    notif.style.cssText='background:var(--sky-bg);border:1px solid var(--sky-bd);border-radius:var(--r);padding:1rem;margin-bottom:1rem';
+    notif.innerHTML=`<div style="font-size:.7rem;font-weight:700;color:var(--sky);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem">👥 Ride-along Requests</div>`+
+      myPending.map(r=>{
+        const v=t.vehicles[r.vehicleIdx];
+        return`<div style="display:flex;align-items:center;gap:.65rem;padding:.45rem 0;border-bottom:1px solid var(--border2)">
+          <div style="flex:1;min-width:0">
+            <span style="font-size:.85rem;font-weight:600;color:var(--text)">${esc(r.userName)}</span>
+            <span style="font-size:.73rem;color:var(--text3)"> wants to join ${esc(v?v.name:r.vehicleName||'your vehicle')}</span>
+          </div>
+          <button class="btn-primary" style="font-size:.65rem;padding:.3rem .7rem;flex-shrink:0" onclick="approveVehicleRequest('${esc(t.id)}',${r.vehicleIdx},'${esc(r.userId)}')">Approve</button>
+          <button class="btn-secondary" style="font-size:.65rem;padding:.3rem .7rem;flex-shrink:0" onclick="declineVehicleRequest('${esc(t.id)}',${r.vehicleIdx},'${esc(r.userId)}')">Decline</button>
+        </div>`;
+      }).join('');
+    grid.parentElement.insertBefore(notif,grid);
+  }
   renderSummarySheet(t);
-  renderSpotify(t);
+}
+function approveVehicleRequest(tripId,vehicleIdx,userId){
+  const t=DB.trips[tripId];if(!t)return;
+  const v=t.vehicles[vehicleIdx];if(!v)return;
+  v.passengers=v.passengers||[v.uid||''];
+  if(!v.passengers.includes(userId))v.passengers.push(userId);
+  t.pendingVehicleRequests=(t.pendingVehicleRequests||[]).filter(r=>!(r.userId===userId&&r.vehicleIdx===vehicleIdx));
+  const reqId=tripId+'_'+userId;
+  if(FB_READY){
+    fbDb.collection('join_requests').doc(reqId).update({status:'vehicle_approved'}).catch(()=>{});
+    fbDb.collection('trips').doc(tripId).set({...t,_updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(()=>{});
+  }
+  sv();renderCrew(t);renderBudget(t);
+  const m=t.crew.find(c=>c.id===userId);
+  toast('✅ '+(m?.name||'Crew member')+' approved for '+(v.name||'vehicle'),'ok');
+}
+function declineVehicleRequest(tripId,vehicleIdx,userId){
+  const t=DB.trips[tripId];if(!t)return;
+  t.pendingVehicleRequests=(t.pendingVehicleRequests||[]).filter(r=>!(r.userId===userId&&r.vehicleIdx===vehicleIdx));
+  if(FB_READY){
+    fbDb.collection('join_requests').doc(tripId+'_'+userId).update({status:'vehicle_declined'}).catch(()=>{});
+    fbDb.collection('trips').doc(tripId).set({...t,_updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(()=>{});
+  }
+  sv();renderCrew(t);
+  toast('Request declined','ok');
 }
 
 function renderSummarySheet(t){
@@ -3389,18 +4012,35 @@ if('serviceWorker' in navigator){
   });
 }
 
-function navTo(panel){
+function navTo(panel,subtab){
+  // legacy redirect: 'days' → plan + itinerary subtab
+  if(panel==='days'){panel='plan';subtab='itinerary';}
   currentPanel=panel;
   document.querySelectorAll('.ni,.bt').forEach(n=>n.classList.toggle('active',n.dataset.panel===panel));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   const pe=$('panel-'+panel);if(pe)pe.classList.add('active');
   const t=T();$('tbTitle').textContent=t?t.name:'TREK';
   if(panel==='plan'){
-    setTimeout(()=>{initLeaflet();if(t)refreshMap(t);if(leafMap)leafMap.invalidateSize();},80);
+    if(subtab==='itinerary'){
+      const routeEl=document.querySelector('[data-stab=route]');
+      setPlanTab('route',routeEl);
+      setTimeout(()=>{
+        toggleItinAccordion(true);
+        const acc=$('itinAccordion');
+        if(acc)acc.scrollIntoView({behavior:'smooth',block:'start'});
+      },80);
+    } else if(subtab){
+      const el=document.querySelector('[data-stab='+subtab+']');
+      setPlanTab(subtab,el);
+    } else {
+      const el=document.querySelector('[data-stab=route]');
+      setPlanTab('route',el);
+    }
     if(t){const sel=$('na-stop');if(sel)sel.innerHTML=t.stops.filter(s=>!s.isStart&&!s.isEnd).map(s=>`<option value="${esc(s.name)}">${s.name}</option>`).join('');}
   }
   if(panel==='budget'&&t)renderBudget(t);
   if(panel==='crew'&&t)renderSummarySheet(t);
+  if(panel==='playlist'&&t)renderSpotify(t);
   if(window.innerWidth<769)$('sidebar').classList.add('off');
   updateFab();
 }
@@ -3409,13 +4049,22 @@ document.querySelectorAll('.ni,.bt').forEach(item=>{
 });
 function setPlanTab(tab,el){
   document.querySelectorAll('.stab').forEach(s=>s.classList.remove('active'));
-  el.classList.add('active');
+  if(el)el.classList.add('active');
   ['route','stays','food','activities'].forEach(t2=>{
     const p=$('stp-'+t2);if(p)p.style.display=t2===tab?'block':'none';
   });
+  const mc=$('mapContainer');
+  if(mc)mc.style.display=tab==='route'?'block':'none';
   if(tab==='activities')renderActivitiesTab(T());
-  // Map always visible in plan panel, refresh when route tab shown
   if(tab==='route')setTimeout(()=>{initLeaflet();if(T())refreshMap(T());if(leafMap)leafMap.invalidateSize();},80);
+}
+function toggleItinAccordion(forceOpen){
+  const body=$('itinAccordionBody'),chevron=$('itinChevron');
+  if(!body)return;
+  const open=forceOpen!==undefined?forceOpen:(body.style.display==='none');
+  body.style.display=open?'block':'none';
+  if(chevron)chevron.classList.toggle('open',open);
+  if(open){const t=T();if(t)renderItinerary(t);}
 }
 function toggleMap(){
   const mc=$('mapContainer');if(!mc)return;
@@ -3494,7 +4143,7 @@ async function spHandleCallback(){
       spPlayer=null; spPlayerReady=false; spDeviceId=null;
       setTimeout(()=>{
         spInitPlayer();
-        navTo('crew');
+        navTo('playlist');
         setTimeout(()=>{const t=T();if(t)renderSpotify(t);},500);
       },300);
       return true;
