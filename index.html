@@ -2204,6 +2204,7 @@ const FIREBASE_CONFIG = {
 let fbApp=null, fbAuth=null, fbDb=null, FB_READY=false;
 let _joinReqUnsubscribes=[];
 let _tripListenerUnsubscribes=[];
+const _deletedTripIds=new Set();
 let _jtFoundTrip=null, _jtSelectedVehicleIdx=null, _jtVehicleMode='own';
 let _lastRenderTs=0, _lastVisibilityLoadTs=0;
 function initFirebase(){
@@ -2264,6 +2265,7 @@ async function loadFromFirebase(uid){
   try{
     // Firebase is the source of truth — wipe all local trips first
     DB.trips={};
+    _deletedTripIds.clear();
 
     // Also get the user's own doc to find joinedTrips
     const userDoc=await fbDb.collection('users').doc(uid).get();
@@ -2481,6 +2483,7 @@ function setupTripListeners(){
   Object.keys(DB.trips).forEach(tripId=>{
     const unsub=fbDb.collection('trips').doc(tripId)
       .onSnapshot(snap=>{
+        if(_deletedTripIds.has(tripId))return; // locally deleted — ignore stale snapshots
         if(!snap.exists||snap.metadata.hasPendingWrites)return;
         // Debounce: skip if we just re-rendered within 1s
         const now=Date.now();
@@ -2952,11 +2955,13 @@ function deleteCurrentTrip(){
     'Delete "'+t.name+'"? This cannot be undone and will remove the trip for all crew members.',
     'Yes, Delete','danger',
     ()=>{
+      const deletingId=DB.cur;
+      _deletedTripIds.add(deletingId);
       if(FB_READY&&fbDb){
-        fbDb.collection('trips').doc(DB.cur).delete().catch(e=>console.warn('Firebase delete:',e));
+        fbDb.collection('trips').doc(deletingId).delete().catch(e=>console.warn('Firebase delete:',e));
         fbDb.collection('invite_codes').doc(t.inviteCode||'__none').delete().catch(()=>{});
       }
-      delete DB.trips[DB.cur];
+      delete DB.trips[deletingId];
       const remaining=Object.keys(DB.trips);
       DB.cur=remaining.length?remaining[0]:null;
       sv();rebuildSel();renderAll();startCD();
