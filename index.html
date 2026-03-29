@@ -24,7 +24,7 @@
 <link rel="dns-prefetch" href="https://c.basemaps.cartocdn.com">
 <link rel="dns-prefetch" href="https://d.basemaps.cartocdn.com">
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Nunito:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://sdk.scdn.co/spotify-player.js" defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
@@ -35,20 +35,50 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
 :root{
-  --bg:#1a2520;--bg2:#212e28;--surface:#293831;--surface2:#31433b;--border:#3d5248;--border2:#4e6459;
-  --text:#f5f0e8;--text2:#c8c2ba;--text3:#91998f;
-  --amber:#f8a818;--al:#ffbb38;--amber-bg:rgba(248,168,24,.13);--amber-bd:rgba(248,168,24,.3);
+  --bg:#111e17;--bg2:#0d1812;--surface:#1e3829;--surface2:#264838;--border:#2D6A4F;--border2:#3a7a5e;
+  --text:#f8f4ee;--text2:#d4cec6;--text3:#9ab8a8;
+  --amber:#D4A853;--al:#e0be70;--amber-bg:rgba(212,168,83,.13);--amber-bd:rgba(212,168,83,.3);
   --sage:#52b870;--sage-bg:rgba(82,184,112,.13);--sage-bd:rgba(82,184,112,.3);
   --rust:#d84e38;--rust-bg:rgba(216,78,56,.12);
   --sky:#46a8d8;--sky-bg:rgba(70,168,216,.12);--sky-bd:rgba(70,168,216,.3);
   --fire:#f07228;
-  --sh:rgba(0,0,0,.18);--shm:rgba(0,0,0,.36);
+  --sh:rgba(0,0,0,.22);--shm:rgba(0,0,0,.42);
   --r:12px;--rl:20px;
   --glass:rgba(255,255,255,.04);--glass-bd:rgba(255,255,255,.07);
 }
+/* ── DAY MODE overrides ─────────────────────────────────── */
+body.day-mode{
+  --bg:#F8F4EF;--bg2:#EDE8DE;--surface:#FDFBF6;--surface2:#EFE9DC;--border:#C8B890;--border2:#B0A070;
+  --text:#1a2820;--text2:#2D6A4F;--text3:#6a8870;
+  --amber:#D4A853;--al:#c49540;--amber-bg:rgba(212,168,83,.12);--amber-bd:rgba(212,168,83,.28);
+  --sage:#2D6A4F;--sage-bg:rgba(45,106,79,.1);--sage-bd:rgba(45,106,79,.25);
+  --rust:#c03428;--rust-bg:rgba(192,52,40,.1);
+  --sky:#2878b8;--sky-bg:rgba(40,120,184,.1);--sky-bd:rgba(40,120,184,.22);
+  --fire:#b85010;
+  --sh:rgba(0,0,0,.07);--shm:rgba(0,0,0,.14);
+  --glass:rgba(0,0,0,.025);--glass-bd:rgba(0,0,0,.09);
+}
+body.day-mode .topbar{background:rgba(248,244,239,.94);border-bottom:1px solid rgba(0,0,0,.08);box-shadow:0 1px 8px rgba(0,0,0,.07);}
+body.day-mode #bottomTabs{background:rgba(248,244,239,.96);border-top:1px solid rgba(0,0,0,.08);box-shadow:0 -2px 16px rgba(0,0,0,.06);}
+body.day-mode .budget-hero{background:linear-gradient(135deg,#2D6A4F 0%,#1e4a38 50%,#3a7a5e 100%);}
+body.day-mode #sidebar{background:linear-gradient(180deg,var(--surface) 0%,var(--bg2) 100%);border-right:1px solid rgba(0,0,0,.12);}
+body.day-mode .mob-panel{background:var(--surface);border-right:1px solid rgba(0,0,0,.12);}
+body.day-mode .modal{background:var(--surface);border:1px solid var(--border);}
+body.day-mode .overlay{background:rgba(100,90,60,.55);}
+body.day-mode .card{background:var(--surface);border-color:var(--border);box-shadow:0 2px 10px rgba(0,0,0,.07),inset 0 1px 0 rgba(255,255,255,.6);}
+body.day-mode .card:hover{box-shadow:0 5px 22px rgba(0,0,0,.12),0 0 0 1px var(--amber-bd);}
+body.day-mode .stat{background:var(--surface);border-color:var(--border);}
+body.day-mode .day-card,.day-mode .cost-card,.day-mode .pack-cat,.day-mode .fv-card,.day-mode .ac-card,.day-mode .bi-card{background:var(--surface);border-color:var(--border);}
+body.day-mode .subtabs{background:var(--bg2);border-color:var(--border);}
+body.day-mode .stab.active{background:var(--surface);border-color:var(--amber-bd);color:var(--amber);}
+body.day-mode #authScreen{background:var(--bg);}
+body.day-mode .auth-card{background:var(--surface);border-color:var(--border);}
+body.day-mode .ps-wrap input,.day-mode .fi input,.day-mode .fg input,.day-mode .fg select,.day-mode .fg textarea{background:var(--bg2);border-color:var(--border);}
+body.day-mode .llogo,.day-mode .sb-logo,.day-mode .auth-logo-mark{background:linear-gradient(135deg,var(--text) 0%,var(--amber) 100%);-webkit-background-clip:text;background-clip:text;}
+body.day-mode .ph-title{background:linear-gradient(135deg,var(--text),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;-webkit-font-smoothing:antialiased;}
-body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.55;overscroll-behavior-y:none;}
+body{background:var(--bg);color:var(--text);font-family:'Playfair Display',Georgia,serif;font-size:15px;line-height:1.55;overscroll-behavior-y:none;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 
@@ -58,9 +88,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .lring{width:60px;height:60px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--amber);animation:spin 1.3s linear infinite;margin-bottom:1.6rem;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .llogo{font-family:'Playfair Display';font-size:2.5rem;font-weight:900;letter-spacing:.22em;color:var(--text);}
-.ltag{font-family:'Space Mono';font-size:.52rem;letter-spacing:.28em;color:var(--text3);text-transform:uppercase;margin-top:.25rem;}
+.ltag{font-family:'Nunito';font-size:.52rem;letter-spacing:.28em;color:var(--text3);text-transform:uppercase;margin-top:.25rem;}
 .ldiv{width:32px;height:1px;background:var(--border);margin:.8rem auto;}
-.lfb{font-family:'Space Mono';font-size:.45rem;letter-spacing:.18em;color:var(--amber);text-transform:uppercase;}
+.lfb{font-family:'Nunito';font-size:.45rem;letter-spacing:.18em;color:var(--amber);text-transform:uppercase;}
 @keyframes lfi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 .llogo,.ltag,.ldiv,.lfb{animation:lfi .5s ease both;}
 .ltag{animation-delay:.15s}.ldiv{animation-delay:.25s}.lfb{animation-delay:.35s}
@@ -72,15 +102,15 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .auth-card{position:relative;z-index:1;width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:2.4rem;box-shadow:0 4px 24px var(--sh);margin:auto;}
 .auth-logo{text-align:center;margin-bottom:1.75rem;}
 .auth-logo-mark{font-family:'Playfair Display';font-size:2.1rem;font-weight:900;letter-spacing:.18em;background:linear-gradient(135deg,var(--text) 0%,var(--amber) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.auth-logo-sub{font-size:.6rem;color:var(--text3);letter-spacing:.18em;font-family:'Space Mono';text-transform:uppercase;margin-top:.25rem;}
-.auth-logo-fb{font-size:.44rem;color:var(--amber);letter-spacing:.16em;font-family:'Space Mono';text-transform:uppercase;margin-top:.12rem;opacity:.7;}
+.auth-logo-sub{font-size:.6rem;color:var(--text3);letter-spacing:.18em;font-family:'Nunito';text-transform:uppercase;margin-top:.25rem;}
+.auth-logo-fb{font-size:.44rem;color:var(--amber);letter-spacing:.16em;font-family:'Nunito';text-transform:uppercase;margin-top:.12rem;opacity:.7;}
 .auth-logo-divider{width:32px;height:1.5px;background:linear-gradient(90deg,transparent,var(--amber),transparent);margin:.9rem auto 0;}
 .auth-tabs{display:flex;background:var(--bg2);border-radius:10px;padding:3px;margin-bottom:1.5rem;border:1px solid var(--border);}
-.auth-tab{flex:1;padding:.5rem;text-align:center;border-radius:8px;cursor:pointer;font-size:.78rem;font-weight:500;color:var(--text3);transition:all .2s;}
+.auth-tab{flex:1;padding:.5rem;text-align:center;border-radius:8px;cursor:pointer;font-size:.7rem;font-weight:700;color:var(--text3);transition:all .2s;font-family:'Nunito',monospace;text-transform:uppercase;letter-spacing:.07em;}
 .auth-tab.active{background:linear-gradient(135deg,var(--amber),var(--fire));color:#fff;box-shadow:0 2px 8px rgba(248,168,24,.35);font-weight:600;}
 .fi{margin-bottom:1rem;}
 .fi label{display:block;font-size:.66rem;font-weight:600;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.35rem;}
-.fi input{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.7rem .9rem;border-radius:10px;font-size:.95rem;outline:none;transition:border-color .18s,background .18s;box-sizing:border-box;}
+.fi input{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.7rem .9rem;border-radius:10px;font-size:.95rem;outline:none;transition:border-color .18s,background .18s;box-sizing:border-box;font-family:'Playfair Display',Georgia,serif;}
 .fi input:focus{border-color:var(--amber);background:var(--surface);box-shadow:0 0 0 3px rgba(248,168,24,.12);}
 .pw-wrap{position:relative;}
 .pw-wrap input{padding-right:3rem;}
@@ -108,8 +138,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 #sidebar.off{transform:translateX(-236px);}
 .sb-head{padding:1.4rem 1.25rem 1.1rem;border-bottom:1px solid var(--glass-bd);}
 .sb-logo{font-family:'Playfair Display';font-size:1.65rem;font-weight:900;letter-spacing:.14em;background:linear-gradient(135deg,var(--text),var(--amber));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.sb-tag{font-size:.47rem;color:var(--text3);letter-spacing:.28em;font-family:'Space Mono';text-transform:uppercase;margin-top:.14rem;}
-.sb-fb{font-size:.41rem;color:var(--amber);letter-spacing:.16em;font-family:'Space Mono';text-transform:uppercase;margin-top:.07rem;opacity:.7;}
+.sb-tag{font-size:.47rem;color:var(--text3);letter-spacing:.28em;font-family:'Nunito';text-transform:uppercase;margin-top:.14rem;}
+.sb-fb{font-size:.41rem;color:var(--amber);letter-spacing:.16em;font-family:'Nunito';text-transform:uppercase;margin-top:.07rem;opacity:.7;}
 .sb-user{padding:.9rem 1.25rem;border-bottom:1px solid var(--glass-bd);display:flex;align-items:center;gap:.75rem;}
 .sb-av{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display';font-size:.95rem;font-weight:700;color:#fff;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.3);}
 .sb-uname{font-size:.84rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -126,31 +156,34 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .btn-del{background:none;border:1px solid rgba(216,78,56,.2);color:var(--rust);}
 .btn-del:hover{background:var(--rust-bg);}
 .sb-nav{flex:1;padding:.6rem .5rem;}
-.ni{display:flex;align-items:center;gap:.65rem;padding:.62rem .85rem;color:var(--text3);cursor:pointer;transition:all .18s;border-radius:10px;font-size:.83rem;font-weight:500;user-select:none;border-left:2.5px solid transparent;margin-bottom:.05rem;}
+.ni{display:flex;align-items:center;gap:.65rem;padding:.62rem .85rem;color:var(--text3);cursor:pointer;transition:all .18s;border-radius:10px;font-size:.65rem;font-weight:700;user-select:none;border-left:2.5px solid transparent;margin-bottom:.05rem;font-family:'Nunito',monospace;text-transform:uppercase;letter-spacing:.06em;}
 .ni:hover{color:var(--text);background:var(--glass);}
 .ni.active{color:var(--amber);border-left-color:var(--amber);background:linear-gradient(90deg,rgba(248,168,24,.13),rgba(248,168,24,.04));font-weight:600;}
 .ni-ic{width:16px;text-align:center;font-size:.9rem;flex-shrink:0;}
-.ni-badge{margin-left:auto;background:var(--rust);color:#fff;font-size:.48rem;padding:1px 5px;border-radius:10px;font-family:'Space Mono';}
+.ni-badge{margin-left:auto;background:var(--rust);color:#fff;font-size:.48rem;padding:1px 5px;border-radius:10px;font-family:'Nunito';}
 .sb-cd{margin:.65rem .9rem .8rem;background:linear-gradient(135deg,rgba(248,168,24,.1),rgba(248,168,24,.05));border:1px solid var(--amber-bd);border-radius:12px;padding:.8rem;}
 .cd-lbl{font-size:.52rem;font-weight:700;color:var(--amber);letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:.55rem;}
 .cd-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.1rem;}
 .cd-u{text-align:center;}
 .cd-n{font-family:'Playfair Display';font-size:1.3rem;font-weight:700;color:var(--amber);line-height:1;}
-.cd-l{font-size:.38rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'Space Mono';}
-.sb-foot{padding:.6rem 1.25rem .8rem;border-top:1px solid var(--glass-bd);font-size:.44rem;color:var(--text3);letter-spacing:.1em;font-family:'Space Mono';text-transform:uppercase;text-align:center;}
+.cd-l{font-size:.38rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:'Nunito';}
+.sb-foot{padding:.6rem 1.25rem .8rem;border-top:1px solid var(--glass-bd);font-size:.44rem;color:var(--text3);letter-spacing:.1em;font-family:'Nunito';text-transform:uppercase;text-align:center;}
 
 /* MAIN */
 #main{margin-left:236px;min-height:100vh;background:var(--bg);}
-.topbar{background:rgba(26,37,32,.88);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--glass-bd);padding:.7rem 1.4rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.18);}
+.topbar{background:rgba(17,30,23,.92);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--glass-bd);padding:.7rem 1.4rem;display:flex;align-items:center;gap:.75rem;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.22);}
 .menu-btn{background:none;border:1px solid var(--border);color:var(--amber);padding:.32rem .55rem;cursor:pointer;border-radius:8px;font-size:.88rem;transition:all .18s;}
 .menu-btn:hover{background:var(--amber-bg);}
-.tb-title{font-family:'Playfair Display';font-size:1rem;font-style:italic;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tb-title{font-family:'Playfair Display';font-size:.88rem;font-weight:700;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-transform:uppercase;letter-spacing:.08em;}
 .btn-sm{background:none;border:1px solid var(--border);color:var(--text3);padding:.3rem .65rem;cursor:pointer;border-radius:8px;font-size:.76rem;transition:all .18s;}
 .btn-sm:hover{color:var(--text);border-color:var(--amber);}
 .topbar-refresh{background:none;border:1.5px solid var(--border2);color:var(--text2);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1.05rem;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
 .topbar-refresh:hover{color:var(--amber);border-color:var(--amber);transform:rotate(45deg);}
 .topbar-refresh:active{transform:scale(.88);}
 .topbar-refresh.spinning{animation:spinOnce .5s ease;}
+.theme-toggle{background:none;border:1.5px solid var(--border2);color:var(--text2);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:.95rem;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;-webkit-tap-highlight-color:transparent;line-height:1;}
+.theme-toggle:hover{border-color:var(--amber);background:var(--amber-bg);transform:scale(1.08);}
+.theme-toggle:active{transform:scale(.88);}
 @keyframes spinOnce{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
 /* PANELS */
@@ -159,12 +192,12 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 @keyframes pIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* BUTTONS */
-.btn-primary{background:linear-gradient(135deg,var(--amber),var(--fire));color:#fff;border:none;padding:.58rem 1.2rem;font-size:.76rem;font-weight:700;letter-spacing:.02em;cursor:pointer;border-radius:10px;transition:all .2s;white-space:nowrap;box-shadow:0 2px 10px rgba(248,168,24,.25);}
+.btn-primary{background:linear-gradient(135deg,var(--amber),var(--fire));color:#fff;border:none;padding:.58rem 1.2rem;font-size:.7rem;font-weight:700;letter-spacing:.08em;cursor:pointer;border-radius:10px;transition:all .2s;white-space:nowrap;box-shadow:0 2px 10px rgba(248,168,24,.25);font-family:'Nunito',monospace;text-transform:uppercase;}
 .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(248,168,24,.38);}
 .btn-primary:active{transform:scale(.96);}
-.btn-secondary{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:.52rem 1.05rem;font-size:.75rem;font-weight:500;cursor:pointer;border-radius:10px;transition:all .2s;}
+.btn-secondary{background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:.52rem 1.05rem;font-size:.68rem;font-weight:700;cursor:pointer;border-radius:10px;transition:all .2s;font-family:'Nunito',monospace;text-transform:uppercase;letter-spacing:.07em;}
 .btn-secondary:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-bg);}
-.btn-danger{background:var(--rust-bg);border:1px solid rgba(216,78,56,.22);color:var(--rust);padding:.38rem .7rem;font-size:.7rem;font-weight:600;cursor:pointer;border-radius:8px;transition:all .18s;}
+.btn-danger{background:var(--rust-bg);border:1px solid rgba(216,78,56,.22);color:var(--rust);padding:.38rem .7rem;font-size:.64rem;font-weight:700;cursor:pointer;border-radius:8px;transition:all .18s;font-family:'Nunito',monospace;text-transform:uppercase;letter-spacing:.06em;}
 .btn-danger:hover{background:rgba(216,78,56,.2);}
 .btn-ghost{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.84rem;padding:.2rem .38rem;transition:color .16s;border-radius:6px;}
 .btn-ghost:hover{color:var(--rust);}
@@ -172,8 +205,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 /* FORMS */
 .form-row{display:flex;gap:.85rem;flex-wrap:wrap;margin-bottom:.9rem;}
 .fg{flex:1;min-width:140px;}
-.fg label{display:block;font-size:.63rem;font-weight:700;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.32rem;}
-.fg input,.fg select,.fg textarea{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.6rem .78rem;border-radius:10px;font-size:.92rem;transition:border-color .18s,background .18s,box-shadow .18s;outline:none;}
+.fg label{display:block;font-size:.63rem;font-weight:700;color:var(--text2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:.32rem;font-family:'Nunito',monospace;}
+.fg input,.fg select,.fg textarea{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.6rem .78rem;border-radius:10px;font-size:.92rem;transition:border-color .18s,background .18s,box-shadow .18s;outline:none;font-family:'Playfair Display',Georgia,serif;}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--amber);background:var(--surface);box-shadow:0 0 0 3px rgba(248,168,24,.1);}
 .fg textarea{resize:vertical;min-height:72px;}
 .modal-footer{display:flex;gap:.7rem;justify-content:flex-end;margin-top:1.4rem;padding-top:1.1rem;border-top:1px solid var(--glass-bd);}
@@ -188,7 +221,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .overlay.open{opacity:1;pointer-events:all;}
 .modal{background:var(--surface);border:1px solid var(--glass-bd);border-bottom:none;border-radius:24px 24px 0 0;padding:1.7rem 1.65rem calc(1.7rem + env(safe-area-inset-bottom));width:100%;max-width:580px;max-height:92vh;overflow-y:auto;transform:translateY(28px);transition:transform .3s cubic-bezier(.22,1,.36,1);position:relative;box-shadow:0 -6px 40px rgba(0,0,0,.4),inset 0 1px 0 var(--glass);}
 .overlay.open .modal{transform:none;}
-.modal-title{font-family:'Playfair Display';font-size:1.35rem;font-weight:700;color:var(--text);margin-bottom:1.25rem;}
+.modal-title{font-family:'Playfair Display';font-size:1.25rem;font-weight:700;color:var(--text);margin-bottom:1.25rem;text-transform:uppercase;letter-spacing:.07em;}
 .modal-close{position:absolute;top:.9rem;right:.9rem;background:var(--surface2);border:none;color:var(--text3);font-size:.88rem;cursor:pointer;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .18s;}
 .modal-close:hover{background:var(--border2);color:var(--text);}
 
@@ -257,34 +290,33 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .wiz-pane.on{display:block;}
 
 /* OVERVIEW DASHBOARD */
-.dash-hero{background:linear-gradient(135deg,#1e1508 0%,#3d2810 40%,#1c3326 100%);border-radius:var(--rl);padding:1.85rem 1.9rem;margin-bottom:1.4rem;color:#fff;position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.07);}
-.dash-hero::before{content:'';position:absolute;right:-60px;bottom:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(248,168,24,.14) 0%,transparent 65%);}
-.dash-hero::after{content:'';position:absolute;left:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(82,184,112,.08) 0%,transparent 65%);}
-.dh-name{font-family:'Playfair Display';font-size:2.1rem;font-weight:900;color:#fff;position:relative;z-index:1;line-height:1.2;}
-.dh-meta{display:flex;gap:1rem;flex-wrap:wrap;margin-top:.6rem;position:relative;z-index:1;}
-.dh-mi{display:flex;align-items:center;gap:.35rem;font-size:.82rem;color:rgba(255,255,255,.75);}
+.dash-hero{background:var(--surface);border:1px solid var(--glass-bd);border-bottom-color:rgba(0,0,0,.2);border-radius:var(--rl);padding:1.85rem 1.9rem;margin-bottom:1.4rem;color:var(--text);box-shadow:0 2px 12px rgba(0,0,0,.2),inset 0 1px 0 var(--glass);}
+.dh-name{font-family:'Playfair Display';font-size:2.1rem;font-weight:900;color:var(--text);line-height:1.2;text-transform:uppercase;letter-spacing:.07em;}
+.dh-meta{display:flex;gap:1rem;flex-wrap:wrap;margin-top:.6rem;}
+.dh-mi{display:flex;align-items:center;gap:.35rem;font-size:.82rem;color:var(--text2);}
 .stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:.85rem;margin-bottom:1.4rem;}
-.stat{background:var(--surface);border:1px solid var(--glass-bd);border-bottom-color:rgba(0,0,0,.18);border-radius:14px;padding:1rem .9rem;box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 1px 0 var(--glass);overflow:hidden;position:relative;transition:all .2s;}
+.stat{background:var(--surface);border:1px solid var(--glass-bd);border-bottom-color:rgba(0,0,0,.18);border-radius:14px;padding:1rem .9rem;box-shadow:0 2px 10px rgba(0,0,0,.18),inset 0 1px 0 var(--glass);overflow:hidden;position:relative;transition:all .2s;text-align:center;}
 .stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2.5px;background:linear-gradient(90deg,var(--amber),var(--fire));opacity:0;transition:opacity .2s;border-radius:14px 14px 0 0;}
 .stat:hover::after,.stat:active::after{opacity:1;}
 .stat-n{font-family:'Playfair Display';font-size:1.7rem;font-weight:700;color:var(--amber);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.15;}
-.stat-l{font-size:.55rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-top:.18rem;white-space:nowrap;font-family:'Space Mono';}
+.stat-l{font-size:.65rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-top:.18rem;white-space:nowrap;font-family:'Nunito',monospace;}
 .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.3rem;}
-.dc{padding:1.1rem;}
-.dc-title{font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.8rem;display:flex;align-items:center;gap:.35rem;}
+.dc{padding:1.1rem;display:flex;flex-direction:column;}
+.dc-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;overflow:hidden;min-height:3rem;}
+.dc-title{font-size:.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.8rem;display:flex;align-items:center;gap:.35rem;font-family:'Nunito',monospace;}
 
 /* INSIGHTS */
 .bi-kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.8rem;margin-bottom:1.3rem;}
-.bi-kpi{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.9rem;box-shadow:0 1px 4px var(--sh);text-align:center;}
-.bi-kpi-n{font-family:'Playfair Display';font-size:1.85rem;font-weight:700;color:var(--amber);}
-.bi-kpi-l{font-size:.58rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:.1rem;}
+.bi-kpi{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.9rem;box-shadow:0 1px 4px var(--sh);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:88px;}
+.bi-kpi-n{font-family:'Playfair Display';font-size:1.7rem;font-weight:700;color:var(--amber);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;line-height:1.1;}
+.bi-kpi-l{font-size:.58rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:.35rem;}
 .bi-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.3rem;}
 .bi-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:1.3rem;box-shadow:0 1px 4px var(--sh);}
 .bi-card.full{grid-column:1/-1;}
-.bi-title{font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:1rem;}
+.bi-title{font-size:.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem;font-family:'Nunito',monospace;}
 .chart-container{position:relative;height:200px;}
 .insight-list{display:flex;flex-direction:column;gap:.5rem;}
-.insight-item{display:flex;align-items:flex-start;gap:.7rem;padding:.7rem;background:var(--bg2);border-radius:8px;}
+.insight-item{display:flex;align-items:flex-start;gap:.7rem;padding:.7rem;background:var(--surface);border-radius:8px;border:1px solid var(--glass-bd);}
 .ins-ic{font-size:1.1rem;flex-shrink:0;margin-top:.03rem;}
 .ins-title{font-size:.8rem;font-weight:600;color:var(--text);}
 .ins-sub{font-size:.75rem;color:var(--text3);margin-top:.1rem;}
@@ -309,7 +341,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .sr-n{font-family:'Playfair Display';font-size:1.15rem;font-weight:700;color:var(--amber);min-width:22px;padding-top:.05rem;}
 .sr-icon{font-size:1.1rem;flex-shrink:0;}
 .sr-body{flex:1;}
-.sr-nm{font-size:.88rem;font-weight:600;color:var(--text);}
+.sr-nm{font-size:.88rem;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em;font-family:'Playfair Display',Georgia,serif;}
 .sr-meta{font-size:.7rem;color:var(--text3);margin-top:.12rem;}
 .sr-km-row{display:flex;align-items:center;gap:.4rem;margin-top:.35rem;}
 .sr-km-inp{width:68px;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.22rem .35rem;border-radius:6px;font-size:.8rem;text-align:center;outline:none;transition:border-color .16s;}
@@ -326,7 +358,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 
 /* SUBTABS */
 .subtabs{display:flex;gap:.3rem;background:var(--bg2);padding:.28rem;border-radius:10px;margin-bottom:1.1rem;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-.stab{flex:1;min-width:fit-content;padding:.44rem .65rem;border:none;background:transparent;color:var(--text3);font-size:.73rem;font-weight:600;cursor:pointer;border-radius:7px;transition:all .18s;white-space:nowrap;}
+.stab{flex:1;min-width:fit-content;padding:.44rem .65rem;border:none;background:transparent;color:var(--text3);font-size:.62rem;font-weight:700;cursor:pointer;border-radius:7px;transition:all .18s;white-space:nowrap;font-family:'Nunito',monospace;text-transform:uppercase;letter-spacing:.06em;}
 .stab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px var(--sh);}
 .stpane{display:none;}
 .stpane.on{display:block;}
@@ -336,11 +368,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .day-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);margin-bottom:.7rem;overflow:hidden;box-shadow:0 1px 3px var(--sh);}
 .day-card.from-route{border-left:3px solid var(--sage);}
 .day-card.travel-day{border-left:3px solid var(--sky);}
-.dh{display:flex;align-items:center;gap:.8rem;padding:.85rem 1rem;cursor:pointer;background:var(--bg2);}
+.dh{display:flex;align-items:center;gap:.8rem;padding:.85rem 1rem;cursor:pointer;background:var(--surface);}
 .dn{font-family:'Playfair Display';font-size:1.3rem;font-weight:700;min-width:38px;}
 .di{flex:1;}
 .dd{font-size:.62rem;font-weight:600;color:var(--text3);letter-spacing:.03em;}
-.dl{font-size:.88rem;font-weight:600;color:var(--text);}
+.dl{font-size:.88rem;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em;font-family:'Playfair Display',Georgia,serif;}
 .dtg{display:flex;gap:.22rem;flex-wrap:wrap;margin-top:.22rem;}
 .dbd{padding:1rem;display:none;border-top:1px solid var(--border2);}
 .dbd.open{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
@@ -356,7 +388,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .sug-lbl{font-size:.62rem;font-weight:700;color:var(--sage);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;}
 .sug-row{display:flex;flex-wrap:wrap;gap:.28rem;}
 .sug-chip{background:var(--sage-bg);border:1px solid var(--sage-bd);color:var(--sage);padding:.2rem .52rem;border-radius:20px;font-size:.73rem;cursor:pointer;transition:all .16s;}
-.sug-chip:hover,.sug-chip:active{background:var(--sage);color:#fff;}
+.sug-chip:hover,.sug-chip:active{background:var(--amber);border-color:var(--amber);color:#fff;}
 .sug-hint{font-size:.65rem;color:var(--text3);margin-top:.3rem;}
 
 /* ACCOMMODATION */
@@ -372,27 +404,27 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .ac-img.lodge{background:linear-gradient(135deg,#c9907a,#8b3222);}
 .ac-img.guesthouse{background:linear-gradient(135deg,#7eacd0,#1e6fa5);}
 .ac-body{padding:.9rem;}
-.ac-name{font-size:.88rem;font-weight:700;color:var(--text);}
+.ac-name{font-size:.88rem;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em;font-family:'Playfair Display',Georgia,serif;}
 .ac-meta{font-size:.75rem;color:var(--text3);margin-top:.15rem;}
 .ac-nights{font-size:.62rem;font-weight:600;color:var(--amber);letter-spacing:.05em;text-transform:uppercase;margin-top:.42rem;}
 .ac-btns{display:flex;gap:.35rem;margin-top:.65rem;flex-wrap:wrap;}
 
 /* BUDGET */
-.budget-hero{background:linear-gradient(135deg,#1f1408,#2d1e0a);border-radius:var(--rl);padding:1.4rem 1.75rem;color:#fff;margin-bottom:1.1rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.budget-hero{background:linear-gradient(135deg,#1a3828,#2D6A4F);border-radius:var(--rl);padding:1.4rem 1.75rem;color:#fff;margin-bottom:1.1rem;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
 .bh-label{font-size:.65rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.65;margin-bottom:.2rem;}
 .bh-amount{font-family:'Playfair Display';font-size:2.2rem;font-weight:900;color:#f0c060;}
 .bh-sub{font-size:.75rem;opacity:.55;margin-top:.15rem;}
 .bh-details{display:flex;gap:1.75rem;flex-wrap:wrap;}
 .bh-di{}
 /* settings bar */
-.budget-bar{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:.7rem .9rem;margin-bottom:1rem;}
-.bb-lbl{font-size:.65rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+.budget-bar{display:flex;gap:.65rem;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--glass-bd);border-radius:var(--r);padding:.7rem .9rem;margin-bottom:1rem;}
+.bb-lbl{font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;font-family:'Nunito',monospace;}
 .bb-inp{background:var(--surface);border:1.5px solid var(--border);color:var(--text);padding:.3rem .58rem;border-radius:6px;font-size:.9rem;width:88px;outline:none;}
 .bb-inp:focus{border-color:var(--amber);}
 .veh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.9rem;margin-bottom:1.25rem;}
 .fv-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:1rem;box-shadow:0 1px 4px var(--sh);}
 .fv-card.fv-mine{border-color:var(--amber-bd);background:var(--amber-bg);}
-.fv-name{font-size:.86rem;font-weight:700;color:var(--text);}
+.fv-name{font-size:.86rem;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em;font-family:'Playfair Display',Georgia,serif;}
 .fv-meta{font-size:.72rem;color:var(--text3);margin-top:.15rem;}
 .fv-cost{font-family:'Playfair Display';font-size:1.25rem;font-weight:700;color:var(--amber);margin-top:.45rem;}
 .my-cost-banner{background:linear-gradient(135deg,var(--amber-bg),var(--sky-bg));border:1px solid var(--amber-bd);border-radius:var(--r);padding:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
@@ -407,11 +439,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .split-pct:focus{border-color:var(--amber);}
 .split-amt{font-size:.78rem;font-weight:600;color:var(--sage);min-width:58px;text-align:right;}
 .section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;margin-top:1.25rem;}
-.section-hd-title{font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;}
+.section-hd-title{font-size:.75rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;font-family:'Nunito',monospace;}
 
 /* FOOD */
 .fd{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);margin-bottom:.75rem;overflow:hidden;box-shadow:0 1px 4px var(--sh);}
-.fdh{display:flex;align-items:center;padding:.68rem 1rem;cursor:pointer;background:var(--bg2);gap:.7rem;border-bottom:1px solid var(--border2);}
+.fdh{display:flex;align-items:center;padding:.68rem 1rem;cursor:pointer;background:var(--surface);gap:.7rem;border-bottom:1px solid var(--border2);}
 .fdt{font-size:.85rem;font-weight:600;color:var(--text);flex:1;}
 .fdl{font-size:.75rem;color:var(--text3);font-style:italic;}
 .fdb{display:none;padding:.9rem 1rem;}
@@ -463,7 +495,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .crew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;margin-bottom:1.4rem;}
 .cc{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:1.1rem;text-align:center;box-shadow:0 1px 4px var(--sh);}
 .cr-av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display';font-size:1.25rem;font-weight:700;color:#fff;margin:0 auto .8rem;}
-.cr-nm{font-size:.88rem;font-weight:700;color:var(--text);}
+.cr-nm{font-size:.88rem;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.05em;font-family:'Playfair Display',Georgia,serif;}
 .cr-rl{font-size:.62rem;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-top:.16rem;}
 .cr-st{font-size:.62rem;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:.5rem;display:inline-block;}
 .cst-conf{background:var(--sage-bg);color:var(--sage);}
@@ -471,7 +503,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .cst-self{background:var(--sky-bg);color:var(--sky);}
 .invite-code-box{background:var(--amber-bg);border:1px solid var(--amber-bd);border-radius:var(--r);padding:.9rem;text-align:center;margin-bottom:1.2rem;}
 .icb-label{font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.38rem;}
-.icb-code{font-family:'Space Mono';font-size:1.55rem;font-weight:700;color:var(--amber);letter-spacing:.22em;}
+.icb-code{font-family:'Nunito';font-size:1.55rem;font-weight:700;color:var(--amber);letter-spacing:.22em;}
 .icb-copy{background:var(--amber);color:#fff;border:none;padding:.32rem .82rem;border-radius:6px;font-size:.7rem;font-weight:600;cursor:pointer;margin-top:.48rem;transition:all .18s;}
 .icb-copy:hover{background:var(--al);}
 
@@ -501,10 +533,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 #fab.has-trip{border-radius:28px;width:auto;padding:0 1.1rem;font-size:.82rem;font-weight:700;letter-spacing:.04em;gap:.35rem;}
 
 /* BOTTOM TAB BAR */
-#bottomTabs{display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:rgba(26,37,32,.9);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--glass-bd);box-shadow:0 -4px 24px rgba(0,0,0,.3);padding:.4rem .5rem calc(.5rem + env(safe-area-inset-bottom));}
+#bottomTabs{display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:rgba(17,30,23,.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid var(--glass-bd);box-shadow:0 -4px 24px rgba(0,0,0,.3);padding:.4rem .5rem calc(.5rem + env(safe-area-inset-bottom));}
 .bt{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:.5rem .15rem .4rem;cursor:pointer;gap:.16rem;border:none;background:none;transition:all .2s;position:relative;border-radius:14px;-webkit-tap-highlight-color:transparent;min-height:52px;}
 .bt-ic{font-size:1.35rem;line-height:1;transition:transform .2s;}
-.bt-lb{font-size:.5rem;font-weight:600;color:var(--text3);letter-spacing:.04em;text-transform:uppercase;transition:color .2s;}
+.bt-lb{font-size:.5rem;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;transition:color .2s;font-family:'Nunito',monospace;}
 .bt.active{background:rgba(248,168,24,.11);}
 .bt.active .bt-ic{transform:translateY(-1px);}
 .bt.active .bt-lb{color:var(--amber);font-weight:700;}
@@ -513,8 +545,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 /* MISC */
 input[type=file]{display:none;}
 .divider{border:none;border-top:1px solid var(--border2);margin:1.4rem 0;}
-.ph-title{font-family:'Playfair Display';font-size:1.65rem;font-weight:700;}
-.ph-sub{font-size:.8rem;color:var(--text3);margin-top:.15rem;}
+.ph-title{font-family:'Playfair Display',Georgia,serif;font-size:1.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;}
+.ph-sub{font-size:.65rem;color:var(--text3);margin-top:.15rem;font-family:'Nunito',monospace;text-transform:uppercase;letter-spacing:.1em;}
 
 /* RESPONSIVE */
 /* ══ MOBILE ══ */
@@ -543,7 +575,7 @@ input[type=file]{display:none;}
   .stats-row{grid-template-columns:repeat(3,1fr);gap:.6rem;}
   .stat{padding:.72rem .55rem;border-radius:12px;}
   .stat-n{font-size:1.05rem;}
-  .stat-l{font-size:.5rem;}
+  .stat-l{font-size:.58rem;}
 
   /* Cards 1 col */
   .dash-grid{grid-template-columns:1fr;gap:.75rem;}
@@ -564,7 +596,7 @@ input[type=file]{display:none;}
 
   /* Subtabs scrollable */
   .subtabs{gap:.22rem;padding:.22rem;}
-  .stab{font-size:.68rem;padding:.38rem .5rem;}
+  .stab{font-size:.58rem;padding:.38rem .5rem;}
 
   /* Stop rows */
   .stop-row{padding:.6rem .7rem;gap:.5rem;}
@@ -615,10 +647,9 @@ input[type=file]{display:none;}
 /* Gradient logo text */
 .llogo,.sb-logo{background:linear-gradient(135deg,var(--al) 20%,var(--amber) 60%,var(--fire) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 /* Richer hero gradients */
-.dash-hero{background:linear-gradient(135deg,#1c3020 0%,#2a1808 50%,#182818 100%);}
-.budget-hero{background:linear-gradient(135deg,#1c1006 0%,#281a08 50%,#182010 100%);box-shadow:0 6px 30px rgba(0,0,0,.5);}
+.budget-hero{background:linear-gradient(135deg,#111e17 0%,#2D6A4F 60%,#1e3829 100%);box-shadow:0 6px 30px rgba(0,0,0,.5);}
 /* Glowing stat / KPI numbers */
-.stat-n,.bi-kpi-n{text-shadow:0 0 18px rgba(248,168,24,.35);}
+.stat-n,.bi-kpi-n{text-shadow:0 0 18px rgba(212,168,83,.35);}
 .bh-amount,.cost-amount,.mcb-amount{text-shadow:0 0 22px rgba(248,168,24,.4);}
 /* Card hover amber glow */
 .card:hover{box-shadow:0 5px 22px var(--shm),0 0 0 1px var(--amber-bd);}
@@ -679,10 +710,10 @@ input[type=file]{display:none;}
 /* Hero panel titles */
 .ph-title{font-size:1.75rem;}
 /* Stop names */
-.sr-nm{font-size:.93rem;font-weight:700;}
+.sr-nm{font-size:.93rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;}
 /* Day card header glow when open */
-.day-card.from-route .dh{background:linear-gradient(90deg,rgba(82,184,112,.09),var(--bg2));}
-.day-card.travel-day .dh{background:linear-gradient(90deg,rgba(70,168,216,.09),var(--bg2));}
+.day-card.from-route .dh{background:linear-gradient(90deg,rgba(82,184,112,.12),var(--surface));}
+.day-card.travel-day .dh{background:linear-gradient(90deg,rgba(70,168,216,.12),var(--surface));}
 /* Invite code box — extra punch */
 .invite-code-box{box-shadow:0 2px 16px rgba(248,168,24,.12);}
 /* Stats highlight */
@@ -721,8 +752,8 @@ input[type=file]{display:none;}
 #mobileDrawer.open .mob-panel{transform:translateX(0);}
 .mob-head{padding:1.25rem 1.2rem 1rem;border-bottom:1px solid var(--border2);}
 .mob-logo{font-family:'Playfair Display';font-size:2.1rem;font-weight:900;letter-spacing:.14em;background:linear-gradient(135deg,var(--al) 20%,var(--amber) 60%,var(--fire) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.1;}
-.mob-sub{font-size:.48rem;color:var(--text3);letter-spacing:.24em;font-family:'Space Mono';text-transform:uppercase;margin-top:.12rem;}
-.mob-fb{font-size:.42rem;color:var(--amber);letter-spacing:.14em;font-family:'Space Mono';text-transform:uppercase;margin-top:.06rem;}
+.mob-sub{font-size:.48rem;color:var(--text3);letter-spacing:.24em;font-family:'Nunito';text-transform:uppercase;margin-top:.12rem;}
+.mob-fb{font-size:.42rem;color:var(--amber);letter-spacing:.14em;font-family:'Nunito';text-transform:uppercase;margin-top:.06rem;}
 .mob-user{display:flex;align-items:center;gap:.7rem;padding:.8rem 1.2rem;border-bottom:1px solid var(--border2);}
 .mob-uname{font-size:.88rem;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .mob-logout{background:none;border:none;color:var(--text3);cursor:pointer;font-size:.85rem;padding:.2rem;transition:color .15s;}
@@ -730,7 +761,7 @@ input[type=file]{display:none;}
 .mob-trips{padding:.85rem 1.2rem;border-bottom:1px solid var(--border2);}
 .mob-trips label{font-size:.6rem;font-weight:700;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:.35rem;}
 .mob-actions{padding:.6rem .8rem .4rem;}
-.mob-foot{margin-top:auto;padding:.6rem 1.2rem .8rem;font-size:.44rem;color:var(--text3);letter-spacing:.1em;font-family:'Space Mono';text-transform:uppercase;text-align:center;border-top:1px solid var(--border2);}
+.mob-foot{margin-top:auto;padding:.6rem 1.2rem .8rem;font-size:.44rem;color:var(--text3);letter-spacing:.1em;font-family:'Nunito';text-transform:uppercase;text-align:center;border-top:1px solid var(--border2);}
 
 /* ── TOWING TOGGLE (per leg) ── */
 .tow-btn{background:var(--bg2);border:1px solid var(--border);color:var(--text3);padding:.15rem .45rem;border-radius:12px;font-size:.6rem;cursor:pointer;transition:all .16s;white-space:nowrap;}
@@ -1046,7 +1077,7 @@ button:active { transform: scale(.97); }
   pointer-events: none;
 }
 .icb-code {
-  font-family: 'Space Mono';
+  font-family: 'Nunito';
   font-size: 1.85rem;
   font-weight: 700;
   color: var(--amber);
@@ -1093,11 +1124,9 @@ button:active { transform: scale(.97); }
 
 /* 15. DASHBOARD — cinematic hero */
 .dash-hero {
-  background: linear-gradient(135deg, #1a2e20 0%, #2a1808 45%, #162418 100%);
+  background: var(--surface);
   border-radius: var(--rl);
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 8px 40px rgba(0,0,0,.45);
+  box-shadow: 0 2px 12px rgba(0,0,0,.2),inset 0 1px 0 var(--glass);
 }
 .dash-hero::before {
   content: '';
@@ -1114,7 +1143,8 @@ button:active { transform: scale(.97); }
   font-family: 'Playfair Display';
   font-size: 2.1rem;
   font-weight: 900;
-  text-shadow: 0 2px 12px rgba(0,0,0,.4);
+  text-transform: uppercase;
+  letter-spacing: .07em;
 }
 
 /* Stats row — editorial numbers */
@@ -1229,7 +1259,7 @@ input:focus, select:focus, textarea:focus {
 
 /* TOPBAR glass effect */
 .topbar {
-  background: rgba(28,41,34,.88);
+  background: rgba(17,30,23,.93);
   backdrop-filter: blur(12px) saturate(160%);
   -webkit-backdrop-filter: blur(12px) saturate(160%);
   border-bottom: 1px solid rgba(255,255,255,.07);
@@ -1303,8 +1333,8 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid transparent;
 }
 .insight-item:hover {
-  background: var(--surface);
-  border-color: var(--border2);
+  background: var(--surface2);
+  border-color: var(--amber-bd);
   transform: translateX(3px);
 }
 
@@ -1342,7 +1372,7 @@ input:focus, select:focus, textarea:focus {
 .doc-card:hover { transform: translateY(-3px); box-shadow: 0 6px 22px rgba(0,0,0,.38); }
 
 /* BUDGET hero amount bigger label */
-.bh-label { font-size: .68rem; letter-spacing: .1em; }
+.bh-label { font-size: .62rem; letter-spacing: .1em; font-family: 'Nunito', monospace; text-transform: uppercase; }
 
 /* Better scrollbar styling */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -1365,6 +1395,35 @@ input:focus, select:focus, textarea:focus {
 .tp-item:last-child{border-bottom:none;}
 .tp-item:hover{background:var(--amber-bg);color:var(--amber);}
 .tp-item.active{color:var(--amber);background:rgba(248,168,24,.08);}
+/* ══ TYPOGRAPHY SYSTEM — Playfair Display everywhere, Space Mono for labels ══ */
+/* Ensure all inputs and selects use Playfair */
+input, select, textarea, button { font-family: inherit; }
+.fg input,.fg select,.fg textarea,
+.fi input,.sb-sel,.ps-wrap input,.bb-inp,.dinp,.madd input,.pack-add input,
+.split-pct,.nights-inp,.sr-km-inp { font-family: 'Playfair Display',Georgia,serif; }
+/* Section heading labels in JS-rendered HTML — Space Mono CAPS */
+.fv-name,.fv-meta { font-family: 'Playfair Display',Georgia,serif; }
+.fv-name { text-transform: uppercase; letter-spacing: .05em; }
+.fv-cost { font-family: 'Playfair Display',Georgia,serif; }
+.ac-name { font-family: 'Playfair Display',Georgia,serif; text-transform: uppercase; letter-spacing: .05em; }
+.pk-hd-title { font-family: 'Nunito',monospace; text-transform: uppercase; letter-spacing: .07em; font-size: .7rem; font-weight: 700; }
+/* Cost card titles */
+.cost-card-title { font-family: 'Playfair Display',Georgia,serif; }
+/* Day/food headers */
+.dn,.fdt { font-family: 'Playfair Display',Georgia,serif; font-weight: 700; }
+.fdt { text-transform: uppercase; letter-spacing: .06em; font-size: .78rem; }
+.dn-date,.dn-loc { font-family: 'Nunito',monospace; font-size: .58rem; text-transform: uppercase; letter-spacing: .07em; }
+/* Crew card names */
+.cr-nm { font-family: 'Playfair Display',Georgia,serif; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.cr-rl,.cr-st { font-family: 'Nunito',monospace; font-size: .62rem; text-transform: uppercase; letter-spacing: .06em; }
+/* Toast */
+.toast { font-family: 'Nunito',monospace; font-size: .75rem; }
+/* Countdown */
+.cd-lbl { font-family: 'Nunito',monospace; }
+.cd-n { font-family: 'Playfair Display',Georgia,serif; }
+/* Stop row label */
+.sr-name { font-family: 'Playfair Display',Georgia,serif; font-weight: 700; }
+.sr-meta { font-family: 'Nunito',monospace; font-size: .6rem; text-transform: uppercase; letter-spacing: .06em; }
 /* ══ END OVERHAUL ══ */
 </style>
 </head>
@@ -1490,6 +1549,7 @@ if('serviceWorker' in navigator){
         <div class="tb-logo">✦ TREK</div>
         <div class="tb-trip-name" id="tbTitle">—</div>
       </div>
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Day / Night mode">☀️</button>
       <button class="topbar-refresh" id="topRefreshBtn" onclick="appRefresh()" title="Refresh">↻</button>
     </div>
     <!-- OVERVIEW -->
@@ -1517,7 +1577,7 @@ if('serviceWorker' in navigator){
         <div class="stop-list" id="stopList"></div>
         <!-- Itinerary accordion -->
         <div id="itinAccordion" style="margin-top:1.25rem;border:1px solid var(--border2);border-radius:var(--r);overflow:hidden">
-          <div onclick="toggleItinAccordion()" style="display:flex;align-items:center;justify-content:space-between;padding:.85rem 1rem;cursor:pointer;background:var(--bg2);user-select:none">
+          <div onclick="toggleItinAccordion()" style="display:flex;align-items:center;justify-content:space-between;padding:.85rem 1rem;cursor:pointer;background:var(--surface);user-select:none">
             <div style="display:flex;align-items:center;gap:.55rem">
               <span style="font-size:.95rem">📅</span>
               <span style="font-size:.82rem;font-weight:700;color:var(--text)">Itinerary</span>
@@ -1772,7 +1832,7 @@ if('serviceWorker' in navigator){
   <!-- Step 1: Enter code -->
   <div id="jt-step1">
     <p style="font-size:.83rem;color:var(--text3);margin-bottom:1.1rem">Enter the invite code from your trip organiser.</p>
-    <div class="fi"><label>Invite Code</label><input type="text" id="jt-code" placeholder="AB12CD" style="text-transform:uppercase;letter-spacing:.2em;font-family:'Space Mono';font-size:1.05rem" oninput="this.value=this.value.toUpperCase()"></div>
+    <div class="fi"><label>Invite Code</label><input type="text" id="jt-code" placeholder="AB12CD" style="text-transform:uppercase;letter-spacing:.2em;font-family:'Nunito';font-size:1.05rem" oninput="this.value=this.value.toUpperCase()"></div>
     <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('joinTripMod')">Cancel</button><button class="btn-primary" onclick="jtLookUp()">Look Up →</button></div>
   </div>
   <!-- Step 2: Vehicle mode -->
@@ -2218,6 +2278,10 @@ async function loadFromFirebase(uid){
       const ids=Object.keys(DB.trips);
       DB.cur=ids.length?ids[0]:null;
     }
+    // Backfill passengers arrays on old vehicles that predate the passengers field
+    Object.values(DB.trips).forEach(trip=>{
+      (trip.vehicles||[]).forEach(v=>{if(!v.passengers||!v.passengers.length)v.passengers=[v.uid||v.driver||uid];});
+    });
     // Process pending join_requests for trips I OWN
     try{
       const myTripIds=Object.keys(DB.trips).filter(id=>DB.trips[id]._owner===uid);
@@ -2307,8 +2371,21 @@ function setupJoinRequestListener(){
           const t=DB.trips[jr.tripId];
           if(!t||jr.userId===ME.id)continue;
           if(t.crew.some(c=>c.id===jr.userId)){
-            // Already in crew — just mark accepted if still pending
-            fbDb.collection('join_requests').doc(jrDoc.id).update({status:'accepted'}).catch(()=>{});
+            // Already in crew — for own-vehicle mode mark accepted; for join-vehicle leave pending (approval dialog handles it)
+            if(jr.vehicleMode!=='join'){
+              fbDb.collection('join_requests').doc(jrDoc.id).update({status:'accepted'}).catch(()=>{});
+            } else {
+              // vehicleMode==='join': ensure passenger is in the vehicle (in case first fire didn't save correctly)
+              if(jr.requestedVehicleIdx!==undefined&&t.vehicles&&t.vehicles[jr.requestedVehicleIdx]){
+                const v=t.vehicles[jr.requestedVehicleIdx];
+                v.passengers=v.passengers||[v.uid||''];
+                if(!v.passengers.includes(jr.userId)){
+                  v.passengers.push(jr.userId);
+                  fbDb.collection('trips').doc(jr.tripId).set({...t,_updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(()=>{});
+                  sv();renderBudget(t);
+                }
+              }
+            }
             continue;
           }
           // Add to crew
@@ -2369,7 +2446,7 @@ function setupJoinRequestListener(){
           // Re-render the affected trip (may not be the currently viewed one)
           const updatedTripId=pendingDocs.find(d=>d.data().tripId)?.data()?.tripId;
           const affectedTrip=updatedTripId?DB.trips[updatedTripId]:null;
-          if(affectedTrip)renderCrew(affectedTrip);
+          if(affectedTrip){renderCrew(affectedTrip);renderBudget(affectedTrip);}
           const cur=T();
           if(cur){renderDash(cur);}
         }
@@ -2422,6 +2499,22 @@ function doResetPassword(){
   fbAuth.sendPasswordResetEmail(email)
     .then(()=>{$('authErr').classList.remove('show');toast('Password reset email sent ✉️','ok');})
     .catch(e=>authErr(e.code==='auth/user-not-found'?'No account found for that email.':'Could not send reset email.'));
+}
+function toggleTheme(){
+  const goDay=!document.body.classList.contains('day-mode');
+  document.body.classList.toggle('day-mode',goDay);
+  const btn=$('themeToggle');
+  if(btn)btn.textContent=goDay?'🌙':'☀️';
+  localStorage.setItem('trek_theme',goDay?'day':'night');
+  // Redraw charts so axis colors update
+  const t=T();if(t)renderInsights(t);
+}
+function initTheme(){
+  const saved=localStorage.getItem('trek_theme');
+  const isDay=saved==='day';
+  if(isDay)document.body.classList.add('day-mode');
+  const btn=$('themeToggle');
+  if(btn)btn.textContent=isDay?'🌙':'☀️';
 }
 function appRefresh(){
   if(!FB_READY||!ME)return;
@@ -2570,6 +2663,7 @@ window.addEventListener('load',()=>{
 
 function launchApp(){
   $('authScreen').classList.add('hidden');
+  initTheme();
   if(!FB_READY)$('fbSetupBanner').style.display='block';
   $('app').classList.add('visible');
   $('sbAvatar').textContent=ME.initials;
@@ -2577,6 +2671,8 @@ function launchApp(){
   $('sbUname').textContent=ME.name;
   rebuildSel(); renderAll(); startCD();
   if(FB_READY){setupJoinRequestListener();setupTripListeners();}
+  // Load local attractions DB in background (non-blocking)
+  if(!ATTRACTIONS)loadAttractions();
   // Handle Spotify callback after normal launch
   if(new URLSearchParams(location.search).get('state')==='trek_spotify'){
     setTimeout(()=>{
@@ -2679,6 +2775,8 @@ function createTrip(){
   const cons=parseFloat($('wcons').value)||12.5;
   const t=newTripObj(name,$('wd').value.trim(),$('ws').value,$('we').value,$('wt').value,$('wa').value,'1','1',$('wnotes').value.trim(),fuelPrice,cons,wizStops.map(s=>({...s})));
   t.id=id;
+  // Normalise isStart/isEnd flags and clear nights from start/end stops
+  t.stops.forEach((s,i)=>{s.isStart=i===0;s.isEnd=i===t.stops.length-1;if(s.isStart||s.isEnd)s.nights=0;});
 
   // Auto-create MY vehicle from wizard input
   const vname=($('wvname').value.trim())||ME.name+"'s vehicle";
@@ -2708,13 +2806,6 @@ function createTrip(){
       setTimeout(()=>suggestActivitiesForStop(s.name,s.lat,s.lon),(idx+1)*1500);
     });
   },600);
-  // Auto-fetch activities for all overnight stops
-  setTimeout(()=>{
-    const cur=T();if(!cur)return;
-    cur.stops.filter(s=>!s.isStart&&!s.isEnd&&parseInt(s.nights)>0).forEach(s=>{
-      suggestActivitiesForStop(s.name,s.lat,s.lon);
-    });
-  },1000);
   toast('🗺️ '+name+' created!','ok'); wizStops=[];
   ['wn','wd','ws','we','wnotes','wfuel','wcons','wtcons','wvname','wvtank'].forEach(id2=>{if($(id2))$(id2).value='';});
 }
@@ -3088,12 +3179,16 @@ function renderAll(){
 function renderDash(t){
   const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
   const km=t._routeKm||manKm||0;
-  const nights=t.stops.reduce((a,s)=>a+(parseInt(s.nights)||0),0);
+  const nights=t.stops.filter(s=>!s.isStart&&!s.isEnd).reduce((a,s)=>a+(parseInt(s.nights)||0),0);
   const packed=t.packing.filter(c=>c.type==='communal'||c.uid===ME.id).reduce((a,c)=>a+c.items.filter(i=>i.checked).length,0);
   const total=t.packing.filter(c=>c.type==='communal'||c.uid===ME.id).reduce((a,c)=>a+c.items.length,0);
   const pct=total?Math.round(packed/total*100):0;
   const today=new Date();today.setHours(0,0,0,0);
-  const upcoming=t.itinerary.filter(d=>!d.isTravel).find(d=>d.date&&new Date(d.date+'T00:00:00')>=today);
+  const tripStarted=t.startDate&&new Date(t.startDate+'T00:00:00')<=today;
+  const startStop=t.stops.find(s=>s.isStart)||t.stops[0];
+  const upcoming=tripStarted
+    ?t.itinerary.filter(d=>!d.isTravel).find(d=>d.date&&new Date(d.date+'T00:00:00')>=today)
+    :null;
   const myCost=calcMyCost(t);
   const expTotal=(t.expenses||[]).reduce((a,e)=>a+Number(e.amount),0);
   const fuelTotal=calcTotalFuel(t);
@@ -3116,13 +3211,13 @@ function renderDash(t){
   ];
   const pendingTodos=todos.filter(x=>!x.done);
   const todoHtml=pendingTodos.length?`
-    <div style="background:var(--rust-bg);border:1px solid rgba(139,50,34,.2);border-radius:var(--r);padding:1rem;margin-bottom:1.1rem">
-      <div style="font-size:.72rem;font-weight:700;color:var(--rust);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.65rem">⚠ Still to do (${pendingTodos.length})</div>
+    <div style="background:#4a3008;border:1.5px solid var(--amber);border-left:4px solid var(--amber);border-radius:var(--r);padding:1rem;margin-bottom:1.1rem">
+      <div style="font-size:.85rem;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.7rem">⚠ Still to do (${pendingTodos.length})</div>
       ${pendingTodos.map(item=>`
-        <div onclick="${item.action}" style="display:flex;align-items:center;gap:.6rem;padding:.4rem 0;cursor:pointer;border-bottom:1px solid rgba(139,50,34,.1)">
-          <div style="width:16px;height:16px;border-radius:50%;border:2px solid rgba(139,50,34,.4);flex-shrink:0"></div>
-          <span style="font-size:.82rem;color:var(--text2);font-weight:500">${item.label}</span>
-          <span style="margin-left:auto;font-size:.7rem;color:var(--rust)">→</span>
+        <div onclick="${item.action}" style="display:flex;align-items:center;gap:.6rem;padding:.45rem 0;cursor:pointer;border-bottom:1px solid rgba(212,168,83,.2)">
+          <div style="width:16px;height:16px;border-radius:50%;border:2px solid rgba(212,168,83,.6);flex-shrink:0"></div>
+          <span style="font-size:.88rem;color:#fff;font-weight:600">${item.label}</span>
+          <span style="margin-left:auto;font-size:.8rem;color:var(--amber);font-weight:700">→</span>
         </div>`).join('')}
     </div>`:
     `<div style="background:var(--sage-bg);border:1px solid var(--sage-bd);border-radius:var(--r);padding:.85rem 1rem;margin-bottom:1.1rem;font-size:.85rem;font-weight:600;color:var(--sage)">✅ All set — have an epic trip!</div>`;
@@ -3148,17 +3243,24 @@ function renderDash(t){
   </div>
   <div class="dash-grid">
     <div class="card dc" onclick="navTo('plan','itinerary')" style="cursor:pointer">
-      <div class="dc-title">📅 Next Stop</div>
-      ${upcoming?`
-        <div style="font-size:.95rem;font-weight:700;color:var(--text)">${upcoming.location}</div>
+      <div class="dc-title">${tripStarted?'📅 Next Stop':'🚩 Starting Point'}</div>
+      <div class="dc-body" style="align-items:flex-start;text-align:left">
+      ${!tripStarted&&startStop?`
+        <div style="font-size:.95rem;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%">${startStop.name}</div>
+        ${t.startDate?`<div style="font-size:.75rem;color:var(--amber);margin-top:.12rem;font-weight:600">Departs ${fmtDate(t.startDate)}</div>`:''}
+        <div style="font-size:.75rem;color:var(--text3);margin-top:.25rem">Trip not yet started</div>
+      `:upcoming?`
+        <div style="font-size:.95rem;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%">${upcoming.location}</div>
         <div style="font-size:.75rem;color:var(--text3);margin-top:.12rem">${fmtDate(upcoming.date)}</div>
-        ${upcoming.accom?`<div style="font-size:.78rem;color:var(--text2);margin-top:.25rem">🏕️ ${upcoming.accom}</div>`:'<div style="font-size:.72rem;color:var(--rust);margin-top:.25rem">⚠ No stay booked yet</div>'}
-        ${upcoming.morning?`<div style="font-size:.78rem;color:var(--text2);margin-top:.18rem">🌅 ${upcoming.morning}</div>`:''}
+        ${upcoming.accom?`<div style="font-size:.78rem;color:var(--text2);margin-top:.25rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%">🏕️ ${upcoming.accom}</div>`:'<div style="font-size:.72rem;color:var(--rust);margin-top:.25rem">⚠ No stay booked yet</div>'}
+        ${upcoming.morning?`<div style="font-size:.78rem;color:var(--text2);margin-top:.18rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%">🌅 ${upcoming.morning}</div>`:''}
         <div style="margin-top:.45rem;display:flex;gap:.22rem;flex-wrap:wrap"><span class="tag t-${upcoming.type||'camp'}">${upcoming.type||'camp'}</span></div>
-      `:`<div class="empty" style="padding:.85rem 0"><div class="ei" style="font-size:1.6rem">📅</div><div class="es">Add stops to your route</div></div>`}
+      `:`<div class="empty" style="padding:.85rem 0;width:100%"><div class="ei" style="font-size:1.6rem">📅</div><div class="es">${tripStarted?'Trip complete!':'Add stops to your route'}</div></div>`}
+      </div>
     </div>
     <div class="card dc" onclick="navTo('budget')" style="cursor:pointer">
       <div class="dc-title">💰 My Cost</div>
+      <div class="dc-body" style="align-items:flex-start;text-align:left">
       <div style="font-family:'Playfair Display';font-size:1.85rem;font-weight:700;color:var(--amber)">${myCost>0?fmtR(myCost):(hasVehicle&&!km?'⏳':fmtR(0))}</div>
       ${hasVehicle&&!km?`<div style="font-size:.72rem;color:var(--text3);margin-top:.18rem;display:flex;align-items:center;gap:.35rem"><div style="width:10px;height:10px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--amber);animation:spin 1s linear infinite;flex-shrink:0"></div>Calculating fuel…</div>`:`
       <div style="margin-top:.45rem;display:flex;flex-direction:column;gap:.16rem">
@@ -3167,22 +3269,27 @@ function renderDash(t){
         ${!hasVehicle?`<div style="font-size:.7rem;color:var(--rust);margin-top:.1rem">⚠ Add vehicle for fuel</div>`:''}
         ${myCost===0&&hasVehicle?`<div style="font-size:.72rem;color:var(--sky)">Tap to add expenses →</div>`:''}
       </div>`}
+      </div>
     </div>
     <div class="card dc" onclick="navTo('pack')" style="cursor:pointer">
       <div class="dc-title">🎒 Packing ${total>0?`<span style="font-size:.65rem;font-weight:400;color:var(--text3)">${packed}/${total}</span>`:''}</div>
+      <div class="dc-body">
       ${total>0?`
-        <div class="prog-wrap" style="margin:.45rem 0"><div class="prog-fill" style="width:${pct}%"></div></div>
-        ${total-packed>0?`<div style="font-size:.75rem;color:var(--rust);font-weight:600">⚠ ${total-packed} item${total-packed>1?'s':''} not packed</div>`:'<div style="font-size:.78rem;color:var(--sage);font-weight:600">✅ All packed!</div>'}
-      `:`<div style="font-size:.8rem;color:var(--text3);margin-top:.35rem">No packing list yet</div><div style="font-size:.72rem;color:var(--rust);margin-top:.2rem">⚠ Tap to start packing</div>`}
+        <div class="prog-wrap" style="margin:.35rem 0;width:100%"><div class="prog-fill" style="width:${pct}%"></div></div>
+        ${total-packed>0?`<div style="font-size:.8rem;color:var(--rust);font-weight:700">⚠ ${total-packed} item${total-packed>1?'s':''} not packed</div>`:'<div style="font-size:.82rem;color:var(--sage);font-weight:700">✅ All packed!</div>'}
+      `:`<div style="font-size:.82rem;color:var(--text2);font-weight:600">No packing list yet</div><div style="font-size:.75rem;color:var(--rust);margin-top:.25rem;font-weight:600">⚠ Tap to start</div>`}
+      </div>
     </div>
     <div class="card dc" onclick="navTo('plan');setTimeout(()=>setPlanTab('food',document.querySelector('[data-stab=food]')),100)" style="cursor:pointer">
       <div class="dc-title">🔥 Meals</div>
+      <div class="dc-body">
       ${hasFoodPlanned?`
         ${t.food.filter(f=>f.dinner&&f.dinner.length).slice(0,2).map(f=>`
-          <div style="font-size:.82rem;font-weight:600;color:var(--text)">${f.dinner[0]}</div>
-          <div style="font-size:.7rem;color:var(--text3)">${f.loc}</div>
+          <div style="font-size:.82rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%">${f.dinner[0]}</div>
+          <div style="font-size:.7rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%">${f.loc}</div>
         `).join('')}
-      `:`<div style="font-size:.8rem;color:var(--text3);margin-top:.35rem">No meals planned</div><div style="font-size:.72rem;color:var(--rust);margin-top:.2rem">⚠ Tap to plan food</div>`}
+      `:`<div style="font-size:.82rem;color:var(--text2);font-weight:600">No meals planned</div><div style="font-size:.75rem;color:var(--rust);margin-top:.25rem;font-weight:600">⚠ Tap to plan food</div>`}
+      </div>
     </div>
   </div>`;
   renderInsights(t);
@@ -3262,7 +3369,7 @@ function calcTotalFuel(t){return calcFuelEstimate(t);}
 function renderInsights(t){
   const manKm=t.stops.slice(1).reduce((a,s)=>a+Number(s.km||0),0);
   const km=t._routeKm||manKm||0;
-  const nights=t.stops.reduce((a,s)=>a+(parseInt(s.nights)||0),0);
+  const nights=t.stops.filter(s=>!s.isStart&&!s.isEnd).reduce((a,s)=>a+(parseInt(s.nights)||0),0);
   const totalCost=(t.expenses||[]).reduce((a,e)=>a+Number(e.amount),0);
   const fuelTotal=calcTotalFuel(t);
   const packTotal=t.packing.filter(c=>c.type==='communal'||c.uid===ME.id).reduce((a,c)=>a+c.items.length,0);
@@ -3276,9 +3383,10 @@ function renderInsights(t){
   // add fuel
   if(fuelTotal>0)byCat.fuel=(byCat.fuel||0)+fuelTotal;
 
-  // Nights by location
+  // Nights by location (exclude start and end stops by flag and by position)
   const byLoc={};
-  t.stops.forEach(s=>{if(s.nights>0&&!s.isStart&&!s.isEnd)byLoc[s.name]=parseInt(s.nights)||0;});
+  const nStops=t.stops.length;
+  t.stops.forEach((s,i)=>{if(s.nights>0&&!s.isStart&&!s.isEnd&&i>0&&i<nStops-1)byLoc[s.name]=parseInt(s.nights)||0;});
 
   // Packing by category
   const packByCat={};
@@ -3299,8 +3407,8 @@ function renderInsights(t){
     <div class="bi-kpi"><div class="bi-kpi-n">${km?km.toLocaleString():'—'}</div><div class="bi-kpi-l">Total km</div></div>
     <div class="bi-kpi"><div class="bi-kpi-n">${nights}</div><div class="bi-kpi-l">Nights away</div></div>
     <div class="bi-kpi"><div class="bi-kpi-n">${t.stops.length}</div><div class="bi-kpi-l">Route Stops</div></div>
-    <div class="bi-kpi"><div class="bi-kpi-n">${fmtR(totalCost+fuelTotal)}</div><div class="bi-kpi-l">Est. Total Cost</div></div>
-    <div class="bi-kpi"><div class="bi-kpi-n">${fmtR(myCost)}</div><div class="bi-kpi-l">My Share</div></div>
+    <div class="bi-kpi"><div class="bi-kpi-n">${fmtRShort(totalCost+fuelTotal)}</div><div class="bi-kpi-l">Est. Total Cost</div></div>
+    <div class="bi-kpi"><div class="bi-kpi-n">${fmtRShort(myCost)}</div><div class="bi-kpi-l">My Share</div></div>
     <div class="bi-kpi"><div class="bi-kpi-n">${packDone}/${packTotal}</div><div class="bi-kpi-l">Items Packed</div></div>
     <div class="bi-kpi"><div class="bi-kpi-n">${confirmed}/${t.crew.length}</div><div class="bi-kpi-l">Crew Confirmed</div></div>
     <div class="bi-kpi"><div class="bi-kpi-n">${km&&nights?Math.round(km/nights*10)/10:'—'}</div><div class="bi-kpi-l">km/night</div></div>
@@ -3341,20 +3449,25 @@ function renderInsights(t){
 }
 
 const CHART_COLORS=['#b8720f','#3d6435','#1e6fa5','#8b3222','#c94b1a','#7a6e5f','#4a3320','#2d4a28'];
-function chartDefaults(){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:11},color:'#4a3f30'}}}};}
+function chartTextColor(){return document.body.classList.contains('day-mode')?'#3d3520':'#c8c2ba';}
+function chartGridColor(){return document.body.classList.contains('day-mode')?'rgba(0,0,0,.09)':'rgba(255,255,255,.08)';}
+function chartDefaults(){const c=chartTextColor();return{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:12,family:'Nunito'},color:c,padding:12}}}};}
 
 function drawCostChart(byCat){
   destroyChart('costChart');
   const labels=Object.keys(byCat).map(k=>k.charAt(0).toUpperCase()+k.slice(1));
   const vals=Object.values(byCat);
   if(!vals.length){$('costChart').parentElement.innerHTML='<div class="empty" style="padding:1.5rem"><div class="es">No expenses yet</div></div>';return;}
-  biCharts.cost=new Chart($('costChart'),{type:'doughnut',data:{labels,datasets:[{data:vals,backgroundColor:CHART_COLORS,borderWidth:2,borderColor:'#fff'}]},options:{...chartDefaults(),cutout:'62%',plugins:{legend:{position:'right',labels:{font:{size:11},color:'#4a3f30',padding:10}},tooltip:{callbacks:{label:ctx=>' '+ctx.label+': '+fmtR(ctx.raw)}}}}});
+  const cc=chartTextColor();
+  biCharts.cost=new Chart($('costChart'),{type:'doughnut',data:{labels,datasets:[{data:vals,backgroundColor:CHART_COLORS,borderWidth:2,borderColor:'rgba(0,0,0,.25)'}]},options:{...chartDefaults(),cutout:'62%',plugins:{legend:{position:'right',labels:{font:{size:12,family:'Nunito'},color:cc,padding:12}},tooltip:{callbacks:{label:ctx=>' '+ctx.label+': '+fmtR(ctx.raw)}}}}});
 }
 function drawNightsChart(byLoc){
   destroyChart('nightsChart');
   const labels=Object.keys(byLoc);const vals=Object.values(byLoc);
   if(!vals.length){$('nightsChart').parentElement.innerHTML='<div class="empty" style="padding:1.5rem"><div class="es">Add stops with nights</div></div>';return;}
-  biCharts.nights=new Chart($('nightsChart'),{type:'bar',data:{labels,datasets:[{label:'Nights',data:vals,backgroundColor:CHART_COLORS[1],borderRadius:6}]},options:{...chartDefaults(),scales:{y:{ticks:{color:'#7a6e5f',font:{size:10}},grid:{color:'rgba(0,0,0,.06)'}},x:{ticks:{color:'#7a6e5f',font:{size:10},maxRotation:30},grid:{display:false}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+' night'+(ctx.raw!==1?'s':'')}}}}});
+  const nightsTrunc=labels.map(l=>l.length>9?l.slice(0,8)+'…':l);
+  const nc=chartTextColor(),ng=chartGridColor();
+  biCharts.nights=new Chart($('nightsChart'),{type:'bar',data:{labels:nightsTrunc,datasets:[{label:'Nights',data:vals,backgroundColor:CHART_COLORS[1],borderRadius:6}]},options:{...chartDefaults(),scales:{y:{ticks:{color:nc,font:{size:11,family:'Nunito'}},grid:{color:ng}},x:{ticks:{color:nc,font:{size:10,family:'Nunito'},maxRotation:0,minRotation:0,autoSkip:false},grid:{display:false}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>ctx.raw+' night'+(ctx.raw!==1?'s':''),title:items=>labels[items[0].dataIndex]}}}}})
 }
 function drawPackChart(packByCat){
   destroyChart('packChart');
@@ -3362,14 +3475,17 @@ function drawPackChart(packByCat){
   const done=labels.map(l=>packByCat[l].done);
   const remaining=labels.map(l=>packByCat[l].total-packByCat[l].done);
   if(!labels.length){$('packChart').parentElement.innerHTML='<div class="empty" style="padding:1.5rem"><div class="es">No packing categories yet</div></div>';return;}
-  biCharts.pack=new Chart($('packChart'),{type:'bar',data:{labels,datasets:[{label:'Packed',data:done,backgroundColor:CHART_COLORS[1],borderRadius:4},{label:'Remaining',data:remaining,backgroundColor:'#e8dfd0',borderRadius:4}]},options:{...chartDefaults(),scales:{x:{stacked:true,ticks:{color:'#7a6e5f',font:{size:10}},grid:{display:false}},y:{stacked:true,ticks:{color:'#7a6e5f',font:{size:10}},grid:{color:'rgba(0,0,0,.06)'}}},plugins:{legend:{position:'bottom',labels:{font:{size:11},color:'#4a3f30'}}}}});
+  const packTrunc=labels.map(l=>{const t=l.replace(/^\p{Emoji}\s*/u,'');return t.length>7?t.slice(0,6)+'…':t;});
+  const pc=chartTextColor(),pg=chartGridColor();
+  biCharts.pack=new Chart($('packChart'),{type:'bar',data:{labels:packTrunc,datasets:[{label:'Packed',data:done,backgroundColor:CHART_COLORS[1],borderRadius:4},{label:'Remaining',data:remaining,backgroundColor:'rgba(216,78,56,.55)',borderRadius:4}]},options:{...chartDefaults(),scales:{x:{stacked:true,ticks:{color:pc,font:{size:10,family:'Nunito'},maxRotation:0,minRotation:0,autoSkip:false},grid:{display:false}},y:{stacked:true,ticks:{color:pc,font:{size:11,family:'Nunito'}},grid:{color:pg}}},plugins:{legend:{position:'bottom',labels:{font:{size:12,family:'Nunito'},color:pc,padding:12}},tooltip:{callbacks:{title:items=>labels[items[0].dataIndex]}}}}})
 }
 function drawCrewCostChart(crewCost){
   destroyChart('crewCostChart');
   const labels=Object.keys(crewCost);
   const vals=Object.values(crewCost);
   if(!labels.length||vals.every(v=>v===0)){$('crewCostChart').parentElement.innerHTML='<div class="empty" style="padding:1.5rem"><div class="es">No crew or expenses yet</div></div>';return;}
-  biCharts.crew=new Chart($('crewCostChart'),{type:'bar',data:{labels,datasets:[{label:'Estimated Cost',data:vals.map(v=>Math.round(v)),backgroundColor:CHART_COLORS[0],borderRadius:6}]},options:{...chartDefaults(),indexAxis:'y',scales:{x:{ticks:{color:'#7a6e5f',font:{size:10},callback:v=>'R'+v.toLocaleString()},grid:{color:'rgba(0,0,0,.06)'}},y:{ticks:{color:'#7a6e5f',font:{size:10}},grid:{display:false}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmtR(ctx.raw)}}}}});
+  const xc=chartTextColor(),xg=chartGridColor();
+  biCharts.crew=new Chart($('crewCostChart'),{type:'bar',data:{labels,datasets:[{label:'Estimated Cost',data:vals.map(v=>Math.round(v)),backgroundColor:CHART_COLORS[0],borderRadius:6}]},options:{...chartDefaults(),indexAxis:'y',scales:{x:{ticks:{color:xc,font:{size:11,family:'Nunito'},callback:v=>'R'+v.toLocaleString()},grid:{color:xg}},y:{ticks:{color:xc,font:{size:11,family:'Nunito'}},grid:{display:false}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmtR(ctx.raw)}}}}});
 }
 function destroyChart(id){const c=biCharts[id.replace('Chart','')];if(c){c.destroy();delete biCharts[id.replace('Chart','')];}}
 function renderInsightsList(t,km,nights,totalCost,fuelTotal,packDone,packTotal){
@@ -3565,7 +3681,7 @@ function renderItinerary(t){
         ${d.notes?`<div style="grid-column:1/-1;font-size:.8rem;color:var(--text3);font-style:italic;padding-top:.4rem">📝 ${d.notes}</div>`:''}
         ${d.suggestions&&d.suggestions.length?`<div class="sug-chips">
           <div class="sug-lbl">💡 Suggested Activities</div>
-          <div class="sug-row">${d.suggestions.map((s,si)=>`<span class="sug-chip" onclick="addSuggestion(${i},'${esc(s)}')">${s}</span>`).join('')}</div>
+          <div class="sug-row">${d.suggestions.map(s=>`<span class="sug-chip" data-activity="${esc(s)}" data-dayidx="${i}" onclick="showActivityDetail(this)">${s}</span>`).join('')}</div>
           <div class="sug-hint">Tap any activity to add to morning or afternoon</div>
         </div>`:''}
       </div>
@@ -3586,66 +3702,242 @@ function addSuggestion(dayIdx,activity){
   toast('✓ Added: '+activity,'ok');
 }
 
+async function showActivityDetail(el){
+  const activity=el.dataset.activity;
+  const stopName=el.dataset.stop||null;
+  const fixedDayIdx=el.dataset.dayidx!=null?parseInt(el.dataset.dayidx):null;
+  const placeName=activity.split(' — ')[0].split(' (')[0].trim();
+  const t=T();
+  // Resolve the location label (stop name preferred — more reliable for photo lookup)
+  const locName=stopName||(fixedDayIdx!=null?t?.itinerary[fixedDayIdx]?.location:null);
+  // Pre-fill modal and open immediately
+  $('actDetailTitle').textContent=placeName;
+  $('actDetailActivity').textContent=activity;
+  $('actDetailImgWrap').style.display='none';
+  $('actDetailWiki').style.display='none';
+  // External links (always available)
+  const googleQ=encodeURIComponent(`${placeName}${locName?' '+locName:''}`);
+  const mapsQ=encodeURIComponent(placeName+(locName?' near '+locName:''));
+  const linkStyle='display:inline-flex;align-items:center;gap:.35rem;padding:.38rem .75rem;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:.78rem;text-decoration:none;font-weight:600';
+  $('actDetailDesc').innerHTML=`<div style="display:flex;gap:.5rem;flex-wrap:wrap">
+    <a href="https://www.google.com/search?q=${googleQ}&tbm=isch" target="_blank" rel="noopener" style="${linkStyle}">🖼️ Photos</a>
+    <a href="https://www.google.com/search?q=${googleQ}" target="_blank" rel="noopener" style="${linkStyle}">🔍 Search</a>
+    <a href="https://maps.google.com/?q=${mapsQ}" target="_blank" rel="noopener" style="${linkStyle}">🗺️ Maps</a>
+  </div>`;
+  // Build day selector
+  let targetDays=[];
+  if(stopName&&t){
+    targetDays=t.itinerary.map((d,i)=>({...d,_idx:i})).filter(d=>d.location===stopName&&!d.isTravel);
+  }
+  const dayWrap=$('actDetailDayWrap');
+  if(targetDays.length>1){
+    dayWrap.innerHTML=`<div style="font-size:.75rem;color:var(--text3);margin-bottom:.35rem">Add to which day?</div>
+      <select id="actDetailDaySel" style="width:100%;padding:.45rem .6rem;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:.82rem">
+        ${targetDays.map(d=>`<option value="${d._idx}">${fmtDate(d.date)} — Day ${d.day}</option>`).join('')}
+      </select>`;
+  } else {
+    dayWrap.innerHTML='';
+  }
+  function getTargetIdx(){
+    if(fixedDayIdx!=null)return fixedDayIdx;
+    const sel=$('actDetailDaySel');
+    if(sel)return parseInt(sel.value);
+    return targetDays.length?targetDays[0]._idx:-1;
+  }
+  $('actDetailMorn').onclick=()=>{
+    const tr=T();if(!tr)return;
+    const idx=getTargetIdx();const d=tr.itinerary[idx];if(!d)return;
+    d.morning=d.morning?(d.morning+', '+placeName):placeName;
+    sv();renderItinerary(tr);renderDash(tr);
+    closeModal('activityDetailMod');toast('✓ Added to morning','ok');
+  };
+  $('actDetailAftn').onclick=()=>{
+    const tr=T();if(!tr)return;
+    const idx=getTargetIdx();const d=tr.itinerary[idx];if(!d)return;
+    d.afternoon=d.afternoon?(d.afternoon+', '+placeName):placeName;
+    sv();renderItinerary(tr);renderDash(tr);
+    closeModal('activityDetailMod');toast('✓ Added to afternoon','ok');
+  };
+  openModal('activityDetailMod');
+  // Fetch a photo from Wikipedia using the STOP NAME (reliable for major SA/Namibia locations)
+  // Try stop name first, then place name extracted from activity
+  if(!locName&&!placeName)return;
+  try{
+    const queries=[locName,placeName].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i);
+    for(const q of queries){
+      const r=await fetch(`https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(q)}&prop=pageimages|extracts&exintro=true&exsentences=3&pithumbsize=600&format=json&origin=*`);
+      if(!r.ok)continue;
+      const data=await r.json();
+      const page=Object.values(data.query?.pages||{})[0];
+      if(!page||page.missing)continue;
+      const imgUrl=page.thumbnail?.source;
+      const extract=page.extract?.replace(/<[^>]+>/g,'').trim();
+      if(imgUrl){
+        $('actDetailImg').src=imgUrl;
+        $('actDetailImgWrap').style.display='block';
+      }
+      if(extract){
+        $('actDetailDesc').innerHTML=`<div style="font-size:.8rem;color:var(--text2);line-height:1.6;margin-bottom:.75rem">${extract}</div>`+$('actDetailDesc').innerHTML;
+        const wikiEl=$('actDetailWiki');
+        wikiEl.href=`https://en.wikipedia.org/wiki/${encodeURIComponent(page.title)}`;
+        wikiEl.style.display='inline-block';
+      }
+      if(imgUrl||extract)break;
+    }
+  }catch(e){}
+}
+
 // ── SUGGESTED ACTIVITIES ENGINE ──
-// Uses Claude API in background to suggest activities for each stop
+// Uses local attractions DB (attractions.json) + Overpass + curated offline fallbacks
 const activityCache={};
+const activityLoadingStops=new Set();
+let ATTRACTIONS=null;
+
+async function loadAttractions(){
+  try{
+    const r=await fetch('attractions.json');
+    if(!r.ok)return;
+    const data=await r.json();
+    ATTRACTIONS=data.attractions||[];
+    console.log(`TREK: Loaded ${ATTRACTIONS.length} local attractions`);
+    // Clear stale cache so next fetch uses the DB
+    Object.keys(activityCache).forEach(k=>delete activityCache[k]);
+    // If activities tab is currently open, re-fetch with DB now available
+    const t=T();
+    if(t&&currentPanel==='plan'){
+      const ap=$('stp-activities');
+      if(ap&&ap.style.display!=='none'){
+        t.stops.filter((s,i)=>!s.isStart&&!s.isEnd&&i>0&&parseInt(s.nights)>0)
+          .forEach(s=>suggestActivitiesForStop(s.name,s.lat,s.lon));
+      }
+    }
+  }catch(e){console.warn('TREK: attractions.json unavailable',e.message);}
+}
+
+const ACT_TYPE_LABEL={
+  attraction:'tourist attraction',viewpoint:'scenic viewpoint',museum:'museum',
+  theme_park:'theme park',zoo:'wildlife park',aquarium:'aquarium',artwork:'public artwork',
+  gallery:'gallery',monument:'historic monument',ruins:'ruins',
+  archaeological_site:'archaeological site',memorial:'memorial',castle:'fort/castle',
+  fort:'fort',wreck:'shipwreck',peak:'mountain peak',waterfall:'waterfall',
+  hot_spring:'hot spring',cave_entrance:'cave',arch:'natural arch',
+  nature_reserve:'nature reserve',park:'reserve/park',gorge:'canyon/gorge',
+  beach:'beach',camp_site:'campsite',hotel:'lodge',guest_house:'guesthouse',
+  wine:'wine estate',winery:'wine estate',rock_art:'rock art site',
+  wetland:'wetland/pan',dam:'dam/reservoir',rock:'rock formation',
+  island:'island',vineyard:'wine estate',cliff:'cliff/escarpment',
+  cave:'cave system',dune:'sand dunes',hot_springs:'hot springs'
+};
+
+function queryLocalAttractions(lat,lon,radiusKm=75){
+  if(!ATTRACTIONS||!ATTRACTIONS.length)return[];
+  const results=[];
+  for(const a of ATTRACTIONS){
+    const dist=haversineDist(lat,lon,a.la,a.lo);
+    if(dist<=radiusKm)results.push({...a,dist});
+  }
+  results.sort((a,b)=>a.dist-b.dist);
+  return results.slice(0,10).map(a=>{
+    const label=ACT_TYPE_LABEL[a.t]||a.t||'';
+    const desc=a.d?` — ${a.d}`:(label?` — ${label}`:'');
+    return `${a.n}${desc} (${Math.round(a.dist)}km away)`;
+  });
+}
+
+function haversineDist(lat1,lon1,lat2,lon2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function overpassLabel(type){
+  return{attraction:'tourist attraction',viewpoint:'scenic viewpoint',museum:'museum',
+    theme_park:'theme park',zoo:'wildlife park',aquarium:'aquarium',artwork:'public artwork',
+    gallery:'gallery',monument:'historic monument',ruins:'ruins',
+    archaeological_site:'archaeological site',memorial:'memorial',castle:'fort/castle',
+    fort:'fort',wreck:'shipwreck',peak:'mountain peak',waterfall:'waterfall',
+    hot_spring:'hot spring',cave_entrance:'cave',arch:'natural arch',
+    nature_reserve:'nature reserve',park:'reserve/park',sports_centre:'sports centre'}[type]||type;
+}
+async function fetchOverpassActivities(lat,lon,stopName){
+  const q=`[out:json][timeout:15];(
+    node["tourism"~"attraction|viewpoint|museum|zoo|aquarium|artwork|gallery"](around:75000,${lat},${lon});
+    node["historic"~"monument|ruins|archaeological_site|memorial|castle|fort|wreck"](around:75000,${lat},${lon});
+    node["natural"~"peak|waterfall|hot_spring|cave_entrance|arch"](around:75000,${lat},${lon});
+    node["leisure"~"nature_reserve|park"](around:75000,${lat},${lon});
+    way["tourism"~"attraction|viewpoint|museum|zoo|aquarium"](around:75000,${lat},${lon});
+    way["historic"~"monument|ruins|archaeological_site|memorial|castle|fort|wreck"](around:75000,${lat},${lon});
+    way["leisure"~"nature_reserve|park"](around:75000,${lat},${lon});
+  );out center 30;`;
+  const resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:q});
+  const data=await resp.json();
+  const els=(data?.elements||[])
+    .filter(e=>e.tags?.name&&e.tags.name!==stopName)
+    .map(e=>{
+      const elat=e.lat??e.center?.lat, elon=e.lon??e.center?.lon;
+      const dist=elat!=null?haversineDist(lat,lon,elat,elon):999;
+      const t=e.tags;
+      const type=t.tourism||t.historic||t.natural||t.leisure||'';
+      return{name:t.name,dist,label:overpassLabel(type)};
+    })
+    .filter(r=>r.dist<75)
+    .sort((a,b)=>a.dist-b.dist)
+    .slice(0,8);
+  if(els.length<2)return null;
+  return els.map(r=>`${r.name}${r.label?' — '+r.label:''} (${Math.round(r.dist)}km away)`);
+}
+
+async function reverseGeocodeNearby(lat,lon){
+  try{
+    const url=`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=8&accept-language=en`;
+    const resp=await fetch(url,{headers:{'User-Agent':'TREK-Expedition-App'}});
+    const data=await resp.json();
+    const a=data?.address||{};
+    // Return all address components so we can try matching against each
+    // Only use specific named components — NOT display_name (full string contains country name
+    // e.g. "Namibia" which falsely matches 'namib' for every stop in Namibia)
+    const candidates=[
+      a.city,a.town,a.village,a.hamlet,
+      a.county,a.state_district,a.region,a.state
+    ].filter(Boolean);
+    return candidates;
+  }catch(e){return[];}
+}
 
 async function fetchSuggestedActivities(stopName,lat,lon){
   const cacheKey=stopName.toLowerCase().replace(/\s+/g,'_');
   if(activityCache[cacheKey])return activityCache[cacheKey];
 
-  try{
-    const tripCtx=T()?`Trip context: ${T().name||'SA/Namibia overland'}, destination: ${T().dest||'Southern Africa'}.`:'';
-    const prompt=`You are a Southern African adventure travel expert. Search the web NOW for real, current activities near "${stopName}"${lat&&lon?` (GPS: ${lat.toFixed(4)},${lon.toFixed(4)})`:''}. 
+  let activities=null;
 
-${tripCtx}
-
-Find and return 6-8 SPECIFIC, REAL activities. You MUST:
-- Search for actual operators, camps, and attractions near ${stopName}
-- Include real business names, phone numbers or websites when found
-- Mention specific distances or landmarks (e.g. "3km north", "at the lagoon")
-- Activities must be reachable as a day trip from ${stopName}
-
-GOOD format (copy this style exactly):
-"Quad biking — Alter-Action Adventures Swakopmund (+264 64 402 096)"
-"Dune 45 sunrise walk, 45km south of Sesriem on C27 road"
-"Sandwich Harbour 4x4 with Levo Expeditions (levotouring.com)"
-"Mondesa township tour with Tommy's Tours (+264 64 403 123)"
-
-BAD format (never do this):
-"Game viewing from vehicle" — too generic
-"Sunrise exploration" — meaningless
-"Local nature walk" — useless
-
-Return ONLY a valid JSON array of strings. No markdown, no explanation, no extra text.`;
-
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:800,
-        tools:[{"type":"web_search_20250305","name":"web_search"}],
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    const data=await resp.json();
-    // Extract text from response — may have tool_use blocks mixed in
-    const textBlock=data.content?.find(b=>b.type==='text');
-    const text=textBlock?.text||'[]';
-    const cleaned=text.replace(/```json|```/g,'').trim();
-    // Find JSON array in the text
-    const match=cleaned.match(/\[.*\]/s);
-    const activities=JSON.parse(match?match[0]:'[]');
-    if(Array.isArray(activities)&&activities.length){
-      activityCache[cacheKey]=activities;
-      return activities;
-    }
-  }catch(e){
-    // Fallback: curated offline suggestions based on keywords
-    return getOfflineSuggestions(stopName);
+  // 1. Local attractions database — 16 000+ GPS-tagged Southern African POIs (instant, offline)
+  if(lat&&lon&&ATTRACTIONS){
+    const local=queryLocalAttractions(lat,lon);
+    if(local.length>=2)activities=local;
   }
-  return getOfflineSuggestions(stopName);
+
+  // 2. Overpass API — real nearby POIs from OpenStreetMap (when local DB empty or not loaded)
+  if(!activities&&lat&&lon){
+    try{activities=await fetchOverpassActivities(lat,lon,stopName);}
+    catch(e){console.warn('Overpass:',e.message);}
+  }
+
+  // 3. When GPS available: reverse geocode → curated offline list by actual region
+  if(!activities&&lat&&lon){
+    const candidates=await reverseGeocodeNearby(lat,lon);
+    for(const name of candidates){
+      activities=getOfflineSuggestions(name);
+      if(activities)break;
+    }
+  }
+
+  // 4. No GPS — name-based curated offline list
+  if(!activities&&!(lat&&lon))activities=getOfflineSuggestions(stopName);
+
+  // 5. Generic fallback
+  if(!activities)activities=getGenericSuggestions(stopName);
+
+  activityCache[cacheKey]=activities;
+  return activities;
 }
 
 function getOfflineSuggestions(name){
@@ -3663,7 +3955,7 @@ function getOfflineSuggestions(name){
   if(n.includes('hermanus')){return['Cliff path whale walk — 12km path along cliff, best Aug-Nov Southern Right season','Walker Bay boat tour — up-close whale encounters (Aug-Dec), R1200/person','Grotto Beach drive — blue flag beach, 10km from town, access via Voëlklip','Hemel-en-Aarde wine valley — Hamilton Russell Vineyards, 19km, pinot noir & chardonnay','Fernkloof Nature Reserve — 60km of fynbos trails, 1400 plant species, free','Bientang\'s Cave Restaurant — dinner in a cave above the ocean, book months ahead','Stanford village — quaint 1800s village 15min east, Oak & Vine lunch, R43 craft beer','Old Harbour Museum — free, carved whale bones, historic whaling equipment'];}
   if(n.includes('garden route')||n.includes('knysna')||n.includes('george')||n.includes('wilderness')||n.includes('plettenberg')||n.includes('tsitsikamma')){return['Knysna Heads viewpoint — dramatic estuary entrance between sandstone cliffs','Bloukrans Bridge bungee — 216m, world\'s highest commercial bungee (facevolunteers.com R1250)','Tsitsikamma suspension bridge — 77m above Storms River mouth, 1hr walk return','Potholes trail Storms River — 5km through dense indigenous yellowwood forest','Knysna Elephant Park — R810/person, guided walk with elephants (knysnaelephantpark.co.za)','Monkeyland free-roaming primate sanctuary — R230, 1hr guided forest walk','Garden Route paraglide — Wilderness Dunes launch site, beach landing','Outeniqua Choo-Tjoe steam train — George to Mossel Bay, booking via Transnet'];}
   if(n.includes('kruger')){return['Satara region dawn drive — lion pride territory, best big cat area in the whole park','Lower Sabie hippo pools — morning hippo counts, resident pod at S114 causeway','Guided wilderness trail from Skukuza — 3hr armed ranger walk, book 6mo in advance','Night drive from main camp — R300/person, hornbills roosting, nocturnal predators','Berg-en-Dal white rhino territory — southern Kruger, highest white rhino concentration','Letaba Elephant Museum — free with camp entry, skulls of the Magnificent Seven tuskers','Olifants River viewpoint deck — panoramic hippo and elephant view, bring binoculars','Phalaborwa to Letaba road — remote, 40km, low traffic, authentic untouched bush'];}
-  if(n.includes('drakensberg')||n.includes('berg')||n.includes('cathedral peak')||n.includes('champagne castle')||n.includes('royal natal')){return['Amphitheatre hike from Sentinel — 4hr return, base of Tugela Falls (second highest waterfall)','Cathedral Peak summit — 7hr return, requires fitness, panoramic Berg views','Rainbow Gorge — 2hr easy fern gorge walk from Inkosana Lodge, family-friendly','Monk\'s Cowl to Sphinx Peak — 5hr moderate hike, dramatic Champagne Castle backdrop','Horseback riding in foothills — Khotso Horse Trails (+27 36 468 1005), from R650','San rock art at Game Pass Shelter — 3hr guided walk, Didima Camp (+27 36 488 8000)','Trout fly fishing — Crystalbrook Farm (+27 36 468 1234), equipment hire available','Royal Natal sundowner terrace — Thendele Camp cliff-edge sunset, book dinner ahead'];}
+  if(n.includes('drakensberg')||n.includes('cathedral peak')||n.includes('champagne castle')||n.includes('royal natal')){return['Amphitheatre hike from Sentinel — 4hr return, base of Tugela Falls (second highest waterfall)','Cathedral Peak summit — 7hr return, requires fitness, panoramic Berg views','Rainbow Gorge — 2hr easy fern gorge walk from Inkosana Lodge, family-friendly','Monk\'s Cowl to Sphinx Peak — 5hr moderate hike, dramatic Champagne Castle backdrop','Horseback riding in foothills — Khotso Horse Trails (+27 36 468 1005), from R650','San rock art at Game Pass Shelter — 3hr guided walk, Didima Camp (+27 36 488 8000)','Trout fly fishing — Crystalbrook Farm (+27 36 468 1234), equipment hire available','Royal Natal sundowner terrace — Thendele Camp cliff-edge sunset, book dinner ahead'];}
   if(n.includes('hluhluwe')||n.includes('imfolozi')||n.includes('st lucia')||n.includes('isimangaliso')){return['Hluhluwe dam sunrise drive — hippo pool, crocs and waterbirds in first light','White rhino tracking on foot — iMfolozi wilderness trail, 4-day guided, limited spaces','Guided night drive from Hilltop — R350/person, predator and nocturnal animal focus','St Lucia estuary boat cruise — hippo and croc tour, R170/person, departs 8:30am','Hippo highlight trail from St Lucia — 1.5hr easy coastal forest and beach walk','Sodwana Bay coral reef diving — 1hr north, Mozambique border zone, pristine reefs','uMkhuze Fig Forest boardwalk — ancient sycamore figs, Pel\'s fishing owl territory','Mkuze Pan hide — waterhole hide open dawn to dusk, incredible bird diversity'];}
   if(n.includes('okavango')||n.includes('moremi')||n.includes('botswana')||n.includes('maun')){return['Okavango Delta mokoro trip — traditional dugout canoe through lily pads and papyrus','Moremi Game Reserve 4x4 self-drive — Chief\'s Island area, wild dog dens','Chobe River sunset boat cruise — elephants swimming, hippo pods, from R850/person','Savuti marsh lion territory — dry season concentrations in Chobe National Park','Linyanti wild dog dens — December-August, highly endangered African wild dogs','Gweta quad bikes on Makgadikgadi Salt Pan — flat white expanse to horizon','Nxai Pan meerkats at dawn — guide meets you at 5:30am, meerkat habituated groups','Planet Baobab detour — ancient baobab grove, overnight camping, en route to Maun'];}
   if(n.includes('victoria falls')||n.includes('vic falls')||n.includes('livingstone')){return['Main Falls walkway Zimbabwe side — see all five waterfalls (Rainforest Trail, R400/person)','Bungee jump Victoria Falls Bridge — 111m drop, Shearwater (+263 13 40006), R3500','White water rafting grade 5 Zambezi — Shearwater or Wildside, full day R2000/person','Devil\'s Pool swim — on the actual edge of the falls, Sep-Dec only, Zambia side','Elephant back safari — Wild Horizons (+263 11 207 1605), 3hr morning ride','Sunset boat cruise — Talon\'s deck boat, hippo, croc and sundowner gin & tonic','Livingstone Island breakfast — Zambia side, sit beside the falls (book via Tongabezi)','Boma cultural dinner Zimbabwe — traditional drumming, food stations, face painting'];}
@@ -3671,56 +3963,105 @@ function getOfflineSuggestions(name){
   if(n.includes('johannesburg')||n.includes('joburg')||n.includes('soweto')||n.includes('sandton')){return['Apartheid Museum — half-day minimum, deeply moving, R195/person (apartheidmuseum.org)','Soweto bicycle tour — Lebo\'s Soweto Backpackers (+27 11 936 3444), from R350','Vilakazi Street — Nelson Mandela & Desmond Tutu both lived here, free to walk','Constitution Hill Old Fort Prison — R85/person, fascinating history of struggle era','Maboneng Precinct — street art, Arts on Main, trendy Sunday market','Lion & Safari Park Hartebeespoort — lion cub interaction and wild dog viewing, 1hr north','Gold Reef City gold pour — 2hr south, actual gold mine shaft tour (goldreefcity.co.za)','Cradle of Humankind World Heritage — Sterkfontein Caves tours, 1hr northwest of city'];}
   if(n.includes('pilanesberg')){return['Mankwe Dam game drive at dawn — resident lion pride drinks here regularly','Manyane Gate self-drive — hippo pool visible from tarmac road, 5km inside gate','Night game drive — R395/person, book at Bakgatla or Manyane camp reception','Buffalo Thorn 4x4 route — southern section only, rhino and cheetah territory','Kwa Maritane lookout deck — elevated 360° panorama over the entire park','Hot air balloon over park — Air Trackers (+27 14 552 5020), 1hr flight from R3500','Bakgatla Gate morning bird walk — guide available at gate from 6am','Sun City resort day visit — 15min from park gates, Valley of the Waves waterpark'];}
   if(n.includes('cederberg')||n.includes('citrusdal')||n.includes('clanwilliam')){return['Wolfberg Arch hike — 4hr return to iconic natural quartzite arch, permit via CapeNature','Wolfberg Cracks scramble — narrow slot canyon route, adventurous 2hr scramble','Dwarsrivier rock art — San paintings on farm, guided tour R150 (Algeria area)','Sneeuberg peak hike — highest in Cederberg at 2026m, 6hr return, serious fitness','Algeria campsite swimming holes — ice-cold mountain stream pools, free with camping','Wupperthal mission village — historic Moravian village, rooibos tea at the bakery','Cederberg Winery tasting — R50/person, Shiraz & Bukettraube, book ahead','Dark sky astrophotography — one of SA\'s clearest skies outside Karoo'];}
-  if(n.includes('grotto bay')||n.includes('tiger reef')||n.includes('langebaan')){return['Tiger Reef beach 4x4 — access at low tide only, check tides before you go','Langebaan lagoon kitesurfing — Cape Sport Centre (+27 22 772 1114), lessons available','West Coast National Park flower drive — Aug-Oct daisy bloom, R200/person entry','Paternoster village lunch — Noisy Oyster or Voorstrandt on the beach (book ahead)','Postberg flower reserve — limited seasonal entry, magnificent namaqualand blooms','Strandveld hiking trail — 2-day West Coast National Park, overnight at Langebaan hut','Jacobsbaai rock fishing — yellowtail, harders and steenbras from the point','Geelbek bird hide — West Coast National Park, flamingos and African spoonbills'];}
+  if(n.includes('grotto bay')||n.includes('langebaan')){return['Tiger Reef beach 4x4 — access at low tide only, check tides before you go','Langebaan lagoon kitesurfing — Cape Sport Centre (+27 22 772 1114), lessons available','West Coast National Park flower drive — Aug-Oct daisy bloom, R200/person entry','Paternoster village lunch — Noisy Oyster or Voorstrandt on the beach (book ahead)','Postberg flower reserve — limited seasonal entry, magnificent namaqualand blooms','Strandveld hiking trail — 2-day West Coast National Park, overnight at Langebaan hut','Jacobsbaai rock fishing — yellowtail, harders and steenbras from the point','Geelbek bird hide — West Coast National Park, flamingos and African spoonbills'];}
   if(n.includes('richtersveld')||n.includes('alexander bay')||n.includes('sendelingsdrift')){return['Richtersveld Transfrontier Park 4x4 — black-rated tracks, permit from SANParks required','De Hoop River Pool — deepest ravine in SA, 3hr challenging trail from Sendelingsdrift','Orange River canoe — Gravity Adventures 4-day self-guided trip (R4500 all inclusive)','Sendelingsdrift border pontoon — cross Orange River to Namibia on the floating pontoon','Succulent Karoo walking — September-October, unique halfmens (Pachypodium) plants','Camp Rooiberg night sky — barely any light pollution, spectacular Milky Way arm','Helskloof Pass 4x4 — extreme black-rated track, permit at Richtersveld office','Springbok Namaqua National Park detour — 60km north, flower capital of the world'];}
   if(n.includes('bazaruto')||n.includes('vilanculos')||n.includes('inhambane')||n.includes('mozambique')){return['Bazaruto Archipelago dhow snorkel — half-day trip, pristine coral gardens','Dugong snorkelling — rare marine mammal, best chance at Bangué Island','Horse riding along Vilanculos beach — multiple beach operators, R300/hour','Deep sea fishing — sailfish and marlin, Vilanculos Dhow Safari charter','Benguerra Island day trip — pristine sandbanks, dhow sailing included','Local Monday market Vilanculos — authentic produce market, peri-peri prawns at R120','Snorkelling Two Mile Reef — world-class coral, 30min by dhow from Vilanculos beach','Flamingo watching at Vilanculos estuary — dawn counts in the hundreds'];}
-  // Generic Southern African overland fallbacks — still location-aware
-  const region=n.includes('namibia')||n.includes('windhoek')||n.includes('namibi')?'Namibia':n.includes('botswana')||n.includes('gaborone')?'Botswana':n.includes('zimb')||n.includes('harare')?'Zimbabwe':'Southern Africa';
+  if(n.includes('spitzkoppe')||n.includes('pontok')){return['Spitzkoppe summit hike — 1,728m granite inselberg, guided only, contact Spitzkoppe Community Camp','San rock art at Bushman\'s Paradise — ancient paintings in granite overhang, guide from camp R150','Pontok Mountains scramble — lesser-visited granite domes directly east, superb sunrise light','Rope Bridge rock formation — natural granite arch, 20min walk from main campsite','Star gazing from the rocks — zero light pollution, one of Namibia\'s best dark sky sites','Large Pool boulder swimming — seasonal rockpool between the kopjes after rain','Klein Spitzkoppe loop — 4hr walk around the smaller peak, gemsbok and klipspringer','4x4 track to Little Spitzkoppe — rough sandy track, high clearance essential'];}
+  if(n.includes('namib-naukluft')||n.includes('naukluft')||n==='namib'||n.includes('namib desert')){return['Naukluft Mountains day hike — Waterkloof trail, 17km loop through canyon and plateau','Naukluft Massif 4x4 track — 58km black route through remote canyon country','Bullsport Farm sundowner — private farm 1hr north, giraffe and kudu on the plains','Solitaire bakery stop — legendary apple pie and petrol, 80km north at the crossroads','Hammerstein waterhole — seasonal springbok and oryx concentrations at dusk','Cañon trail Naukluft — 3.5hr loop past kloof pools, indigenous quiver trees','Sesriem to Naukluft gravel drive — 85km on D854, barely any traffic, desert wilderness','Dawn photography at Naukluft peaks — burnt-orange granite turns crimson in first light'];}
+  if(n.includes('lüderitz')||n.includes('luderitz')||n.includes('lüderitz')){return['Kolmanskop ghost town — diamond-rush ruins buried in sand, guided tour R220 (08:30 & 10:00)','Shark Island campsite sunset — dramatic rocky peninsula, Atlantic sunset views','Diaz Point lighthouse walk — 20km south, jackass penguin colony and flamingos at the point','Bogenfels rock arch — permits required, 70km north on restricted diamond area road','Halifax Island flamingos — largest flamingo colony in southern Africa viewed from shore','Lüderitz Waterfront seafood — fresh crayfish and oysters at harbour stalls','Agate Beach 4x4 — semi-precious stones on the shoreline at low tide, beachcombing','Lüderitz Brewing Company — craft beer in an art deco building, tours on Saturdays'];}
+  if(n.includes('kolmanskop')){return['Ghost town sunrise photography — enter at 08:00 before tour groups, sand-drifted rooms','Guided historical tour — diamond boom to abandonment 1908-1956, R220/person','Architectural photography — intact German colonial hospital, skittles alley, ballroom','Lüderitz township walk — 14km east, colourful fishing community, crayfish shacks','Elizabeth Bay restricted mine road — further diamond ruins, permit via Namdeb (rare access)','Grillenthal hill walk — panoramic view over ghost town and Atlantic at sunset','Bogenfels day trip — 70km north of Lüderitz, massive rock arch on restricted coastline','Diaz Cross replica and museum — replica of Portuguese navigator\'s 1488 stone cross'];}
+  if(n.includes('caprivi')||n.includes('bwabwata')||n.includes('katima')||n.includes('kasane')){return['Bwabwata National Park self-drive — buffalo, elephant, hippo and lion territory','Chobe River sunset cruise — departs Kasane (Botswana side), R850/person, massive elephant herds','Popa Falls — Okavango rapids, 45min west of Divundu, hippo pools below the falls','Mahango Core Area loop — excellent lion, sable antelope and roan in the dense mopane','Mudumu National Park — remote, log book at entrance, elephant and sitatunga territory','Susuwe Island Lodge fishing — tigerfish and bream, Namibia\'s premier fishing destination','Night drive from Divundu — African wild cat, genet, bush baby active after dark','Chobe National Park day trip — full day Chobe game drive from Kasane, 30min drive'];}
+  if(n.includes('rundu')){return['Okavango River sunset boat — sundowner cruise, hippo pods near Sarasungu riverlodge','Rundu craft market — Angolan traders, wooden carvings, baskets, open daily on main road','Kaisosi River Lodge birding — 400+ species recorded, jacana, pel\'s fishing owl territory','N\'Kwazi Lodge canoe trip — paddle the Okavango upstream, half-day from R500/person','Kavango basketry co-op — women\'s weaving collective, authentic traditional baskets','Divundu to Rundu riverside drive — B8 highway, 250km, baboon and elephant crossing','Omega 3 community conservancy visit — San Bushman community cultural experience','Bum Hill viewpoint — overlooks Okavango floodplain, best at golden hour'];}
+  if(n.includes('brandberg')){return['Maack Shelter White Lady rock painting — 2hr return guided hike, Brandberg Rest Camp (compulsory guide)','Brandberg summit attempt — 2,573m, highest in Namibia, 2-day hike with guide','Tsisab Gorge scramble — dramatic canyon through the massif, half-day with guide','Petrified dune photography — wind-sculpted granite formations around the base','Ugab river bed drive — dry riverbed 4x4 track, elephant foot prints common','Desert-adapted elephant tracking — Damaraland Elephant Trust, best morning activity','Uis tin mine museum — small community museum, hand-painted rocks for sale','Night sky photography — Brandberg sits in some of Africa\'s darkest skies'];}
+  if(n.includes('sossusvlei')||n.includes('sesriem')){return['Dune 45 — climb before 7am, 45km from Sesriem gate on C27 (free with park entry)','Dead Vlei salt pan — ancient camel thorns in a white clay bowl, 1km walk from 4x4 parking','Big Daddy dune — 325m climb, 2hr return, bring 2L water minimum','Sesriem Canyon at sunset — 30m deep gorge carved by Orange River, 1km loop walk','Elim Dune at dawn — accessible dune 5km from gate, half the crowds of Dune 45','Hidden Vlei walk — far fewer people than Deadvlei, 2.5km through the pans','Star gazing from NamibRand reserve border — zero light pollution, best Milky Way in southern Africa','Sossusvlei 4x4 sand road — drive the 60km loop before the gate opens at sunrise'];}
+  // ── Namibian admin regions returned by reverse geocoding ──
+  // ǁKaras Region: southern Namibia — Fish River Canyon, Lüderitz, Aus, Grünau
+  if(n.includes('karas')||n.includes('grünau')||n.includes('grunau')||n.includes('aus, namibia')||n.includes('keetmanshoop')){
+    return['Fish River Canyon sunrise viewpoint — arrive at Hobas lookout by 6:30am, canyon glows red-orange','Ai-Ais hot springs — thermal pools at 60°C, soak after the drive (+264 63 297 011, R150/person)','Grünau to Lüderitz scenic drive — 250km on B4, dramatic desert landscape changes','Kolmanskop ghost town — diamond ruins buried in sand, guided tour 08:30 & 10:00 (R220)','Quiver tree forest near Keetmanshoop — ancient kokerbome, 500+ year-old specimens, R100/person','Aus wild horses at dusk — feral desert horses, best sighting from Garub waterhole at sunset','Hell\'s Corner 4x4 track — rim of Fish River Canyon, extreme views down into the gorge','Warmbad hot spring — seasonal pools near Ai-Ais, less crowded than main resort'];}
+  // Erongo Region: coastal Namibia — Swakopmund, Walvis Bay, Skeleton Coast south, Mile 108 area
+  if(n.includes('erongo')||n.includes('mile 108')||n.includes('henties bay')||n.includes('uis')){
+    return['Skeleton Coast 4x4 — drive north from Swakopmund along the surf line at low tide','Quad biking on coastal dunes — Alter-Action Adventures Swakopmund (+264 64 402 096), from R650','Walvis Bay lagoon flamingos — thousands of pink flamingos year-round at the salt works','Sandwich Harbour 4x4 — Levo Expeditions (levotouring.com), dunes drop into the Atlantic Ocean','Cape Cross seal colony — 100 000+ Cape fur seals, 120km north of Swakopmund','Surf fishing on the Skeleton Coast beach — kabeljou and steenbras, bait from any Swakopmund shop','Moonscape valley near Swakopmund — alien geology 30km east on the C28, free to drive','Desert shipwreck photography at dawn — mist and surreal Benguela fog on the cold Atlantic shore'];}
+  // Kunene Region: far northwest Namibia — Skeleton Coast north, Damaraland, Kaokoland
+  if(n.includes('kunene')||n.includes('kaokoland')||n.includes('opuwo')||n.includes('purros')){
+    return['Skeleton Coast wilderness drive — remote coastal dunes, shipwrecks and seal colonies','Desert-adapted elephant tracking — Hoanib River basin, morning tracking with local guide','Himba village cultural visit — Opuwo area, respectful guided visit (arrange via camp)','Epupa Falls on the Kunene River — tigerfish pool below the falls, camping on the bank','Hartmann\'s Valley 4x4 — one of Namibia\'s most remote and dramatic desert valleys','Marienfluss Valley sunrise — vast red grass plains backed by the Hartmann Mountains','Wild camping on the Kunene River — Namibia/Angola border, hippos audible after dark','Orupembe community conservancy — desert lion territory, guide from Orupembe village'];}
+  // Hardap Region: central Namibia — Mariental, Brukkaros, Maltahöhe
+  if(n.includes('hardap')||n.includes('mariental')||n.includes('maltahöhe')||n.includes('maltahohe')){
+    return['Brukkaros volcanic crater hike — 3hr return, panoramic views over Kalahari plains','Hardap Dam game reserve self-drive — white rhino, kudu and fish eagle territory','Duwisib Castle — remote 1909 German castle, free entry, fascinating colonial history','Maltahöhe plateau drive — rolling desert highlands, sheep farms and koppies','Gibeon meteor field — largest meteorite strewn field in the world, some on display','Naute Dam fishing — bream and carp, permits at the resort (R50/rod/day)','Night sky at Hardap — one of Namibia\'s darkest regions, exceptional Milky Way','Berseba Canyon walk — little-visited canyon 40km south, complete solitude'];}
+  // Khomas Region: Windhoek and surrounds
+  if(n.includes('khomas')||n.includes('windhoek')){
+    return['Christuskirche & Independence Memorial Museum — free city walk, colonial architecture','Namibia Craft Centre — best curated local crafts (40 Tal Street), open Mon-Sat','Joe\'s Beerhouse dinner — Namibian game steaks, legendary atmosphere (+264 61 232 457)','Daan Viljoen Game Reserve — 20min from city centre, self-drive kudu and zebra','Avis Dam short hike — 1hr loop, flamingos and herons, free entry near suburb','Katutura township cultural tour — authentic living history, Penduka women\'s crafts','Namibia Breweries tour — book via namibiabreweries.com','Heja Game Lodge sundowner — 15min from city, giraffe and zebra at the waterhole'];}
+  // Otjozondjupa / Omaheke: central-east Namibia — Waterberg, Gobabis
+  if(n.includes('otjozondjupa')||n.includes('waterberg')||n.includes('omaheke')||n.includes('gobabis')){
+    return['Waterberg Plateau hike — guided trails on top of the plateau, book at NWR reception','White rhino tracking on foot — Waterberg Plateau Park, guided morning walk','Cheetah Conservation Fund visit — 45min from Otjiwarongo, world\'s largest cheetah sanctuary','AfriCat Foundation at Okonjima — leopard and cheetah tracking (okonjima.com)','Waterberg evening drive — sable antelope and leopard territory on the plateau','Otjiwarongo crocodile farm — 500+ Nile crocodiles, guided tour (R100/person)','Gobabis to Botswana border drive — Kalahari thornbush, oryx and springbok herds','Farm stay sundowner — most game farms in this region offer sundowners to passing overlanders'];}
+  return null; // no specific match found
+}
+function getGenericSuggestions(name){
+  const d=name.trim()||'this area';
   return[
-    'Ask your camp host for the best local hidden spots — they always know the secret places',
-    'Sunrise 4x4 exploration — first hour of light transforms the landscape, get out early',
-    'Sundowner braai from high ground — find an elevated spot and watch the sky turn',
-    `Star gazing — ${region} skies away from cities are exceptional, Milky Way arm clearly visible`,
-    'Dawn wildlife photography from vehicle — golden hour light, animals most active',
-    'Visit the nearest local market — real food, real crafts, meet the community',
-    'Explore nearest river or waterhole at dusk — elephant and predator activity peaks',
-    'Ask the nearest lodge about guided walks — many offer free or cheap walks to guests'
+    `${d} sunrise exploration — first light transforms the landscape, leave camp before 6am`,
+    `Ask your camp host at ${d} for hidden local spots — they always know what the guidebooks miss`,
+    `Sundowner with braai from high ground near ${d} — find an elevated viewpoint, watch the sky turn amber`,
+    `Star gazing from ${d} — Southern African skies away from cities are exceptional, Milky Way arm visible`,
+    `Dawn wildlife photography near ${d} — golden hour light, animals most active in first 90 minutes`,
+    `Visit the nearest local market to ${d} — fresh produce, handmade crafts, meet the community`,
+    `Waterhole or river visit at dusk near ${d} — elephant and predator activity peaks at last light`,
+    `Ask the nearest lodge at ${d} about guided walks — many offer walks to guests at no extra cost`
   ];
 }
 
+// Quality ranking: 3=Overpass real POIs, 2=offline curated, 1=generic, 0=empty
+function actQuality(arr){
+  if(!arr||!arr.length)return 0;
+  if(arr[0].includes('sunrise exploration'))return 1;
+  if(arr[0].includes('km away'))return 3;
+  return 2;
+}
+// Trip-level suggestions store — single source of truth, not per-itinerary-day
+function getStoredSugs(t,stopName){
+  return(t.activitySuggestions&&t.activitySuggestions[stopName])||null;
+}
+function setStoredSugs(t,stopName,activities){
+  if(!t.activitySuggestions)t.activitySuggestions={};
+  t.activitySuggestions[stopName]=activities;
+  // Also mirror into itinerary days so sug-chips work in itinerary view
+  t.itinerary.forEach(d=>{if(d.location===stopName&&!d.isTravel)d.suggestions=activities;});
+}
 async function suggestActivitiesForStop(stopName,lat,lon){
   const t=T();if(!t)return;
-  const activities=await fetchSuggestedActivities(stopName,lat,lon);
-  // Apply to all itinerary days at this stop (overnight nights only)
-  let changed=false;
-  t.itinerary.forEach(d=>{
-    if(d.location===stopName&&!d.isTravel&&(!d.suggestions||!d.suggestions.length)){
-      d.suggestions=activities;
-      changed=true;
+  // Skip if already loading for this stop
+  if(activityLoadingStops.has(stopName))return;
+  activityLoadingStops.add(stopName);
+  // Refresh the activities tab to show loading state
+  if(currentPanel==='plan'){const ap=$('stp-activities');if(ap&&ap.style.display!=='none')renderActivitiesTab(t);}
+  try{
+    delete activityCache[stopName.toLowerCase().replace(/\s+/g,'_')];
+    const activities=await fetchSuggestedActivities(stopName,lat,lon);
+    const newQ=actQuality(activities);
+    const existQ=actQuality(getStoredSugs(t,stopName));
+    if(newQ>existQ){
+      setStoredSugs(t,stopName,activities);
+      sv();
+      renderItinerary(t);
+      if(currentPanel==='plan'){const ap=$('stp-activities');if(ap&&ap.style.display!=='none')renderActivitiesTab(t);}
     }
-  });
-  if(changed){
-    sv();
-    renderItinerary(t);
-    // Also refresh activities tab if it's currently shown
-    if(currentPanel==='plan'){
-      const actPane=$('stp-activities');
-      if(actPane&&actPane.style.display!=='none')renderActivitiesTab(t);
-    }
-    toast('💡 '+stopName+' — activities ready','ok');
+  }finally{
+    activityLoadingStops.delete(stopName);
+    if(currentPanel==='plan'){const ap=$('stp-activities');if(ap&&ap.style.display!=='none')renderActivitiesTab(t);}
   }
 }
 function renderActivitiesTab(t){
   const el=$('activitiesContent');if(!el||!t)return;
-  const overnightStops=t.stops.filter(s=>!s.isStart&&!s.isEnd&&parseInt(s.nights)>0);
+  const nS=t.stops.length;
+  const overnightStops=t.stops.filter((s,i)=>!s.isStart&&!s.isEnd&&i>0&&parseInt(s.nights)>0);
   if(!overnightStops.length){
     el.innerHTML=`<div class="empty"><div class="ei">💡</div><div class="et">No overnight stops yet</div><div class="es">Add stops with nights in the Route tab — activities will appear here</div></div>`;
     return;
   }
   el.innerHTML=overnightStops.map(s=>{
-    // Collect all suggestions for this stop from itinerary days
     const days=t.itinerary.filter(d=>d.location===s.name&&!d.isTravel);
-    const sugs=days.length&&days[0].suggestions?days[0].suggestions:[];
+    // Read from trip-level store first, fall back to legacy per-day suggestions
+    const sugs=getStoredSugs(t,s.name)||(days.length&&days[0].suggestions?days[0].suggestions:[]);
+    const isLoading=activityLoadingStops.has(s.name);
     const usedMorning=days.filter(d=>d.morning).map(d=>d.morning);
     const usedAfternoon=days.filter(d=>d.afternoon).map(d=>d.afternoon);
     return`<div class="card card-pad" style="margin-bottom:1rem">
@@ -3729,16 +4070,18 @@ function renderActivitiesTab(t){
           <div style="font-size:.92rem;font-weight:700;color:var(--text)">📍 ${s.name}</div>
           <div style="font-size:.72rem;color:var(--text3);margin-top:.12rem">${s.nights} night${s.nights!==1?'s':''}</div>
         </div>
-        <button class="btn-secondary" style="font-size:.68rem;padding:.3rem .72rem" onclick="refreshActivities('${esc(s.name)}',${s.lat||0},${s.lon||0})">↻ Refresh</button>
+        <button class="btn-secondary" style="font-size:.68rem;padding:.3rem .72rem" onclick="refreshActivities('${esc(s.name)}',${s.lat||0},${s.lon||0})">↻ Reload</button>
       </div>
-      ${sugs.length?`
+      ${isLoading?`
+        <div style="display:flex;align-items:center;gap:.6rem;padding:.6rem 0;color:var(--text3);font-size:.82rem">
+          <span style="display:inline-block;width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--amber);border-radius:50%;animation:spin 0.8s linear infinite"></span>
+          Fetching activities…
+        </div>`:
+      sugs.length?`
         <div class="sug-lbl" style="margin-bottom:.5rem">💡 Suggested — tap to add to itinerary</div>
         <div class="sug-row" style="margin-bottom:${usedMorning.length||usedAfternoon.length?'.85rem':'0'}">
-          ${sugs.map((sg,si)=>{
-            const dayIdx=days.length?t.itinerary.indexOf(days[0]):-1;
-            return`<span class="sug-chip" onclick="addSuggestion(${dayIdx},'${esc(sg)}')">${sg}</span>`;
-          }).join('')}
-        </div>`:'<div style="font-size:.8rem;color:var(--text3);font-style:italic;margin-bottom:.75rem">No suggestions yet — tap Refresh to fetch</div>'}
+          ${sugs.map(sg=>`<span class="sug-chip" data-activity="${esc(sg)}" data-stop="${esc(s.name)}" onclick="showActivityDetail(this)">${sg}</span>`).join('')}
+        </div>`:'<div style="font-size:.8rem;color:var(--text3);font-style:italic;margin-bottom:.75rem">No suggestions yet — tap ↻ to fetch</div>'}
       ${usedMorning.length||usedAfternoon.length?`
         <div style="border-top:1px solid var(--border2);padding-top:.75rem;margin-top:.25rem">
           <div class="sug-lbl" style="margin-bottom:.45rem">✅ Added to itinerary</div>
@@ -3749,12 +4092,19 @@ function renderActivitiesTab(t){
   }).join('');
 }
 async function refreshActivities(stopName,lat,lon){
-  toast('Fetching activities for '+stopName+'…');
   const t=T();if(!t)return;
-  const activities=await fetchSuggestedActivities(stopName,lat,lon);
-  t.itinerary.forEach(d=>{if(d.location===stopName&&!d.isTravel){d.suggestions=activities;}});
-  sv();renderActivitiesTab(t);renderItinerary(t);
-  toast('💡 Activities updated','ok');
+  activityLoadingStops.add(stopName);
+  renderActivitiesTab(t);
+  try{
+    delete activityCache[stopName.toLowerCase().replace(/\s+/g,'_')];
+    const activities=await fetchSuggestedActivities(stopName,lat,lon);
+    setStoredSugs(t,stopName,activities);
+    sv();renderItinerary(t);
+    toast('💡 '+stopName+' — activities updated','ok');
+  }finally{
+    activityLoadingStops.delete(stopName);
+    renderActivitiesTab(t);
+  }
 }
 function tog(id){$(id)&&$(id).classList.toggle('open');}
 function removeDay(i){if(!confirm('Remove?'))return;const t=T();t.itinerary.splice(i,1);t.itinerary.forEach((d,j)=>d.day=j+1);sv();renderItinerary(t);renderDash(t);}
@@ -4047,14 +4397,16 @@ function renderAccom(t){
   const grouped={};
   const sNm=t.stops.length>0?t.stops[0].name:null;
   const eNm=t.stops.length>1?t.stops[t.stops.length-1].name:null;
+  const startEndNames=new Set([sNm,eNm].filter(Boolean));
   t.accommodation.forEach(a=>{
-    if(a.stopName===sNm||a.stopName===eNm)return;
+    if(startEndNames.has(a.stopName))return;
     const key=a.stopName||'Other';
     if(!grouped[key])grouped[key]=[];
     grouped[key].push(a);
   });
-  // Stops without accommodation (excluding start/end)
-  t.stops.filter(s=>!s.isStart&&!s.isEnd&&parseInt(s.nights)>0).forEach(s=>{
+  // Stops without accommodation (excluding start/end by flag and position)
+  const nStops=t.stops.length;
+  t.stops.filter((s,i)=>!s.isStart&&!s.isEnd&&i>0&&i<nStops-1&&parseInt(s.nights)>0).forEach(s=>{
     if(!grouped[s.name])grouped[s.name]=[];
   });
   if(!Object.keys(grouped).length){
@@ -4316,7 +4668,8 @@ function renderBudget(t){
       if(legs.length&&legs.some(s=>Number(s.km||0)>0)){
         legs.forEach(s=>{
           const legKm=Number(s.km||s._osrmKm||0);
-          const cons=(s.towing&&v.towingCons)?Number(v.towingCons):(Number(v.consumption)||12.5);
+          const baseCons2=Number(v.consumption)||12.5;
+          const cons=s.towing?(v.towingCons?Number(v.towingCons):baseCons2*1.3):baseCons2;
           L+=(legKm/100)*cons;
         });
       } else if(km>0){
@@ -4909,7 +5262,14 @@ function setPlanTab(tab,el){
   });
   const mc=$('mapContainer');
   if(mc)mc.style.display=tab==='route'?'block':'none';
-  if(tab==='activities')renderActivitiesTab(T());
+  if(tab==='activities'){
+    renderActivitiesTab(T());
+    const cur=T();if(cur){
+      cur.stops.filter((s,i)=>!s.isStart&&!s.isEnd&&i>0&&parseInt(s.nights)>0).forEach(s=>{
+        suggestActivitiesForStop(s.name,s.lat,s.lon);
+      });
+    }
+  }
   if(tab==='route'){setTimeout(()=>{initLeaflet();if(T())refreshMap(T());},80);setTimeout(()=>{if(leafMap)leafMap.invalidateSize();},350);}
 }
 function toggleItinAccordion(forceOpen){
@@ -5366,5 +5726,27 @@ function renderSpotify(t){
 }
 
 </script>
+
+<!-- Activity Detail Modal -->
+<div class="overlay" id="activityDetailMod">
+  <div class="modal" style="max-width:440px;padding:0;overflow:hidden">
+    <button class="modal-close" onclick="closeModal('activityDetailMod')" style="z-index:2">✕</button>
+    <div id="actDetailImgWrap" style="display:none;width:100%;height:200px;overflow:hidden;border-radius:var(--rl) var(--rl) 0 0;background:var(--surface2)">
+      <img id="actDetailImg" style="width:100%;height:100%;object-fit:cover" src="" alt="">
+    </div>
+    <div style="padding:1.4rem 1.5rem 1.2rem">
+      <div class="modal-title" id="actDetailTitle" style="margin-bottom:.6rem;padding-right:2rem"></div>
+      <div id="actDetailDesc" style="font-size:.86rem;color:var(--text2);line-height:1.65;margin-bottom:.85rem;min-height:2rem"></div>
+      <div id="actDetailActivity" style="font-size:.78rem;color:var(--text3);border-left:3px solid var(--amber);padding:.35rem .7rem;border-radius:0 6px 6px 0;background:var(--amber-bg);margin-bottom:1rem;line-height:1.5"></div>
+      <a id="actDetailWiki" href="#" target="_blank" rel="noopener" style="display:none;font-size:.78rem;color:var(--sky);margin-bottom:1.1rem">📖 Read more on Wikipedia →</a>
+      <div id="actDetailDayWrap" style="margin-bottom:.85rem"></div>
+      <div class="modal-footer" style="margin-top:.85rem">
+        <button class="btn-secondary" onclick="closeModal('activityDetailMod')">Close</button>
+        <button class="btn-primary" id="actDetailMorn">＋ Morning</button>
+        <button class="btn-primary" id="actDetailAftn" style="background:var(--surface2);border-color:var(--border2)">＋ Afternoon</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
