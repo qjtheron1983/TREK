@@ -13,16 +13,22 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="TREK">
 <meta name="format-detection" content="telephone=no">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <title>TREK — Expedition Planner by Forgebit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://a.basemaps.cartocdn.com" crossorigin>
+<link rel="preconnect" href="https://b.basemaps.cartocdn.com" crossorigin>
+<link rel="preconnect" href="https://c.basemaps.cartocdn.com" crossorigin>
+<link rel="preconnect" href="https://d.basemaps.cartocdn.com" crossorigin>
+<link rel="dns-prefetch" href="https://a.basemaps.cartocdn.com">
+<link rel="dns-prefetch" href="https://b.basemaps.cartocdn.com">
+<link rel="dns-prefetch" href="https://c.basemaps.cartocdn.com">
+<link rel="dns-prefetch" href="https://d.basemaps.cartocdn.com">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<script src="https://sdk.scdn.co/spotify-player.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://sdk.scdn.co/spotify-player.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
@@ -59,28 +65,38 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .ltag{animation-delay:.15s}.ldiv{animation-delay:.25s}.lfb{animation-delay:.35s}
 
 /* AUTH */
-#authScreen{position:fixed;inset:0;z-index:8500;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:1.25rem;overflow-y:auto;}
+#authScreen{position:fixed;inset:0;z-index:8500;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;padding:1.25rem;overflow-y:auto;padding-bottom:3rem;}
+#authScreen::before{content:'';position:fixed;bottom:-80px;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(248,168,24,.07) 0%,transparent 70%);pointer-events:none;z-index:0;}
 #authScreen.hidden{display:none;}
-.auth-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:2.25rem;box-shadow:0 4px 24px var(--sh);}
-.auth-logo{text-align:center;margin-bottom:1.5rem;}
-.auth-logo-mark{font-family:'Playfair Display';font-size:1.85rem;font-weight:900;letter-spacing:.18em;}
-.auth-logo-sub{font-size:.65rem;color:var(--text3);letter-spacing:.14em;font-family:'Space Mono';text-transform:uppercase;margin-top:.18rem;}
-.auth-logo-fb{font-size:.48rem;color:var(--amber);letter-spacing:.16em;font-family:'Space Mono';text-transform:uppercase;margin-top:.12rem;}
-.auth-tabs{display:flex;background:var(--bg2);border-radius:8px;padding:3px;margin-bottom:1.4rem;}
-.auth-tab{flex:1;padding:.48rem;text-align:center;border-radius:6px;cursor:pointer;font-size:.78rem;font-weight:500;color:var(--text3);transition:all .18s;}
-.auth-tab.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px var(--sh);}
-.fi{margin-bottom:.9rem;}
-.fi label{display:block;font-size:.68rem;font-weight:600;color:var(--text2);letter-spacing:.04em;text-transform:uppercase;margin-bottom:.3rem;}
-.fi input{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.65rem .82rem;border-radius:8px;font-size:.95rem;outline:none;transition:border-color .18s;}
-.fi input:focus{border-color:var(--amber);background:var(--surface);}
-.btn-auth{width:100%;background:var(--amber);color:#fff;border:none;padding:.75rem;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;margin-top:.2rem;}
-.btn-auth:hover{background:var(--al);}
-.btn-auth:active{transform:scale(.98);}
-.auth-err{background:var(--rust-bg);border:1px solid rgba(139,50,34,.2);color:var(--rust);border-radius:6px;padding:.55rem .82rem;font-size:.82rem;margin-bottom:.8rem;display:none;}
-.auth-err.show{display:block;}
-.auth-switch{text-align:center;margin-top:1rem;font-size:.8rem;color:var(--text3);}
+.auth-card{position:relative;z-index:1;width:100%;max-width:400px;background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:2.4rem;box-shadow:0 4px 24px var(--sh);margin:auto;}
+.auth-logo{text-align:center;margin-bottom:1.75rem;}
+.auth-logo-mark{font-family:'Playfair Display';font-size:2.1rem;font-weight:900;letter-spacing:.18em;background:linear-gradient(135deg,var(--text) 0%,var(--amber) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.auth-logo-sub{font-size:.6rem;color:var(--text3);letter-spacing:.18em;font-family:'Space Mono';text-transform:uppercase;margin-top:.25rem;}
+.auth-logo-fb{font-size:.44rem;color:var(--amber);letter-spacing:.16em;font-family:'Space Mono';text-transform:uppercase;margin-top:.12rem;opacity:.7;}
+.auth-logo-divider{width:32px;height:1.5px;background:linear-gradient(90deg,transparent,var(--amber),transparent);margin:.9rem auto 0;}
+.auth-tabs{display:flex;background:var(--bg2);border-radius:10px;padding:3px;margin-bottom:1.5rem;border:1px solid var(--border);}
+.auth-tab{flex:1;padding:.5rem;text-align:center;border-radius:8px;cursor:pointer;font-size:.78rem;font-weight:500;color:var(--text3);transition:all .2s;}
+.auth-tab.active{background:linear-gradient(135deg,var(--amber),var(--fire));color:#fff;box-shadow:0 2px 8px rgba(248,168,24,.35);font-weight:600;}
+.fi{margin-bottom:1rem;}
+.fi label{display:block;font-size:.66rem;font-weight:600;color:var(--text2);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.35rem;}
+.fi input{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);padding:.7rem .9rem;border-radius:10px;font-size:.95rem;outline:none;transition:border-color .18s,background .18s;box-sizing:border-box;}
+.fi input:focus{border-color:var(--amber);background:var(--surface);box-shadow:0 0 0 3px rgba(248,168,24,.12);}
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:3rem;}
+.pw-eye{position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;padding:.25rem;font-size:1rem;line-height:1;transition:color .15s;-webkit-tap-highlight-color:transparent;}
+.pw-eye:hover{color:var(--amber);}
+.btn-auth{width:100%;background:linear-gradient(135deg,var(--amber),var(--fire));color:#fff;border:none;padding:.82rem;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:.4rem;letter-spacing:.04em;box-shadow:0 4px 16px rgba(248,168,24,.35);}
+.btn-auth:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(248,168,24,.45);}
+.btn-auth:active{transform:scale(.97);}
+.auth-err{background:var(--rust-bg);border:1px solid rgba(216,78,56,.25);color:var(--rust);border-radius:8px;padding:.6rem .9rem;font-size:.82rem;margin-bottom:.85rem;display:none;}
+.auth-err.show{display:block;animation:fadeSlideUp .2s ease;}
+.auth-switch{text-align:center;margin-top:1.1rem;font-size:.78rem;color:var(--text3);}
 .auth-switch a{color:var(--amber);cursor:pointer;font-weight:600;}
-#fbSetupBanner{display:none;background:#fff8e1;border:1px solid #ffe082;border-radius:7px;padding:.7rem .85rem;font-size:.75rem;color:#7a6e5f;margin-bottom:.9rem;line-height:1.5;}
+.auth-switch a:hover{text-decoration:underline;}
+.auth-forgot{text-align:right;margin-top:-.4rem;margin-bottom:.8rem;}
+.auth-forgot a{font-size:.72rem;color:var(--text3);cursor:pointer;transition:color .15s;}
+.auth-forgot a:hover{color:var(--amber);}
+#fbSetupBanner{display:none;background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:.7rem .9rem;font-size:.75rem;color:#7a6e5f;margin-bottom:.9rem;line-height:1.5;}
 
 /* APP SHELL */
 #app{display:none;min-height:100vh;}
@@ -130,6 +146,11 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .tb-title{font-family:'Playfair Display';font-size:1rem;font-style:italic;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .btn-sm{background:none;border:1px solid var(--border);color:var(--text3);padding:.28rem .6rem;cursor:pointer;border-radius:6px;font-size:.75rem;transition:all .16s;}
 .btn-sm:hover{color:var(--text);border-color:var(--amber);}
+.topbar-refresh{background:none;border:1.5px solid var(--border2);color:var(--text2);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:1.05rem;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;-webkit-tap-highlight-color:transparent;}
+.topbar-refresh:hover{color:var(--amber);border-color:var(--amber);transform:rotate(45deg);}
+.topbar-refresh:active{transform:scale(.88);}
+.topbar-refresh.spinning{animation:spinOnce .5s ease;}
+@keyframes spinOnce{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 
 /* PANELS */
 .panel{display:none;padding:1.5rem;animation:pIn .28s ease;max-width:1200px;}
@@ -238,10 +259,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .dh-name{font-family:'Playfair Display';font-size:2rem;font-weight:900;color:#fff;position:relative;z-index:1;}
 .dh-meta{display:flex;gap:1.1rem;flex-wrap:wrap;margin-top:.55rem;position:relative;z-index:1;}
 .dh-mi{display:flex;align-items:center;gap:.32rem;font-size:.82rem;color:rgba(255,255,255,.78);}
-.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:.8rem;margin-bottom:1.3rem;}
-.stat{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.9rem;box-shadow:0 1px 4px var(--sh);}
-.stat-n{font-family:'Playfair Display';font-size:1.7rem;font-weight:700;color:var(--amber);}
-.stat-l{font-size:.58rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:.12rem;}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.8rem;margin-bottom:1.3rem;}
+.stat{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:.9rem;box-shadow:0 1px 4px var(--sh);overflow:hidden;}
+.stat-n{font-family:'Playfair Display';font-size:1.7rem;font-weight:700;color:var(--amber);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.stat-l{font-size:.58rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:.12rem;white-space:nowrap;}
 .dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.3rem;}
 .dc{padding:1.1rem;}
 .dc-title{font-size:.72rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.8rem;display:flex;align-items:center;gap:.35rem;}
@@ -513,7 +534,7 @@ input[type=file]{display:none;}
   /* Stats — 3 col on mobile */
   .stats-row{grid-template-columns:repeat(3,1fr);gap:.55rem;}
   .stat{padding:.65rem .5rem;}
-  .stat-n{font-size:1.1rem;}
+  .stat-n{font-size:1rem;}
   .stat-l{font-size:.52rem;}
 
   /* Cards 1 col */
@@ -1323,6 +1344,21 @@ input:focus, select:focus, textarea:focus {
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--amber-bd); }
 
+/* TRIP PICKER */
+.trip-picker{position:relative;width:100%;margin-bottom:.28rem;}
+.tp-cur{display:flex;align-items:center;gap:.5rem;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:.52rem .72rem;cursor:pointer;transition:border-color .18s,box-shadow .18s;min-width:0;}
+.tp-cur:hover{border-color:var(--amber-bd);box-shadow:0 0 0 2px rgba(248,168,24,.10);}
+.trip-picker.open .tp-cur{border-color:var(--amber);box-shadow:0 0 0 2px rgba(248,168,24,.15);}
+.tp-ic{font-size:.95rem;flex-shrink:0;}
+.tp-name{flex:1;font-family:'Playfair Display';font-size:.9rem;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tp-chev{color:var(--amber);font-size:.75rem;flex-shrink:0;transition:transform .18s;}
+.trip-picker.open .tp-chev{transform:rotate(180deg);}
+.tp-list{display:none;position:absolute;top:calc(100% + 5px);left:0;right:0;background:var(--surface);border:1px solid var(--border2);border-radius:10px;box-shadow:0 8px 28px rgba(0,0,0,.48);z-index:600;overflow:hidden;max-height:220px;overflow-y:auto;}
+.trip-picker.open .tp-list{display:block;animation:fadeSlideUp .16s ease;}
+.tp-item{padding:.6rem .82rem;font-family:'Playfair Display';font-size:.88rem;font-weight:600;cursor:pointer;transition:background .12s,color .12s;color:var(--text2);border-bottom:1px solid var(--border);}
+.tp-item:last-child{border-bottom:none;}
+.tp-item:hover{background:var(--amber-bg);color:var(--amber);}
+.tp-item.active{color:var(--amber);background:rgba(248,168,24,.08);}
 /* ══ END OVERHAUL ══ */
 </style>
 </head>
@@ -1354,6 +1390,7 @@ if('serviceWorker' in navigator){
       <div class="auth-logo-mark">✦ TREK</div>
       <div class="auth-logo-sub">Expedition Planner</div>
       <div class="auth-logo-fb">A Forgebit Product</div>
+      <div class="auth-logo-divider"></div>
     </div>
     <div id="fbSetupBanner">⚡ <strong>Local mode</strong> — Firebase not configured. Replace FIREBASE_CONFIG in index.html to enable cloud sync.</div>
     <div class="auth-tabs">
@@ -1362,15 +1399,28 @@ if('serviceWorker' in navigator){
     </div>
     <div id="authErr" class="auth-err"></div>
     <div id="loginPane">
-      <div class="fi"><label>Email</label><input type="email" id="li-email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
-      <div class="fi"><label>Password</label><input type="password" id="li-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div class="fi"><label>Email</label><input type="email" id="li-email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')doLogin()" onfocus="authScrollFix(this)"></div>
+      <div class="fi">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="li-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" onfocus="authScrollFix(this)">
+          <button type="button" class="pw-eye" onclick="togglePw('li-pass',this)" tabindex="-1">👁</button>
+        </div>
+      </div>
+      <div class="auth-forgot"><a onclick="doResetPassword()">Forgot password?</a></div>
       <button class="btn-auth" onclick="doLogin()">Sign In →</button>
       <div class="auth-switch">No account? <a onclick="showAuthTab('register')">Register free</a></div>
     </div>
     <div id="registerPane" style="display:none">
-      <div class="fi"><label>Your Name</label><input type="text" id="re-name" placeholder="Quintus Theron"></div>
-      <div class="fi"><label>Email</label><input type="email" id="re-email" placeholder="you@example.com"></div>
-      <div class="fi"><label>Password</label><input type="password" id="re-pass" placeholder="Min. 6 characters"></div>
+      <div class="fi"><label>Your Name</label><input type="text" id="re-name" placeholder="Quintus Theron" onfocus="authScrollFix(this)"></div>
+      <div class="fi"><label>Email</label><input type="email" id="re-email" placeholder="you@example.com" onfocus="authScrollFix(this)"></div>
+      <div class="fi">
+        <label>Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="re-pass" placeholder="Min. 6 characters" onfocus="authScrollFix(this)">
+          <button type="button" class="pw-eye" onclick="togglePw('re-pass',this)" tabindex="-1">👁</button>
+        </div>
+      </div>
       <button class="btn-auth" onclick="doRegister()">Create Account →</button>
       <div class="auth-switch">Have an account? <a onclick="showAuthTab('login')">Sign In</a></div>
     </div>
@@ -1394,10 +1444,18 @@ if('serviceWorker' in navigator){
     </div>
     <div class="sb-trip">
       <label>Current Trip</label>
-      <select id="tripSel" class="sb-sel" onchange="switchTrip(this.value)"></select>
+      <div class="trip-picker" id="tripPickerDesk">
+        <div class="tp-cur" onclick="toggleTripPicker('desk')">
+          <span class="tp-ic">🗺️</span>
+          <span class="tp-name" id="tpNameDesk">—</span>
+          <span class="tp-chev">▾</span>
+        </div>
+        <div class="tp-list" id="tpListDesk"></div>
+      </div>
       <button class="btn-trip btn-new" onclick="openNewTripModal()">＋ New Expedition</button>
       <button class="btn-trip btn-join" onclick="openJoinTrip()">🔗 Join a Trip</button>
-      <button class="btn-trip btn-del" onclick="deleteCurrentTrip()">🗑 Delete Trip</button>
+      <button id="sbDelBtn" class="btn-trip btn-del" onclick="deleteCurrentTrip()" style="display:none">🗑 Delete Trip</button>
+      <button id="sbLeaveBtn" class="btn-trip btn-del" onclick="leaveTrip()" style="display:none">🚪 Leave Trip</button>
     </div>
     <nav class="sb-nav">
       <div class="ni active" data-panel="overview"><span class="ni-ic">🗺️</span>Overview</div>
@@ -1426,10 +1484,7 @@ if('serviceWorker' in navigator){
         <div class="tb-logo">✦ TREK</div>
         <div class="tb-trip-name" id="tbTitle">—</div>
       </div>
-      <div style="display:flex;gap:.35rem;align-items:center;flex-shrink:0">
-        <button class="btn-sm" onclick="shareTrip()" title="Share">⬆</button>
-        <button class="btn-sm" onclick="exportTrip()" title="Export">⬇</button>
-      </div>
+      <button class="topbar-refresh" id="topRefreshBtn" onclick="appRefresh()" title="Refresh">↻</button>
     </div>
     <!-- OVERVIEW -->
     <section class="panel active" id="panel-overview">
@@ -1528,17 +1583,11 @@ if('serviceWorker' in navigator){
     <section class="panel" id="panel-crew">
       <div style="margin-bottom:1.1rem"><div class="ph-title">Crew</div><div class="ph-sub">Team · Documents · Gallery</div></div>
       <div id="inviteCodeBox"></div>
+      <div id="crewLeaveRow" style="display:none;margin-bottom:.9rem">
+        <button class="btn-danger" style="width:100%" onclick="leaveTrip()">🚪 Leave This Trip</button>
+      </div>
       <div class="crew-grid" id="crewGrid"></div>
 
-      <div class="card card-pad" style="margin-bottom:1.1rem">
-        <div style="font-family:'Playfair Display';font-size:1.1rem;margin-bottom:.9rem">📨 Invite Member</div>
-        <div class="form-row">
-          <div class="fg"><label>Name</label><input type="text" id="invName" placeholder="Jannie Smit"></div>
-          <div class="fg"><label>Email</label><input type="email" id="invEmail" placeholder="jannie@example.com"></div>
-        </div>
-        <div class="fg" style="margin-bottom:.9rem"><label>Role</label><select id="invRole"><option>Traveller</option><option>Navigator</option><option>Camp Chef</option><option>Medic</option><option>Organiser</option><option>Driver</option></select></div>
-        <button class="btn-primary" onclick="addCrew()">Send Invite</button>
-      </div>
       <div class="card card-pad" style="margin-bottom:1.1rem">
         <div style="font-family:'Playfair Display';font-size:1.1rem;margin-bottom:.9rem">📄 Documents</div>
         <div class="drop-zone" style="padding:1.4rem;margin-bottom:.75rem" onclick="$('docFile').click()" ondragover="event.preventDefault();this.classList.add('over')" ondragleave="this.classList.remove('over')" ondrop="docDrop(event)">
@@ -1649,12 +1698,20 @@ if('serviceWorker' in navigator){
   </div>
   <div class="mob-trips">
     <label>Current Trip</label>
-    <select id="tripSelDrawer" class="sb-sel" onchange="switchTrip(this.value);closeMobileMenu()"></select>
+    <div class="trip-picker" id="tripPickerMob">
+      <div class="tp-cur" onclick="toggleTripPicker('mob')">
+        <span class="tp-ic">🗺️</span>
+        <span class="tp-name" id="tpNameMob">—</span>
+        <span class="tp-chev">▾</span>
+      </div>
+      <div class="tp-list" id="tpListMob"></div>
+    </div>
   </div>
   <div class="mob-actions">
     <button class="btn-trip btn-new" style="width:100%;margin-bottom:.35rem;text-align:left" onclick="openNewTripModal();closeMobileMenu()">＋ New Expedition</button>
     <button class="btn-trip btn-join" style="width:100%;margin-bottom:.35rem;text-align:left" onclick="openJoinTrip();closeMobileMenu()">🔗 Join a Trip</button>
-    <button class="btn-trip btn-del" style="width:100%;text-align:left" onclick="deleteCurrentTrip();closeMobileMenu()">🗑 Delete Trip</button>
+    <button id="mobDelBtn" class="btn-trip btn-del" style="width:100%;text-align:left;display:none" onclick="deleteCurrentTrip();closeMobileMenu()">🗑 Delete Trip</button>
+    <button id="mobLeaveBtn" class="btn-trip btn-del" style="width:100%;text-align:left;display:none" onclick="leaveTrip();closeMobileMenu()">🚪 Leave Trip</button>
   </div>
   <div class="mob-foot">Forgebit · TREK v5</div>
 </div>
@@ -1695,7 +1752,8 @@ if('serviceWorker' in navigator){
   <div class="wiz-pane" id="wp3">
     <p style="font-size:.8rem;color:var(--text3);margin-bottom:.85rem">Your vehicle only — crew members add their own when they join.</p>
     <div class="form-row"><div class="fg"><label>Vehicle Name</label><input type="text" id="wvname" placeholder="Hilux GD-6 / Fortuner…"></div><div class="fg"><label>Fuel Type</label><select id="wvftype"><option value="Diesel">Diesel</option><option value="Petrol 95">Petrol (95)</option><option value="Petrol 93">Petrol (93)</option></select></div></div>
-    <div class="form-row"><div class="fg"><label>Consumption (L/100km)</label><input type="number" id="wcons" placeholder="12.5" step="0.1" value="12.5"></div><div class="fg"><label>Tank Size (L)</label><input type="number" id="wvtank" placeholder="80" value="80"></div></div>
+    <div class="form-row"><div class="fg"><label>Consumption (L/100km)</label><input type="number" id="wcons" placeholder="12.5" step="0.1" value="12.5"></div><div class="fg"><label>Towing Consumption (L/100km)</label><input type="number" id="wtcons" placeholder="16.0" step="0.1"></div></div>
+    <div class="form-row"><div class="fg"><label>Tank Size (L)</label><input type="number" id="wvtank" placeholder="80" value="80"></div><div class="fg"></div></div>
     <div class="form-row"><div class="fg"><label>Fuel Price (R/L)</label><input type="number" id="wfuel" placeholder="24.50" step="0.1" value="24.50"></div><div class="fg"><label>Notes / Permits</label><input type="text" id="wnotes" placeholder="Kgalagadi permit…"></div></div>
     <div class="modal-footer"><button class="btn-secondary" onclick="wizGo(2)">← Back</button><button class="btn-primary" onclick="createTrip()">🗺️ Create!</button></div>
   </div>
@@ -1717,16 +1775,16 @@ if('serviceWorker' in navigator){
     <div style="font-size:.78rem;font-weight:700;color:var(--text2);margin-bottom:.75rem">🚗 Vehicle</div>
     <div style="display:flex;gap:.65rem;margin-bottom:1rem">
       <label style="flex:1;cursor:pointer">
-        <input type="radio" name="jt-vmode" value="own" checked onchange="jtToggleVMode()" style="display:none">
-        <div class="jt-vmode-card" id="jt-own-card" style="border:2px solid var(--amber);background:var(--amber-bg)">
+        <input type="radio" name="jt-vmode" value="own" checked style="display:none">
+        <div class="jt-vmode-card" id="jt-own-card" onclick="jtSetMode('own')" style="border:2px solid var(--amber);background:var(--amber-bg)">
           <div style="font-size:1.3rem;margin-bottom:.25rem">🚗</div>
           <div style="font-size:.8rem;font-weight:700;color:var(--text)">Own Vehicle</div>
           <div style="font-size:.68rem;color:var(--text3);margin-top:.1rem">I'm bringing my car</div>
         </div>
       </label>
       <label style="flex:1;cursor:pointer">
-        <input type="radio" name="jt-vmode" value="join" onchange="jtToggleVMode()" style="display:none">
-        <div class="jt-vmode-card" id="jt-join-card" style="border:2px solid var(--border2);background:var(--surface)">
+        <input type="radio" name="jt-vmode" value="join" style="display:none">
+        <div class="jt-vmode-card" id="jt-join-card" onclick="jtSetMode('join')" style="border:2px solid var(--border2);background:var(--surface)">
           <div style="font-size:1.3rem;margin-bottom:.25rem">👥</div>
           <div style="font-size:.8rem;font-weight:700;color:var(--text)">Join a Vehicle</div>
           <div style="font-size:.68rem;color:var(--text3);margin-top:.1rem">Ride with another crew</div>
@@ -1883,10 +1941,22 @@ if('serviceWorker' in navigator){
   <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('addDefaultsMod')">Cancel</button><button class="btn-primary" onclick="addDefaultCats()">＋ Add Selected</button></div>
 </div></div>
 
+<!-- CONFIRM DIALOG -->
+<div class="overlay" id="confirmMod">
+<div class="modal" style="position:relative;max-width:360px;text-align:center">
+  <div id="confirmIcon" style="font-size:2.4rem;margin-bottom:.6rem"></div>
+  <div id="confirmTitle" class="modal-title" style="justify-content:center;margin-bottom:.5rem"></div>
+  <div id="confirmMsg" style="font-size:.86rem;color:var(--text2);margin-bottom:1.5rem;line-height:1.55"></div>
+  <div style="display:flex;gap:.7rem">
+    <button class="btn-secondary" style="flex:1" onclick="closeModal('confirmMod')">Cancel</button>
+    <button id="confirmOkBtn" class="btn-danger" style="flex:1"></button>
+  </div>
+</div></div>
+
 <script>
 
 function openJoinTrip(){
-  _jtFoundTrip=null; _jtSelectedVehicleIdx=null;
+  _jtFoundTrip=null; _jtSelectedVehicleIdx=null; _jtVehicleMode='own';
   $('jt-code').value='';
   $('jt-step1').style.display='block';
   $('jt-step2').style.display='none';
@@ -1942,14 +2012,24 @@ function jtBack(){
   $('jt-step2').style.display='none';
   _jtFoundTrip=null; _jtSelectedVehicleIdx=null;
 }
-function jtToggleVMode(){
-  const mode=document.querySelector('input[name=jt-vmode]:checked')?.value||'own';
+function jtSetMode(mode){
+  _jtVehicleMode=mode;
+  if(mode==='own')_jtSelectedVehicleIdx=null;
   $('jt-own-fields').style.display=mode==='own'?'block':'none';
   $('jt-join-fields').style.display=mode==='join'?'block':'none';
   $('jt-own-card').style.borderColor=mode==='own'?'var(--amber)':'var(--border2)';
   $('jt-own-card').style.background=mode==='own'?'var(--amber-bg)':'var(--surface)';
   $('jt-join-card').style.borderColor=mode==='join'?'var(--amber)':'var(--border2)';
   $('jt-join-card').style.background=mode==='join'?'var(--amber-bg)':'var(--surface)';
+  // Auto-select first vehicle when switching to join mode
+  if(mode==='join'&&_jtSelectedVehicleIdx===null){
+    const first=document.querySelector('.jt-vehicle-choice');
+    if(first)jtSelectVehicle(first,parseInt(first.dataset.vidx)||0);
+  }
+}
+function jtToggleVMode(){
+  const mode=document.querySelector('input[name=jt-vmode]:checked')?.value||'own';
+  jtSetMode(mode);
 }
 function jtSelectVehicle(el,idx){
   document.querySelectorAll('.jt-vehicle-choice').forEach(c=>c.classList.remove('selected'));
@@ -1959,7 +2039,7 @@ function jtSelectVehicle(el,idx){
 async function joinTrip(){
   const foundTrip=_jtFoundTrip;
   if(!foundTrip){toast('Please look up a code first','err');return;}
-  const vehicleMode=document.querySelector('input[name=jt-vmode]:checked')?.value||'own';
+  const vehicleMode=_jtVehicleMode||'own';
   if(vehicleMode==='join'&&_jtSelectedVehicleIdx===null){toast('Select a vehicle to join','err');return;}
 
   // Add ME to crew locally
@@ -2038,7 +2118,7 @@ const FIREBASE_CONFIG = {
 let fbApp=null, fbAuth=null, fbDb=null, FB_READY=false;
 let _joinReqUnsubscribes=[];
 let _tripListenerUnsubscribes=[];
-let _jtFoundTrip=null, _jtSelectedVehicleIdx=null;
+let _jtFoundTrip=null, _jtSelectedVehicleIdx=null, _jtVehicleMode='own';
 let _lastRenderTs=0, _lastVisibilityLoadTs=0;
 function initFirebase(){
   try{
@@ -2212,11 +2292,11 @@ function setupJoinRequestListener(){
   chunks.forEach(chunk=>{
     const unsub=fbDb.collection('join_requests')
       .where('tripId','in',chunk)
-      .where('status','==','pending')
       .onSnapshot(async snap=>{
-        if(snap.empty)return;
+        const pendingDocs=snap.docs.filter(d=>d.data().status==='pending');
+        if(!pendingDocs.length)return;
         let anyAdded=false;
-        for(const jrDoc of snap.docs){
+        for(const jrDoc of pendingDocs){
           const jr=jrDoc.data();
           const t=DB.trips[jr.tripId];
           if(!t||jr.userId===ME.id)continue;
@@ -2260,17 +2340,28 @@ function setupJoinRequestListener(){
             fbDb.collection('join_requests').doc(jrDoc.id).update({status:'accepted'}).catch(()=>{});
           }
           anyAdded=true;
-          const joinMsg=jr.vehicleMode==='join'
-            ?'🎉 '+jr.userName+' joined! Vehicle request pending approval.'
-            :'🎉 '+jr.userName+' joined the trip!';
-          toast(joinMsg,'ok');
+          if(jr.vehicleMode==='join'){
+            // Show immediate approval dialog for vehicle ride-along requests
+            const vName=jr.requestedVehicleName||'your vehicle';
+            const _tripId=jr.tripId,_vIdx=jr.requestedVehicleIdx,_uid=jr.userId,_uname=jr.userName;
+            toast('🚐 '+_uname+' wants to ride along in '+vName,'info');
+            setTimeout(()=>{
+              confirmDialog('🚐','Ride-along Request',
+                _uname+' wants to join '+vName+'. Approve them as a passenger?',
+                'Approve','primary',
+                ()=>approveVehicleRequest(_tripId,_vIdx,_uid)
+              );
+            },600);
+          } else {
+            toast('🎉 '+jr.userName+' joined the trip!','ok');
+          }
           console.log('[JOIN] Live: added',jr.userName,'to trip',jr.tripId);
         }
         if(anyAdded){
           sv();
           rebuildSel();
           // Re-render the affected trip (may not be the currently viewed one)
-          const updatedTripId=snap.docs.find(d=>d.data().tripId)?.data()?.tripId;
+          const updatedTripId=pendingDocs.find(d=>d.data().tripId)?.data()?.tripId;
           const affectedTrip=updatedTripId?DB.trips[updatedTripId]:null;
           if(affectedTrip)renderCrew(affectedTrip);
           const cur=T();
@@ -2303,6 +2394,7 @@ function setupTripListeners(){
 function T(){return DB.trips[DB.cur]||null;}
 function fmtDate(s){if(!s)return'—';try{const d=new Date(s.includes('T')?s:s+'T00:00:00');return d.toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});}catch(e){return s;}}
 function fmtR(n){return'R '+(Number(n)||0).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function fmtRShort(n){n=Number(n)||0;if(n>=1000000)return'R '+(n/1000000).toFixed(1).replace(/\.0$/,'')+'M';if(n>=10000)return'R '+(n/1000).toFixed(0)+'k';if(n>=1000)return'R '+(n/1000).toFixed(1).replace(/\.0$/,'')+'k';return'R '+Math.round(n);}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 // ══════════════════════════════════════════════════════════════
@@ -2315,24 +2407,45 @@ function showAuthTab(tab){
   $('authErr').classList.remove('show');
 }
 function authErr(msg){$('authErr').textContent=msg;$('authErr').classList.add('show');}
+function togglePw(id,btn){const inp=$(id);if(!inp)return;const show=inp.type==='password';inp.type=show?'text':'password';btn.textContent=show?'🙈':'👁';}
+function authScrollFix(el){setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'center'}),320);}
+function doResetPassword(){
+  const email=$('li-email').value.trim().toLowerCase();
+  if(!email){authErr('Enter your email address first.');return;}
+  if(!FB_READY){authErr('Not available offline.');return;}
+  fbAuth.sendPasswordResetEmail(email)
+    .then(()=>{$('authErr').classList.remove('show');toast('Password reset email sent ✉️','ok');})
+    .catch(e=>authErr(e.code==='auth/user-not-found'?'No account found for that email.':'Could not send reset email.'));
+}
+function appRefresh(){
+  if(!FB_READY||!ME)return;
+  const btn=$('topRefreshBtn');
+  if(btn){btn.classList.add('spinning');setTimeout(()=>btn.classList.remove('spinning'),500);}
+  setupJoinRequestListener();setupTripListeners();
+  loadFromFirebase(ME.id).then(()=>{sv();rebuildSel();renderAll();startCD();toast('Up to date','ok');}).catch(()=>toast('Refresh failed','err'));
+}
 
 function doLogin(){
   const email=$('li-email').value.trim().toLowerCase();
   const pass=$('li-pass').value;
   if(!email||!pass){authErr('Please enter email and password.');return;}
   if(FB_READY){
-    fbAuth.signInWithEmailAndPassword(email,pass)
-      .then(cred=>{
-        const fbUser=cred.user;
-        // Ensure local user record exists
-        if(!DB.users[fbUser.uid]){
-          DB.users[fbUser.uid]={id:fbUser.uid,name:fbUser.displayName||email.split('@')[0],email,initials:(fbUser.displayName||email).slice(0,2).toUpperCase(),avatar:COLORS[0]};
-        }
-        ME=DB.users[fbUser.uid];
-        DB.lastUser=ME.id;
-        loadFromFirebase(ME.id).then(()=>{sv();launchApp();});
-      })
-      .catch(e=>{authErr(e.code==='auth/user-not-found'||e.code==='auth/wrong-password'?'Incorrect email or password.':'Sign in failed: '+e.message);});
+    // Always sign out any cached session first — ensures credentials entered are actually used
+    fbAuth.signOut().catch(()=>{}).finally(()=>{
+      fbAuth.signInWithEmailAndPassword(email,pass)
+        .then(cred=>{
+          const fbUser=cred.user;
+          const freshName=fbUser.displayName||email.split('@')[0];
+          const freshInitials=freshName.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||freshName.slice(0,2).toUpperCase();
+          const existingAvatar=DB.users[fbUser.uid]?.avatar||COLORS[0];
+          DB.users={};DB.trips={};DB.cur=null; // clear ALL previous user state
+          DB.users[fbUser.uid]={id:fbUser.uid,name:freshName,email,initials:freshInitials,avatar:existingAvatar};
+          ME=DB.users[fbUser.uid];
+          DB.lastUser=ME.id;
+          loadFromFirebase(ME.id).then(()=>{sv();launchApp();});
+        })
+        .catch(e=>{authErr(e.code==='auth/user-not-found'||e.code==='auth/wrong-password'?'Incorrect email or password.':'Sign in failed: '+e.message);});
+    });
     return;
   }
   // Local fallback
@@ -2372,7 +2485,12 @@ function doRegister(){
 }
 function doLogout(){
   if(FB_READY&&fbAuth)fbAuth.signOut().catch(()=>{});
-  ME=null; DB.lastUser=null; sv();
+  // Clear ALL local state so the next user starts completely fresh
+  ME=null;
+  DB={users:{},trips:{},cur:null,lastUser:null};
+  _joinReqUnsubscribes.forEach(u=>u());_joinReqUnsubscribes=[];
+  _tripListenerUnsubscribes.forEach(u=>u());_tripListenerUnsubscribes=[];
+  try{localStorage.removeItem(SK);}catch(e){}
   $('app').classList.remove('visible');
   $('authScreen').classList.remove('hidden');
   showAuthTab('login');
@@ -2408,10 +2526,20 @@ window.addEventListener('load',()=>{
       clearTimeout(fbTimeout);
 
       if(user){
-        // Ensure local user record exists
-        if(!DB.users[user.uid]){
-          DB.users[user.uid]={id:user.uid,name:user.displayName||user.email.split('@')[0],email:user.email,initials:((user.displayName||user.email).slice(0,2)).toUpperCase(),avatar:COLORS[0]};
+        // Only auto-launch if this user explicitly logged in before (DB.lastUser matches)
+        // If DB.lastUser is null the user logged out — require manual login even if Firebase has a cached session
+        if(!DB.lastUser||DB.lastUser!==user.uid){
+          // Cached session for a different/unknown user — show login screen, pre-fill email
+          dismissLoader();
+          const emailEl=$('li-email');
+          if(emailEl&&user.email)emailEl.value=user.email;
+          return;
         }
+        // Always refresh core identity fields from Firebase Auth (prevents stale local data)
+        const freshName=user.displayName||user.email.split('@')[0];
+        const freshInitials=freshName.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||freshName.slice(0,2).toUpperCase();
+        if(!DB.users[user.uid])DB.users[user.uid]={id:user.uid,avatar:COLORS[0]};
+        DB.users[user.uid]={...DB.users[user.uid],id:user.uid,name:freshName,email:user.email,initials:freshInitials};
         ME=DB.users[user.uid]; DB.lastUser=ME.id;
         loadFromFirebase(ME.id).then(()=>{
           sv(); dismissLoader(); launchApp();
@@ -2548,13 +2676,16 @@ function createTrip(){
 
   // Auto-create MY vehicle from wizard input
   const vname=($('wvname').value.trim())||ME.name+"'s vehicle";
+  const towCons=parseFloat($('wtcons').value)||0;
   t.vehicles=[{
     name:vname,
     fuelType:$('wvftype').value||'Diesel',
     consumption:cons,
+    towingCons:towCons||undefined,
     tank:Number($('wvtank').value)||80,
     driver:ME.name,
-    uid:ME.id
+    uid:ME.id,
+    passengers:[ME.id]
   }];
 
   DB.trips[id]=t; DB.cur=id;
@@ -2579,7 +2710,7 @@ function createTrip(){
     });
   },1000);
   toast('🗺️ '+name+' created!','ok'); wizStops=[];
-  ['wn','wd','ws','we','wnotes','wfuel','wcons','wvname','wvtank'].forEach(id2=>{if($(id2))$(id2).value='';});
+  ['wn','wd','ws','we','wnotes','wfuel','wcons','wtcons','wvname','wvtank'].forEach(id2=>{if($(id2))$(id2).value='';});
 }
 function toggleMobileMenu(){
   const d=$('mobileDrawer');
@@ -2587,7 +2718,8 @@ function toggleMobileMenu(){
   if(d.classList.contains('open')){closeMobileMenu();return;}
   // Sync drawer with current state
   const drawer=$('tripSelDrawer');
-  if(drawer)drawer.innerHTML=$('tripSel').innerHTML;
+  const legacySel=$('tripSel');
+  if(drawer&&legacySel)drawer.innerHTML=legacySel.innerHTML;
   if(ME){
     const av=$('mobAvatar');const un=$('mobUname');
     if(av){av.textContent=ME.initials;av.style.background=ME.avatar||COLORS[0];}
@@ -2621,7 +2753,7 @@ function toggleTowing(i){
   sv();renderStops(t);renderBudget(t);renderDash(t);
 }
 function rebuildSel(){
-  const sel=$('tripSel'); sel.innerHTML='';
+  const sel=$('tripSel'); if(sel)sel.innerHTML='';
   // Only show trips where ME is in crew, deduped by name+startDate
   const myTrips=Object.values(DB.trips).filter(t=>t.crew&&t.crew.some(c=>c.id===ME.id||c.email===ME.email));
   // Deduplicate: if same name+startDate appear twice, keep the Firebase one (has _owner)
@@ -2642,32 +2774,121 @@ function rebuildSel(){
   // If current trip was removed, switch to first available
   if(DB.cur&&!DB.trips[DB.cur])DB.cur=deduped[0]?.id||null;
 
-  deduped.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.name;if(t.id===DB.cur)o.selected=true;sel.appendChild(o);});
-  if(!deduped.length)sel.innerHTML='<option value="">— No trips yet —</option>';
-  // Sync mobile drawer trip selector
-  const drawerSel=$('tripSelDrawer');
-  if(drawerSel){
-    drawerSel.innerHTML=deduped.map(t=>`<option value="${t.id}" ${t.id===DB.cur?'selected':''}>${t.name}</option>`).join('');
-    if(!deduped.length)drawerSel.innerHTML='<option value="">— No trips yet —</option>';
-  }
+  // Update hidden sel for any legacy references
+  if(sel){deduped.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.name;if(t.id===DB.cur)o.selected=true;sel.appendChild(o);});
+  if(!deduped.length)sel.innerHTML='<option value="">— No trips yet —</option>';}
+  // Update custom trip pickers
+  const cur=deduped.find(t=>t.id===DB.cur);
+  const curName=cur?cur.name:'— No trips —';
+  const listHtml=deduped.length
+    ?deduped.map(t=>`<div class="tp-item${t.id===DB.cur?' active':''}" data-id="${t.id}">${esc(t.name)}</div>`).join('')
+    :'<div class="tp-item" style="color:var(--text3);cursor:default;font-family:Inter">No trips yet</div>';
+  ['Desk','Mob'].forEach(side=>{
+    const nameEl=$('tpName'+side);const listEl=$('tpList'+side);
+    if(nameEl)nameEl.textContent=curName;
+    if(listEl)listEl.innerHTML=listHtml;
+  });
+  // Show Delete (owner) or Leave (crew) based on current trip ownership
+  const ct=T();const isOwner=ct&&(!ct._owner||ct._owner===ME.id);
+  ['sbDelBtn','mobDelBtn'].forEach(id=>{const b=$(id);if(b)b.style.display=ct&&isOwner?'block':'none';});
+  ['sbLeaveBtn','mobLeaveBtn'].forEach(id=>{const b=$(id);if(b)b.style.display=ct&&!isOwner?'block':'none';});
 }
+function toggleTripPicker(side){
+  const picker=$('tripPicker'+(side==='desk'?'Desk':'Mob'));
+  if(!picker)return;
+  const wasOpen=picker.classList.contains('open');
+  document.querySelectorAll('.trip-picker.open').forEach(p=>p.classList.remove('open'));
+  if(!wasOpen)picker.classList.add('open');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.trip-picker'))document.querySelectorAll('.trip-picker.open').forEach(p=>p.classList.remove('open'));
+});
+document.addEventListener('click',e=>{
+  const item=e.target.closest('.tp-item[data-id]');
+  if(!item)return;
+  const id=item.dataset.id;
+  const inMob=item.closest('#tripPickerMob');
+  document.querySelectorAll('.trip-picker.open').forEach(p=>p.classList.remove('open'));
+  switchTrip(id);
+  if(inMob)closeMobileMenu();
+});
 function switchTrip(id){
   if(!id||!DB.trips[id])return;
   DB.cur=id; sv(); renderAll(); startCD();
   if(currentPanel==='plan')setTimeout(()=>{initLeaflet();refreshMap(T());if(leafMap)leafMap.invalidateSize();},100);
 }
+function confirmDialog(icon,title,msg,okLabel,okClass,onOk){
+  $('confirmIcon').textContent=icon;
+  $('confirmTitle').textContent=title;
+  $('confirmMsg').textContent=msg;
+  const btn=$('confirmOkBtn');
+  btn.textContent=okLabel;
+  btn.className='btn-'+(okClass||'danger');
+  btn.style.flex='1';
+  btn.onclick=()=>{closeModal('confirmMod');onOk();};
+  openModal('confirmMod');
+}
 function deleteCurrentTrip(){
   const t=T();if(!t){toast('No trip selected','err');return;}
-  if(!confirm('Delete "'+t.name+'"? This cannot be undone.'))return;
-  // Delete from Firebase if available
-  if(FB_READY&&fbDb){
-    fbDb.collection('trips').doc(DB.cur).delete().catch(e=>console.warn('Firebase delete:',e));
-  }
-  delete DB.trips[DB.cur];
-  const remaining=Object.keys(DB.trips);
-  DB.cur=remaining.length?remaining[0]:null;
-  sv(); rebuildSel(); renderAll(); startCD();
-  toast('Trip deleted','ok');
+  if(t._owner&&t._owner!==ME.id){toast('Only the trip organiser can delete this trip','err');return;}
+  confirmDialog('🗑️','Delete Trip?',
+    'Delete "'+t.name+'"? This cannot be undone and will remove the trip for all crew members.',
+    'Yes, Delete','danger',
+    ()=>{
+      if(FB_READY&&fbDb){
+        fbDb.collection('trips').doc(DB.cur).delete().catch(e=>console.warn('Firebase delete:',e));
+        fbDb.collection('invite_codes').doc(t.inviteCode||'__none').delete().catch(()=>{});
+      }
+      delete DB.trips[DB.cur];
+      const remaining=Object.keys(DB.trips);
+      DB.cur=remaining.length?remaining[0]:null;
+      sv();rebuildSel();renderAll();startCD();
+      toast('Trip deleted','ok');
+    }
+  );
+}
+function leaveTrip(){
+  const t=T();if(!t){toast('No trip selected','err');return;}
+  if(t._owner===ME.id){toast('You are the organiser — transfer or delete the trip instead','err');return;}
+  confirmDialog('🚪','Leave Trip?',
+    'Leave "'+t.name+'"? Your costs will be redistributed to remaining crew.',
+    'Yes, Leave','danger',
+    async ()=>{
+      // Remove from crew + _crewIds
+      t.crew=t.crew.filter(c=>c.id!==ME.id);
+      t._crewIds=(t._crewIds||[]).filter(id=>id!==ME.id);
+      // Remove from vehicle passengers
+      (t.vehicles||[]).forEach(v=>{
+        if(v.passengers)v.passengers=v.passengers.filter(id=>id!==ME.id);
+      });
+      // Redistribute expense splits
+      (t.expenses||[]).forEach(e=>{
+        if(!e.splits||!e.splits[ME.id])return;
+        const leaverPct=e.splits[ME.id];
+        delete e.splits[ME.id];
+        if(e.paidBy===ME.id)e.paidBy=t._owner||t.crew[0]?.id||'';
+        // Normalise remaining splits to sum to 100
+        const remaining=Object.keys(e.splits);
+        if(!remaining.length)return;
+        const currentSum=remaining.reduce((a,k)=>a+e.splits[k],0);
+        if(currentSum<=0){const eq=100/remaining.length;remaining.forEach(k=>e.splits[k]=eq);return;}
+        const scale=(currentSum+leaverPct)/currentSum;
+        remaining.forEach(k=>e.splits[k]=Math.round(e.splits[k]*scale*10)/10);
+      });
+      // Save updated trip to Firebase (we're still in _crewIds for this write since we haven't been removed server-side)
+      if(FB_READY&&fbDb){
+        await fbDb.collection('trips').doc(t.id).set({...t,_updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:false}).catch(e=>console.warn(e));
+        // Remove from joinedTrips on our user doc
+        fbDb.collection('users').doc(ME.id).update({joinedTrips:firebase.firestore.FieldValue.arrayRemove(t.id)}).catch(()=>{});
+      }
+      delete DB.trips[DB.cur];
+      const remaining2=Object.keys(DB.trips);
+      DB.cur=remaining2.length?remaining2[0]:null;
+      sv();rebuildSel();renderAll();startCD();
+      const nt=T();if(nt){renderBudget(nt);renderDash(nt);}
+      toast('You left "'+t.name+'"','ok');
+    }
+  );
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2913,10 +3134,10 @@ function renderDash(t){
   ${todoHtml}
   <div class="stats-row">
     <div class="stat" onclick="navTo('plan','itinerary')" style="cursor:pointer"><div class="stat-n">${t.itinerary.filter(d=>!d.isTravel).length||0}</div><div class="stat-l">Nights</div></div>
-    <div class="stat" onclick="navTo('plan')" style="cursor:pointer"><div class="stat-n">${km?km.toLocaleString():'—'}</div><div class="stat-l">Total km</div></div>
-    <div class="stat" onclick="navTo('budget')" style="cursor:pointer"><div class="stat-n" style="font-size:${myCost>0?'1.7rem':'.9rem'}">${myCost>0?fmtR(myCost):(hasVehicle&&!km?'⏳':'—')}</div><div class="stat-l">My Cost</div></div>
-    <div class="stat" onclick="navTo('budget')" style="cursor:pointer"><div class="stat-n">${fmtR(myFuelShare)}</div><div class="stat-l">Fuel Share</div></div>
-    <div class="stat" onclick="navTo('budget')" style="cursor:pointer"><div class="stat-n">${fmtR(myExpShare)}</div><div class="stat-l">Expenses</div></div>
+    <div class="stat" onclick="navTo('plan')" style="cursor:pointer"><div class="stat-n">${km?km>=1000?(km/1000).toFixed(1).replace(/\.0$/,'')+'k':km:'—'}</div><div class="stat-l">Total km</div></div>
+    <div class="stat" onclick="navTo('budget')" style="cursor:pointer"><div class="stat-n">${myCost>0?fmtRShort(myCost):(hasVehicle&&!km?'⏳':'—')}</div><div class="stat-l">My Cost</div></div>
+    <div class="stat" onclick="navTo('budget')" style="cursor:pointer"><div class="stat-n">${fmtRShort(myFuelShare)}</div><div class="stat-l">Fuel Share</div></div>
+    <div class="stat" onclick="navTo('budget')" style="cursor:pointer"><div class="stat-n">${fmtRShort(myExpShare)}</div><div class="stat-l">Expenses</div></div>
     <div class="stat" onclick="navTo('pack')" style="cursor:pointer"><div class="stat-n">${pct}%</div><div class="stat-l">Packed</div></div>
   </div>
   <div class="dash-grid">
@@ -2982,7 +3203,8 @@ function calcMyVehicleFuel(t){
       // Per-leg calculation
       legs.forEach(s=>{
         const km=Number(s.km||s._osrmKm||0);
-        const cons=(s.towing&&v.towingCons)?Number(v.towingCons):(Number(v.consumption)||12.5);
+        const baseCons=Number(v.consumption)||12.5;
+        const cons=s.towing?(v.towingCons?Number(v.towingCons):baseCons*1.3):baseCons;
         vFuel+=(km/100)*cons*price;
       });
     } else {
@@ -3016,7 +3238,8 @@ function calcFuelEstimate(t){
     if(legs.length&&legs.some(s=>Number(s.km||0)>0)){
       legs.forEach(s=>{
         const km=Number(s.km||s._osrmKm||0);
-        const cons=(s.towing&&v.towingCons)?Number(v.towingCons):(Number(v.consumption)||12.5);
+        const baseCons=Number(v.consumption)||12.5;
+        const cons=s.towing?(v.towingCons?Number(v.towingCons):baseCons*1.3):baseCons;
         vFuel+=(km/100)*cons*price;
       });
     } else {
@@ -3201,6 +3424,8 @@ document.addEventListener('visibilitychange',()=>{
     const now=Date.now();
     if(now-_lastVisibilityLoadTs>30000){
       _lastVisibilityLoadTs=now;
+      // Mobile browsers kill WebSocket connections in the background — restart Firestore listeners
+      setupJoinRequestListener();setupTripListeners();
       loadFromFirebase(ME.id).then(()=>{sv();rebuildSel();renderAll();startCD();}).catch(()=>{});
     }
   }
@@ -3663,18 +3888,16 @@ function addStop(){
     syncFromStops(t);
     toast('🧭 Stop added','ok');
   }
+  const _sy=window.scrollY;
   sv();renderStops(t);renderItinerary(t);renderFood(t);renderAccom(t);renderDash(t);
   updateFuelKm(t);refreshMap(t);renderBudget(t);
   closeModal('addStopMod');
   ['rs-nights','rs-km','rs-notes'].forEach(id=>$(id).value='');
   $('rSearch').value='';$('rPills').innerHTML='';rStopSelected=null;
+  requestAnimationFrame(()=>window.scrollTo(0,_sy));
   // Fetch suggested activities in background for overnight stops
   if(nights>0&&!t.stops[t.stops.length-1].isEnd){
     setTimeout(()=>suggestActivitiesForStop(name,lat,lon),800);
-  }
-  // Fetch suggested activities in background for overnight stops
-  if(nights>0&&!stop.isEnd){
-    setTimeout(()=>suggestActivitiesForStop(name,lat,lon),500);
   }
 }
 function removeStop(i){
@@ -3723,9 +3946,27 @@ function updStopKm(idx,val){
 //  LEAFLET MAP
 // ══════════════════════════════════════════════════════════════
 function initLeaflet(){
-  if(leafReady||typeof L==='undefined')return;
-  leafMap=L.map('leafletMap',{zoomControl:true}).setView([-22,22],5);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:19}).addTo(leafMap);
+  if(leafReady)return;
+  if(typeof L==='undefined'){setTimeout(()=>{initLeaflet();if(T())refreshMap(T());if(leafMap)leafMap.invalidateSize();},300);return;}
+  leafMap=L.map('leafletMap',{zoomControl:true,preferCanvas:true}).setView([-22,22],5);
+  // Try CartoDB dark tiles; auto-fall back to OSM after 3 failures (CartoDB free tier is unreliable)
+  let _tileErrors=0,_tileFallback=false;
+  const _cartoLayer=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_matter/{z}/{x}/{y}.png',{
+    attribution:'© <a href="https://openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains:'abcd',maxZoom:19,keepBuffer:3,updateWhenIdle:true
+  }).addTo(leafMap);
+  _cartoLayer.on('tileerror',()=>{
+    _tileErrors++;
+    if(_tileErrors>=3&&!_tileFallback){
+      _tileFallback=true;
+      leafMap.removeLayer(_cartoLayer);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        attribution:'© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        subdomains:'abc',maxZoom:19,keepBuffer:3,updateWhenIdle:true
+      }).addTo(leafMap);
+    }
+  });
+  setTimeout(()=>{if(leafMap)leafMap.invalidateSize();},200);
   leafReady=true;
 }
 function refreshMap(t){
@@ -3760,8 +4001,10 @@ function drawMap(t,latlngs,stops){
   leafMap.fitBounds(bounds,{padding:[40,40]});
   if(latlngs.length>=2){
     const cs=latlngs.map(c=>c[1]+','+c[0]).join(';');
-    fetch(`https://router.project-osrm.org/route/v1/driving/${cs}?overview=full&geometries=geojson&steps=false`)
-    .then(r=>r.json()).then(d=>{
+    const osrmCtrl=new AbortController();
+    const osrmTimer=setTimeout(()=>osrmCtrl.abort(),10000);
+    fetch(`https://router.project-osrm.org/route/v1/driving/${cs}?overview=full&geometries=geojson&steps=false`,{signal:osrmCtrl.signal})
+    .then(r=>r.json()).then(d=>{clearTimeout(osrmTimer);
       if(d.routes&&d.routes[0]){
         const route=d.routes[0];
         leafPolyline=L.polyline(route.geometry.coordinates.map(c=>[c[1],c[0]]),{color:'#f8a818',weight:4,opacity:.9}).addTo(leafMap);
@@ -3784,7 +4027,7 @@ function drawMap(t,latlngs,stops){
           sv();updateFuelKm(t2);renderStops(t2);renderDash(t2);renderBudget(t2);
         }
       }
-    }).catch(()=>{leafPolyline=L.polyline(latlngs,{color:'#f8a818',weight:3,opacity:.65,dashArray:'8 5'}).addTo(leafMap);});
+    }).catch(()=>{clearTimeout(osrmTimer);leafPolyline=L.polyline(latlngs,{color:'#f8a818',weight:3,opacity:.65,dashArray:'8 5'}).addTo(leafMap);});
   }
 }
 
@@ -4392,6 +4635,8 @@ function renderCrew(t){
      .catch(e=>console.error('invite_codes write failed:',e));
   }
   $('inviteCodeBox').innerHTML=`<div class="invite-code-box"><div class="icb-label">Trip Invite Code — share with your crew</div><div class="icb-code">${t.inviteCode||'—'}</div><button class="icb-copy" onclick="navigator.clipboard?.writeText('${t.inviteCode}');toast('Invite code copied 📋','ok')">Copy Code</button></div>`;
+  const isOwner=!t._owner||t._owner===ME.id;
+  const leaveRow=$('crewLeaveRow');if(leaveRow)leaveRow.style.display=isOwner?'none':'block';
   if(!t.crew.length){grid.innerHTML='';return;}
   grid.innerHTML=t.crew.map((m,i)=>{
     const isMe=m.id===ME.id;
@@ -4421,6 +4666,7 @@ function renderCrew(t){
   }
   renderSummarySheet(t);
 }
+function crewRefresh(){appRefresh();}
 function approveVehicleRequest(tripId,vehicleIdx,userId){
   const t=DB.trips[tripId];if(!t)return;
   const v=t.vehicles[vehicleIdx];if(!v)return;
@@ -4658,7 +4904,7 @@ function setPlanTab(tab,el){
   const mc=$('mapContainer');
   if(mc)mc.style.display=tab==='route'?'block':'none';
   if(tab==='activities')renderActivitiesTab(T());
-  if(tab==='route')setTimeout(()=>{initLeaflet();if(T())refreshMap(T());if(leafMap)leafMap.invalidateSize();},80);
+  if(tab==='route'){setTimeout(()=>{initLeaflet();if(T())refreshMap(T());},80);setTimeout(()=>{if(leafMap)leafMap.invalidateSize();},350);}
 }
 function toggleItinAccordion(forceOpen){
   const body=$('itinAccordionBody'),chevron=$('itinChevron');
